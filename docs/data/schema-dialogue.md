@@ -7,7 +7,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "canon": "5.2",
+  "canon": "5.3",
   "id": "DLG.S07.junho.call",
   "channel": "call",
   "participants": ["father", "junho"],

@@ -5,7 +5,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "canon": "5.2",
+  "canon": "5.3",
   "know": [
     {
       "id": "K-19",

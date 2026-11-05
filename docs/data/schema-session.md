@@ -7,7 +7,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "canon": "5.2",
+  "canon": "5.3",
   "id": "S06",
   "title": "편의점",
   "act": "2-1",

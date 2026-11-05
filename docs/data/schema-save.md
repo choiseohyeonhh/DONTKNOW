@@ -6,7 +6,7 @@
 
 ```json
 {
-  "meta": { "schemaVersion": 1, "canon": "5.2", "savedAt": 1767225600000, "playthrough": 1, "contentHash": "a1b2c3" },
+  "meta": { "schemaVersion": 1, "canon": "5.3", "savedAt": 1767225600000, "playthrough": 1, "contentHash": "a1b2c3" },
   "clock": { "day": 18, "min": 610 },
   "location": "PL.police",
   "device": "father",
