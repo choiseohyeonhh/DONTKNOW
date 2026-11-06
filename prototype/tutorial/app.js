@@ -96,7 +96,7 @@ const ctByNum = (n) => CT.find((c) => c.num === n);
 // ───────── 메시지 스레드 (데이터: docs/content/father-phone-data.md 4장) ─────────
 const T = {};
 T.hangyeol = { name: '1600-XXXX', unread: 11, reply: 'none', msgs: DATA.hangyeol.map((m) => ({ from: 'them', d: m.d, t: m.t, text: m.x, ts: m.ts })) };
-T.jihoon = { name: '정지훈(도현친구)', unread: 1, reply: 's2', msgs: [{ from: 'them', d: '2026년 3월 15일 (일)', t: '15:25', text: '아저씨 도현이 집에 있어요?', ts: '202603151525' }] };
+T.jihoon = { name: '정지훈(도현친구)', unread: 1, reply: 's2', msgs: [{ from: 'them', d: '2026년 3월 15일 (일)', t: '15:25', text: '아저씨 혹시 도현이 집에 들어왔어요?', ts: '202603151525' }] };
 T.dispatch = { name: '배차실', unread: 2, reply: 'quick', quick: ['사정이 있어서 못 갑니다.', '지금 가겠습니다.'], msgs: DATA.dispatch.map((m) => ({ from: 'them', d: m.d, t: m.t, text: m.x, ts: m.ts })) };
 T.univ = { name: '○○대학교', unread: 2, reply: 'none', msgs: DATA.univ.map((m) => ({ from: 'them', d: m.d, t: m.t, text: m.x, ts: m.ts })) };
 T.dohyun = { name: '도현', unread: 0, reply: 'none', msgs: [{ from: 'them', d: '2026년 3월 14일 (토)', t: '18:52', text: '오늘 좀 늦어. 먼저 자', ts: '202603141852' }] };
@@ -104,42 +104,56 @@ DATA.ads.forEach((a, i) => { T['ad' + i] = { name: a.num, unread: 1, reply: 'non
 const totalUnread = () => Object.values(T).reduce((n, t) => n + t.unread, 0);
 const lastOf = (th) => th.msgs[th.msgs.length - 1];
 
-// ───────── S2 대화 스크립트 (docs/sessions/S02.md 3~5장) ─────────
-// say: 지훈 발화 / me: 아버지 발화(통화 오프너) / choice: 선택지 / branch: 모드별 분기 / end: 종료
-const SAY = (text, extra = {}) => ({ type: 'say', text, ...extra });
-const CH = (opts) => ({ type: 'choice', opts: [...opts, { label: '(전화한다)', switch: true }] });
+// ───────── S2 대화 스크립트 (docs/sessions/S02.md 3~4장, 문체: docs/narrative/dialogue-style.md) ─────────
+// 같은 노드라도 문자와 통화는 문장이 다르다. m: 문자 버블 배열 / c: 통화 자막 한 줄
+// say: 지훈 발화 / choice: 선택지 / branch: 모드별 분기 / end: 종료
+const SAY = (m, c, extra = {}) => ({ type: 'say', m: [].concat(m), c, ...extra });
+const CH = (opts, extra = {}) => ({ type: 'choice', opts: [...opts, { label: { m: '(전화한다)' }, switch: true }], ...extra });
+const GOODNIGHT = () => ({ label: { m: '그래 알았다. 늦었는데 얼른 자라', c: '그래, 알았다. 늦었는데 얼른 자라.' }, then: [BYE, { type: 'end' }] });
+const BYE = SAY(['네', '아저씨 도현이 소식 있으면 저한테도 꼭 알려주세요'], '네… 아저씨, 도현이 소식 있으면 저한테도 꼭 알려 주세요.');
 const S2_SCRIPT = () => [
-  CH([{ label: '무슨 일이니.', then: [SAY('4일 참았는데 도저히 못 참겠어요.')] }]),
+  // CH.S02.01 — 문자 첫 답장. 통화로 시작하면 아버지 첫 마디가 대신한다.
+  CH([{ label: { m: '그래 지훈아 무슨 일이냐' } }], { opener: true }),
+  SAY(['죄송해요 이 시간에', '나흘 내내 참았는데', '도저히 안 되겠어서요'], '죄송해요, 이 시간에… 나흘 내내 참았는데 도저히 안 되겠어서요.'),
   CH([
-    { label: '왜 이제 말하는 거니.', then: [SAY('도현이가 말하지 말라고 했는데… 죄송해요.')] },
-    { label: '고맙다.', then: [SAY('아저씨, 도현이 아저씨 얘기 자주 했어요. 걱정된다고.', { kx: 'KX-02' })] },
+    { label: { m: '근데 왜 이제야 말하는 거냐', c: '근데… 왜 이제야 말하는 거냐.' },
+      then: [SAY(['도현이가 아무한테도 말하지 말라고 해서요', '진짜 죄송해요'], '도현이가 아무한테도 말하지 말라고 해서요… 진짜 죄송해요.')] },
+    { label: { m: '그래 연락 줘서 고맙다', c: '그래. 전화 줘서 고맙다.' },
+      then: [SAY(['아니에요', '아 그리고 아저씨', '도현이가 아저씨 얘기 자주 했어요', '아저씨 걱정된다고'], '아니에요. 아, 그리고 아저씨… 도현이가 아저씨 얘기 자주 했어요. 아저씨 걱정된다고.', { kx: 'KX-02' })] },
   ]),
-  SAY('3월 초부터 이상했어요. 점심도 안 먹고 폰만 자주 보고, 웃음도 줄었고요.', { kn: 'K-01' }),
+  SAY(['3월 들어서부터 좀 이상했어요', '밥 먹자 해도 잘 안 먹고', '폰만 계속 들여다보고', '잘 웃지도 않고요'],
+    '3월 들어서부터 좀 이상했어요. 점심 먹자 해도 거르고, 폰만 계속 들여다보고… 잘 웃지도 않았고요.', { kn: 'K-01' }),
   CH([
-    { label: '그 전엔.', then: [SAY('고1 겨울부터 좀 조용하긴 했어요. 근데 그냥 원래 그런 앤 줄 알았어요.')] },
-    {
-      label: '폰을 자주 봤다고.', then: [
-        SAY('네, 맨날 뭘 확인하더라고요.'),
-        CH([
-          { label: '도현이 폰 비번 알아.', call: true, then: [SAY('모르는데… 걔 맨날 가족 생일 같은 거 써요. 촌스럽다고 놀렸는데.', { kn: 'K-05' })] },
-          { label: '그렇구나.' },
-        ]),
-      ],
-    },
+    { label: { m: '그 전에는 괜찮았고?', c: '그 전에는? 그 전엔 괜찮았냐.' },
+      then: [SAY(['사실 고1 겨울부터 좀 조용해지긴 했어요', '고2 땐 과외 알바 한다고 맨날 바빴고요', '근데 저는 그냥 원래 그런 앤 줄 알았어요'],
+        '사실 고1 겨울부터 좀 조용해지긴 했어요. 고2 땐 과외 알바 한다고 맨날 바빴고요. 근데 저는 그냥 걔가 원래 그런 앤 줄 알았어요.')] },
+    { label: { m: '폰을 계속 봤다고?', c: '폰을 계속 봤다고?' }, then: [
+      SAY(['네 맨날 뭘 확인하더라고요'], '네, 맨날 뭘 확인하더라고요.'),
+      CH([
+        { label: { c: '혹시 도현이 폰 비밀번호 아냐?' }, call: true,
+          then: [SAY([], '비번은 모르는데… 걔 맨날 가족 생일 같은 거 써요. 촌스럽다고 제가 놀렸었는데.', { kn: 'K-05' })] },
+        { label: { m: '그래', c: '그래.' } },
+      ]),
+    ] },
   ]),
-  SAY('3/13 밤에 재수학원 앞으로 찾아왔어요. "내일 끝난다"고. 무슨 뜻이냐니까 "대학 오기 전에 끝냈어야 했던 거"라고만 했어요.', { kn: 'K-02' }),
-  SAY('대학 생활 어떠냐고 물으니까 웃기만 하던데요.'),
-  SAY('아랫집 고2 준호요. 요즘 둘이 자주 다녔어요.', { kn: 'K-03' }),
+  SAY(['그리고 13일 밤에', '걔가 저 학원 앞으로 왔었어요', '갑자기 내일 끝난다고', '뭐가 끝나냐니까 대학 오기 전에 끝냈어야 했던 거래요', '그게 다였어요'],
+    '13일 밤에 걔가 저 학원 앞으로 왔었어요. 갑자기 내일 끝난다고. 뭐가 끝나냐니까, 대학 오기 전에 끝냈어야 했던 거라고만 하고…', { kn: 'K-02' }),
+  SAY(['대학 생활 어떠냐고 물어봤는데', '그냥 웃기만 했어요'], '대학 생활 어떠냐니까 그냥 웃기만 하더라고요.'),
+  SAY(['아 그리고 준호요', '아랫집 사는 고2', '요즘 둘이 자주 붙어 다녔어요'], '아, 그리고 준호라고… 아랫집 사는 고2요. 요즘 걔랑 둘이 자주 붙어 다녔어요.', { kn: 'K-03' }),
   { type: 'branch', mode: 'call',
-    then: [SAY('형이 어쩌고 하면서 통화하는 걸 들었어요. 친형 아니죠?', { kn: 'K-04' })],
-    else: [SAY('이건 전화로 말씀드릴게요.')] },
+    then: [SAY([], "그리고 이건 좀 이상했는데… 걔가 누구랑 통화하면서 계속 '형, 형' 하더라고요. 걔 친형 없잖아요.", { kn: 'K-04' })],
+    else: [SAY(['하나 더 있는데', '이건 전화로 말씀드릴게요'], '')] },
   CH([
-    { label: '대학 친구들은.', call: true, then: [SAY('2주밖에 안 됐잖아요. 걔 아는 사람은 다 성원고에 있어요. 윤쌤… 상담쌤한테 가보세요. 졸업식 날 걔 상담실 들어가는 거 봤어요.', { kx: 'KX-04' })] },
-    { label: '알았다. 들어가.', then: [{ type: 'end' }] },
+    { label: { c: '대학 친구들한테는 물어봤냐?' }, call: true,
+      then: [SAY([], '대학은 들어간 지 2주밖에 안 됐잖아요. 거기 애들은 도현이 잘 몰라요. 걔 아는 사람은 다 성원고에 있어요.'),
+        SAY([], '아, 윤쌤… 상담 선생님 한번 찾아가 보세요. 졸업식 날 걔 상담실 들어가는 거 봤어요.', { kx: 'KX-04' }),
+        CH([GOODNIGHT()])] },
+    GOODNIGHT(),
   ]),
 ];
-const FATHER_OPEN = '도현이 아빠다. 늦은 시간에 미안하다.';
-const visibleOpts = (it) => it.opts.filter((o) => (!o.call || S.s2.mode === 'call') && (!o.switch || S.s2.mode === 'msg'));
+const FATHER_OPEN = '어, 지훈아. 아저씨다.';
+const optLabel = (o) => (S.s2.mode === 'call' ? o.label.c : o.label.m) || o.label.m || o.label.c;
+const visibleOpts = (it) => it.opts.filter((o) => (S.s2.mode === 'call' ? (o.label.c && !o.switch) : (o.label.m && !o.call)));
 
 // ───────── 메시지 추가 ─────────
 function addMsg(id, m, { banner = true } = {}) {
@@ -164,12 +178,13 @@ function showBanner(title, body, id) {
 }
 function hideBanner(body) {
   if (!S.banner || (body && S.banner.body !== body)) return;
-  const el = $('#overlay .banner');
-  if (el) el.classList.add('out');
+  S.banner.out = true;
+  refresh();
   later(280, () => { S.banner = null; refresh(); }, 'banner');
 }
 function showMono(text) {
   S.mono = text;
+  S.monoN = (S.monoN || 0) + 1;
   clearGroup('mono');
   later(2300, () => { S.mono = null; refresh(); }, 'mono');
   refresh();
@@ -231,7 +246,7 @@ function startS1() {
 function jihoonEvent() {
   if (S.jihoonEventDone || S.phase !== 's1') return;
   S.jihoonEventDone = true;
-  const lines = ['아저씨 자고 계세요', '도현이가 말하지 말라고 했는데요', '저 할 말 있어요'];
+  const lines = ['아저씨 혹시 주무세요?', '도현이가 아무한테도 말하지 말랬는데요', '저 아저씨한테 할 말이 있어요'];
   lines.forEach((t, i) => later(i * 1000, () => {
     addMsg('jihoon', nowMsg('them', t));
     // 이미 지훈 스레드를 보고 있었다면 세 번째 문자가 도착한 순간이 '열람'이다
@@ -260,7 +275,7 @@ function startS2(mode) {
   later(90000, () => { if (S.phase === 's2' && S.s2.mode === 'msg') addMsg('jihoon', nowMsg('them', '아저씨 보셨어요?')); }, 'nudge2');
   later(180000, () => {
     if (S.phase === 's2' && S.s2.mode === 'msg') {
-      addMsg('jihoon', nowMsg('them', '전화 드려도 돼요?'));
+      addMsg('jihoon', nowMsg('them', '제가 전화 드려도 될까요?'));
       S.ov = { type: 'incoming', name: '정지훈(도현친구)', from: 'jihoon' };
       refresh();
     }
@@ -272,17 +287,29 @@ function startS2(mode) {
 function runQueue() {
   const s = S.s2;
   if (S.phase !== 's2' || s.busy || s.waiting) return;
-  const it = s.queue[0];
+  let it = s.queue[0];
   if (!it) return endS2();
+  if (it.type === 'choice' && it.opener && s.mode === 'call') { s.queue.shift(); return runQueue(); }
   if (it.type === 'choice') { s.waiting = it; refresh(); return; }
   s.queue.shift();
   if (it.type === 'branch') { s.queue.unshift(...(s.mode === 'call' ? it.then : it.else)); return runQueue(); }
   if (it.type === 'end') return endS2();
   if (it.type === 'say') {
+    const text = s.mode === 'call' ? it.c : it.m[0];
+    if (!text) { grant(it.kn); grant(it.kx); return runQueue(); }
+    if (s.mode === 'msg' && it.m.length > 1) {
+      // 문자는 버블 하나씩. K는 마지막 버블에 붙인다.
+      const rest = { ...it, m: it.m.slice(1) };
+      s.queue.unshift(rest);
+      it = { ...it, kn: null, kx: null };
+    }
+    it.text = text;
     s.busy = true;
     s.typing = s.mode === 'msg';
     refresh();
-    later(600 + it.text.length * 28, () => {
+    // 지훈은 문자를 빨리 친다(버블 간 0.6~1.4초). 통화 자막은 말하는 길이만큼.
+    const wait = s.mode === 'msg' ? 500 + Math.min(900, text.length * 22) : 700 + text.length * 30;
+    later(wait, () => {
       s.busy = false;
       s.typing = false;
       deliverSay(it);
@@ -307,14 +334,14 @@ function choose(i) {
   if (!opt) return;
   if (opt.switch) {
     // 같은 질문을 전화로 이어 간다: 선택지 지점은 유지되고, 통화에서는 통화 전용 선택지가 더 보인다.
-    deliverMe('전화할게.');
+    deliverMe('잠깐 전화할게');
     return switchToCall();
   }
   s.waiting = null;
   const idx = s.queue.indexOf(it);
   if (idx >= 0) s.queue.splice(idx, 1);
   if (S.ov && S.ov.type === 'choices') S.ov = null;
-  deliverMe(opt.label);
+  deliverMe(optLabel(opt));
   s.queue.unshift(...(opt.then || []));
   runQueue();
   refresh();
@@ -428,13 +455,17 @@ const IMG = { hall_night: 'img/hall_night.jpg' };
 const CINE = {
   'CN-00': { skip: true, cuts: [
     { text: '2026년 3월 18일 수요일', dur: 2800 },
-    { img: 'hall_night', origin: '50% 55%', from: 'scale(1.02)', to: 'scale(1.1) translateY(1%)', dur: 5600, stamp: '02:47' },
-    { img: 'hall_night', origin: '47% 74%', from: 'scale(2.2)', to: 'scale(2.35)', dur: 4200, stamp: '02:47' },
+    { img: 'hall_night', origin: '50% 55%', from: 'scale(1.02)', to: 'scale(1.1) translateY(1%)', dur: 5600,
+      cap: ['토요일 저녁, 늦는다는 문자를 끝으로 아들 도현은 집에 돌아오지 않았다.', '스무 살. 대학에 들어간 지 2주 만이었다.'] },
+    { img: 'hall_night', origin: '47% 74%', from: 'scale(2.2)', to: 'scale(2.35)', dur: 4200, stamp: '02:47',
+      cap: ['나흘째 되는 밤. 아버지 이상철은 아들 방 앞에 서 있다.', '손에 쥔 폰이, 지금 그가 가진 전부다.'] },
   ] },
   'CN-01': { skip: true, cuts: [
-    { img: 'hall_night', origin: '47% 74%', from: 'scale(2.35)', to: 'scale(1.7)', dur: 4200, stamp: '03:30' },
+    { img: 'hall_night', origin: '47% 74%', from: 'scale(2.35)', to: 'scale(1.7)', dur: 4200, stamp: '03:30',
+      cap: ['그 뒤로도 잠은 오지 않았다.'] },
     { roll: ['03:30', '08:40'], dur: 2800 },
-    { img: 'hall_night', filter: 'morning', origin: '50% 55%', from: 'scale(1.0)', to: 'scale(1.06)', dur: 4400, stamp: '08:40' },
+    { img: 'hall_night', filter: 'morning', origin: '50% 55%', from: 'scale(1.0)', to: 'scale(1.06)', dur: 4400, stamp: '08:40',
+      cap: ['아침이 왔다. 방문은 여전히 닫혀 있다.', '도현이 3년을 다닌 학교, 성원고로 간다.'] },
   ] },
 };
 const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -448,6 +479,22 @@ function playCine(id, done) {
   el.dataset.act = 'cineTap';
   nextCut();
 }
+// 자막 타이밍: 첫 줄 0.8초, 다음 줄은 앞 줄을 읽을 시간 뒤(최소 1.4초). 컷은 마지막 줄을 읽을 시간까지 늘어난다.
+const readMs = (t) => 1200 + t.length * 60;
+function capTimes(cut) {
+  const at = [];
+  (cut.cap || []).forEach((t, i) => at.push(i ? at[i - 1] + Math.max(1400, readMs(cut.cap[i - 1]) - 300) : 800));
+  const end = at.length ? at[at.length - 1] + readMs(cut.cap[cut.cap.length - 1]) : 0;
+  return { at, dur: Math.max(cut.dur, end + 1000) };
+}
+function cineTap() {
+  // 아직 안 나온 자막이 있으면 먼저 다 띄우고, 다음 탭에 넘어간다
+  const rest = [...document.querySelectorAll('#cine .cut:last-child .caps p:not(.on)')];
+  if (!rest.length) return nextCut();
+  clearGroup('cine');
+  rest.forEach((p) => p.classList.add('on'));
+  later(2600, nextCut, 'cine');
+}
 function nextCut() {
   if (!S.cine) return;
   clearGroup('cine');
@@ -455,6 +502,7 @@ function nextCut() {
   S.cine.i += 1;
   if (S.cine.i >= c.cuts.length) return endCine();
   const cut = c.cuts[S.cine.i];
+  const tm = capTimes(cut);
   const el = $('#cine');
   const div = document.createElement('div');
   div.className = 'cut';
@@ -466,12 +514,17 @@ function nextCut() {
     kb.style.transform = REDUCED ? cut.to : cut.from;
     div.appendChild(kb);
     if (!REDUCED) requestAnimationFrame(() => requestAnimationFrame(() => {
-      kb.style.transition = `transform ${cut.dur + 1400}ms cubic-bezier(.3,.1,.4,1)`;
+      kb.style.transition = `transform ${tm.dur + 1400}ms cubic-bezier(.3,.1,.4,1)`;
       kb.style.transform = cut.to;
     }));
   }
   if (cut.text) div.insertAdjacentHTML('beforeend', `<div class="txt">${esc(cut.text)}</div>`);
   if (cut.stamp) div.insertAdjacentHTML('beforeend', `<div class="stamp">${esc(cut.stamp)}</div>`);
+  if (cut.cap) {
+    div.insertAdjacentHTML('beforeend', `<div class="caps">${cut.cap.map((t) => `<p>${esc(t)}</p>`).join('')}</div>`);
+    const ps = div.querySelectorAll('.caps p');
+    tm.at.forEach((t, i) => later(t, () => ps[i].classList.add('on'), 'cine'));
+  }
   if (cut.roll) {
     div.insertAdjacentHTML('beforeend', `<div class="roll">${cut.roll[0]}</div>`);
     const toMin = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
@@ -491,7 +544,7 @@ function nextCut() {
   requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('on')));
   const olds = [...el.querySelectorAll('.cut')].slice(0, -1);
   setTimeout(() => olds.forEach((o) => o.remove()), 1400);
-  later(cut.dur, nextCut, 'cine');
+  later(tm.dur, nextCut, 'cine');
 }
 function endCine() {
   if (!S.cine) return;
@@ -707,6 +760,36 @@ function appView(top) {
   }
 }
 
+// ───────── DOM 패치 ─────────
+// innerHTML 통째 교체 대신 바뀐 노드만 고친다. 그대로인 요소는 살아남아서
+// 등장 애니메이션(통화 화면, 배너, 잠금화면 카드)이 다시 재생되지 않는다.
+// data-k가 있으면 키로 짝을 맞춘다(자막 줄, 오버레이 부품, 뷰).
+function morph(parent, html) {
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  patchKids(parent, tpl.content);
+}
+function keyOf(n) { return n.nodeType === 1 ? n.getAttribute('data-k') : null; }
+function sameNode(x, y) { return x.nodeType === y.nodeType && x.nodeName === y.nodeName && keyOf(x) === keyOf(y); }
+function patchKids(a, b) {
+  const keyed = new Map();
+  for (const c of a.children) { const k = keyOf(c); if (k) keyed.set(k, c); }
+  let cur = a.firstChild;
+  for (const y of [...b.childNodes]) {
+    let x = cur;
+    const k = keyOf(y);
+    if (k) { x = keyed.get(k); if (x && x !== cur) a.insertBefore(x, cur); }
+    if (x && sameNode(x, y)) { patchNode(x, y); cur = x.nextSibling; } else a.insertBefore(y, cur);
+  }
+  while (cur) { const n = cur.nextSibling; a.removeChild(cur); cur = n; }
+}
+function patchNode(x, y) {
+  if (x.nodeType !== 1) { if (x.nodeValue !== y.nodeValue) x.nodeValue = y.nodeValue; return; }
+  for (const at of [...x.attributes]) if (!y.hasAttribute(at.name)) x.removeAttribute(at.name);
+  for (const at of y.attributes) if (x.getAttribute(at.name) !== at.value) x.setAttribute(at.name, at.value);
+  patchKids(x, y);
+}
+
 function renderRoot() {
   const root = $('#root');
   const screen = $('#screen');
@@ -715,12 +798,13 @@ function renderRoot() {
   if (S.phase === 'notice') html = noticeHTML();
   else if (S.phase === 'title') html = titleHTML();
   else if (S.phase === 'prologue') html = '<div class="blackfill"></div>';
-  else if (!S.unlocked) { html = `<div class="lock" style="position:absolute;inset:0">${lockHTML()}</div>`; cls = 'lock'; }
-  else if (!S.stack.length) { html = `<div class="home" style="position:absolute;inset:0">${homeHTML()}</div>`; cls = 'home'; }
-  else { html = `<div class="view-wrap" style="position:absolute;inset:0;background:#fff">${appView(S.stack[S.stack.length - 1])}</div>`; }
+  else if (!S.unlocked) { html = `<div class="lock" data-k="lock" style="position:absolute;inset:0">${lockHTML()}</div>`; cls = 'lock'; }
+  else if (!S.stack.length) { html = `<div class="home" data-k="home" style="position:absolute;inset:0">${homeHTML()}</div>`; cls = 'home'; }
+  else { const tp = S.stack[S.stack.length - 1]; html = `<div class="view-wrap" data-k="v-${S.stack.length}-${tp.app}-${tp.id ?? ''}" style="position:absolute;inset:0;background:#fff">${appView(S.stack[S.stack.length - 1])}</div>`; }
   screen.className = `screen ${cls}`;
   if (root._h !== html) {
-    root.innerHTML = html;
+    // 화면 이동은 새로 그리고(전환 애니메이션), 같은 화면 안의 변화는 패치한다
+    if (S.navAnim) root.innerHTML = html; else morph(root, html);
     root._h = html;
     if (S.navAnim && root.firstElementChild) root.firstElementChild.classList.add(`anim-${S.navAnim === 'homeSlow' ? 'home' : S.navAnim}`);
     keep.forEach(([k, v]) => { const el = root.querySelector(`[data-keep="${k}"]`); if (el) el.scrollTop = v; });
@@ -745,17 +829,18 @@ function callHTML() {
   const dead = c.state === 'dead';
   let subs = '';
   if (c.state === 'talk') {
+    const base = Math.max(0, c.lines.length - 3);
     const last = c.lines.slice(-3);
-    subs = last.map((l, i) => `<div class="sub ${l.who === 'me' ? 'me' : ''} ${i < last.length - 1 ? 'old' : 'fresh'}">${l.who === 'me' ? '나: ' : ''}${esc(l.text)}</div>`).join('');
+    subs = last.map((l, i) => `<div data-k="l${base + i}" class="sub ${l.who === 'me' ? 'me' : ''} ${i < last.length - 1 ? 'past' : 'fresh'}">${l.who === 'me' ? '나: ' : ''}${esc(l.text)}</div>`).join('');
   }
   let choices = '';
   const w = S.s2.waiting;
   if (c.state === 'talk' && c.kind === 'jihoon' && S.s2.mode === 'call' && w) {
-    choices = `<div class="lbl">대답</div><div class="ch">${visibleOpts(w).map((o, i) => `<button class="opt" data-act="choose" data-i="${i}">${esc(o.label)}</button>`).join('')}</div>`;
+    choices = `<div class="lbl">대답</div><div class="ch">${visibleOpts(w).map((o, i) => `<button class="opt" data-act="choose" data-i="${i}">${esc(optLabel(o))}</button>`).join('')}</div>`;
   }
   const status = ring ? '연결 중…' : dead ? c.deadText : fmtDur(Date.now() - c.since);
-  return `<div class="call">
-    <div class="who">${esc(name)}</div><div class="st ${ring ? 'ring' : ''}">${status}</div>
+  return `<div class="call" data-k="call">
+    <div class="who">${esc(name)}</div><div class="st ${ring ? 'ring' : ''}" id="call-st">${status}</div>
     <div class="av"><svg viewBox="0 0 30 30"><circle cx="15" cy="11" r="5.5"/><path d="M5 27c1.4-5.4 5.2-8 10-8s8.6 2.6 10 8z"/></svg></div>
     <div class="subs">${subs}</div>
     ${choices}
@@ -766,14 +851,14 @@ function callHTML() {
 function renderOv() {
   const el = $('#overlay');
   let h = '';
-  if (S.banner) h += `<div class="banner" data-act="bannerTap" data-id="${S.banner.id || ''}"><div class="appic" style="background:linear-gradient(#5EE07A,#2DBE4E)">${'<svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#fff"><path d="M12 3.5c5 0 9 3.3 9 7.5s-4 7.5-9 7.5c-1 0-2-.1-2.9-.4L4.5 20l1.2-3.6C4 15 3 13.1 3 11c0-4.2 4-7.5 9-7.5z"/></svg>'}</div><div><div class="t">${esc(S.banner.title)}</div><div class="b">${esc(S.banner.body)}</div></div><div class="time">지금</div></div>`;
-  if (S.mono) h += `<div class="mono"><span>${esc(S.mono)}</span></div>`;
+  if (S.banner) h += `<div class="banner ${S.banner.out ? 'out' : ''}" data-k="banner" data-act="bannerTap" data-id="${S.banner.id || ''}"><div class="appic" style="background:linear-gradient(#5EE07A,#2DBE4E)">${'<svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#fff"><path d="M12 3.5c5 0 9 3.3 9 7.5s-4 7.5-9 7.5c-1 0-2-.1-2.9-.4L4.5 20l1.2-3.6C4 15 3 13.1 3 11c0-4.2 4-7.5 9-7.5z"/></svg>'}</div><div><div class="t">${esc(S.banner.title)}</div><div class="b">${esc(S.banner.body)}</div></div><div class="time">지금</div></div>`;
+  if (S.mono) h += `<div class="mono" data-k="mono-${S.monoN}"><span>${esc(S.mono)}</span></div>`;
   const ov = S.ov;
   if (ov) {
     if (ov.type === 'call' && S.call) h += callHTML();
     if (ov.type === 'incoming') h += `<div class="scrim" data-act="decline"></div><div class="sheet" style="top:60px;bottom:auto;padding-top:24px;text-align:center"><div style="font-size:14px;color:var(--label2)">휴대전화</div><div style="font-size:26px;font-weight:600;margin:6px 0 30px">${esc(ov.name)}</div><div style="display:flex;justify-content:space-around"><div class="rb" data-act="decline" style="color:var(--red)"><i style="background:var(--red)"><svg viewBox="0 0 24 24" style="stroke:none;fill:#fff;transform:rotate(135deg)"><path d="M3 13c3-3 15-3 18 0l-2 4-3-1v-2c-2-.7-6-.7-8 0v2l-3 1-2-4z"/></svg></i>거절</div><div class="rb" data-act="accept" style="color:var(--green)"><i style="background:var(--green)"><svg viewBox="0 0 24 24" style="stroke:none;fill:#fff"><path d="M6.6 2.8c.6-.1 1.1.2 1.4.7l1.5 3.2c.2.5.1 1.1-.3 1.5L7.8 9.6a12 12 0 0 0 6.6 6.6l1.4-1.4c.4-.4 1-.5 1.5-.3l3.2 1.5c.5.3.8.8.7 1.4l-.4 2.4c-.1.7-.7 1.2-1.4 1.2C10.4 21 3 13.6 3 4.6c0-.7.5-1.3 1.2-1.4z"/></svg></i>받기</div></div></div>`;
     if (ov.type === 'choices' && S.s2.waiting) {
-      h += `<div class="scrim" data-act="closeov"></div><div class="sheet"><div class="grab"></div><h3>답장</h3><div class="group">${visibleOpts(S.s2.waiting).map((o, i) => `<button class="opt blue" data-act="choose" data-i="${i}">${esc(o.label)}</button>`).join('')}</div><button class="cancel" data-act="closeov">취소</button></div>`;
+      h += `<div class="scrim" data-act="closeov"></div><div class="sheet"><div class="grab"></div><h3>답장</h3><div class="group">${visibleOpts(S.s2.waiting).map((o, i) => `<button class="opt blue" data-act="choose" data-i="${i}">${esc(optLabel(o))}</button>`).join('')}</div><button class="cancel" data-act="closeov">취소</button></div>`;
     }
     if (ov.type === 'quick') {
       h += `<div class="scrim" data-act="closeov"></div><div class="sheet"><div class="grab"></div><h3>답장</h3><div class="group">${T.dispatch.quick.map((q, i) => `<button class="opt blue" data-act="quick" data-i="${i}">${esc(q)}</button>`).join('')}</div><button class="cancel" data-act="closeov">취소</button></div>`;
@@ -781,7 +866,7 @@ function renderOv() {
     if (ov.type === 'block') h += `<div class="scrim" data-act="closeov"></div><div class="sheet"><div class="grab"></div><h3>차단된 번호</h3><div class="note-box">${esc(ov.name)}은(는) 차단 목록에 있어 전화를 걸 수 없습니다. 설정 › 차단된 번호에서 해제할 수 있습니다.</div><div class="group" style="margin-top:12px"><button class="opt blue" data-act="closeov" style="justify-content:center">확인</button></div></div>`;
     if (ov.type === 'done') h += `<div class="scrim" data-act="closeov"></div><div class="sheet"><div class="grab"></div><h3>튜토리얼 끝</h3><div class="note-box">S1·S2 까지 진행했습니다. S3는 아직 없습니다. 앱은 계속 둘러볼 수 있습니다.</div><div class="group" style="margin-top:12px"><button class="opt blue" data-act="closeov" style="justify-content:center">계속 둘러보기</button><button class="opt red" data-act="reset" style="justify-content:center">처음부터</button></div></div>`;
   }
-  if (el._h !== h) { el.innerHTML = h; el._h = h; }
+  if (el._h !== h) { morph(el, h); el._h = h; }
 }
 
 function renderDebug() {
@@ -800,7 +885,11 @@ function renderDebug() {
     <button data-act="reset">처음부터</button>`;
 }
 
-setInterval(() => { if (S.call && S.call.state === 'talk') renderOv(); }, 1000);
+// 통화 시간은 글자만 바꾼다. 오버레이 전체를 다시 그리면 화면이 깜빡인다.
+setInterval(() => {
+  const st = document.getElementById('call-st');
+  if (S.call && S.call.state === 'talk' && st) st.textContent = fmtDur(Date.now() - S.call.since);
+}, 1000);
 
 function refresh() {
   renderStatus();
@@ -815,7 +904,7 @@ function act(name, el) {
     case 'noticeOk': S.phase = 'title'; return refresh();
     case 'start': return startPrologue();
     case 'skipCine': return endCine();
-    case 'cineTap': return nextCut();
+    case 'cineTap': return cineTap();
     case 'reset': return location.reload();
     case 'unlock': if (S.unlocked) return; nav('unlock'); S.unlocked = true; S.stack = []; return refresh();
     case 'home': if (S.unlocked && S.stack.length) { nav('home'); S.stack = []; S.ov = S.ov && S.ov.type === 'done' ? S.ov : null; refresh(); } return;
@@ -878,7 +967,7 @@ function act(name, el) {
       later(350, () => { S.flash = false; refresh(); }, 'flash');
       return;
     }
-    case 'startnav': return showMono('안내는 다음 단계에서 붙는다.');
+    case 'startnav': return showMono('(경로 안내는 다음 빌드에서 연결됩니다)');
     case 'route': nav('push'); S.stack.push({ app: 'map', id: 'route' }); return refresh();
     case 'open-route': return;
     default: return;

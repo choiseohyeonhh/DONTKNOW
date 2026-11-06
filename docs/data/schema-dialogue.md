@@ -19,14 +19,14 @@
     "c01": {
       "type": "choice",
       "options": [
-        { "id": "CH.S07.01", "text": "말해. 안 혼낸다.", "cond": "true", "next": "n03" },
-        { "id": "CH.S07.02", "text": "유진이 너 얘기 하던데.", "cond": "K-08", "next": "yujin", "priority": 2 },
+        { "id": "CH.S07.01", "text": "괜찮아. 말해 봐. 안 혼낸다.", "cond": "true", "next": "n03" },
+        { "id": "CH.S07.02", "text": "유진이라는 애가 네 얘기를 하던데.", "cond": "K-08", "next": "yujin", "priority": 2 },
         { "id": "CH.S07.03", "text": "…", "cond": "true", "next": "n03" }
       ]
     },
     "yujin": {
       "type": "line", "speaker": "junho",
-      "text": "유진 누나 말 믿지 마세요. 무서운 사람이에요.",
+      "text": "유진 누나 말 믿지 마세요. 그 누나 무서운 사람이에요.",
       "tags": ["TRUE", "CANON"],
       "effects": [ { "know": "K-14" } ],
       "next": "slip"
@@ -37,8 +37,8 @@
       "effects": [ { "know": "KX-07" }, { "monologue": "MO.05" } ],
       "next": "door"
     },
-    "door": { "type": "line", "speaker": "junho", "text": "15일 새벽에 누가 우리 집 문 두드렸어요.", "effects": [ { "know": "K-13" } ], "next": "door2" },
-    "door2": { "type": "line", "speaker": "junho", "text": "입 다물라고. 엄마 깨면 어쩔 뻔했는지…", "next": "cut" },
+    "door": { "type": "line", "speaker": "junho", "text": "15일 새벽에 누가 저희 집 문을 막 두드렸어요.", "effects": [ { "know": "K-13" } ], "next": "door2" },
+    "door2": { "type": "line", "speaker": "junho", "text": "입 다물고 있으라고요. 엄마 깼으면 진짜…", "next": "cut" },
     "cut": { "type": "end", "endReason": "interrupted", "effects": [ { "sfx": "AU.sfx.call_drop" } ] },
     "hangup": { "type": "end", "endReason": "hangup" }
   }
