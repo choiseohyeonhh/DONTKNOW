@@ -40,6 +40,10 @@ const S = {
   travel: null,
   routePlace: null,
   hasCheckpoint: false,
+  talkTab: 'friends',
+  talkChoice: null,
+  replyOffer: null,
+  cctv: null,
 };
 
 // ───────── 타이머 (SPEED 반영, 그룹 단위 취소) ─────────
@@ -176,7 +180,7 @@ const charName = (who) => CHARS[who] || who || '';
 const CT = [
   { id: 'dohyun', name: '도현', num: '010-XXXX-0921', kind: 'dohyun', th: 'dohyun' },
   { id: 'jihoon', name: '정지훈(도현친구)', num: '010-XXXX-1188', kind: 'jihoon', th: 'jihoon' },
-  { id: 'teacher', name: '김선생님(도현 고3담임)', num: '010-XXXX-7730', kind: 'none' },
+  { id: 'teacher', name: '김선생님(도현 고3담임)', num: '010-XXXX-7730', kind: 'none', th: 'teacher' },
   { id: 'dispatch', name: '배차실', num: '031-XXX-2200', kind: 'none', th: 'dispatch' },
   { id: 'hangyeol', name: '한결캐피탈', num: '070-XXXX-3301', kind: 'block', th: 'hangyeol' },
   { id: 'junho', name: '103호', num: '010-XXXX-6103', kind: 'none' },
@@ -193,9 +197,93 @@ T.jihoon = { name: '정지훈(도현친구)', unread: 1, reply: 'none', msgs: [{
 T.dispatch = { name: '배차실', unread: 2, reply: 'quick', quick: ['사정이 있어서 못 갑니다.', '지금 가겠습니다.'], msgs: DATA.dispatch.map((m) => ({ from: 'them', d: m.d, t: m.t, text: m.x, ts: m.ts })) };
 T.univ = { name: '○○대학교', unread: 2, reply: 'none', msgs: DATA.univ.map((m) => ({ from: 'them', d: m.d, t: m.t, text: m.x, ts: m.ts })) };
 T.dohyun = { name: '도현', unread: 0, reply: 'none', msgs: [{ from: 'them', d: '2026년 3월 14일 (토)', t: '18:52', text: '오늘 좀 늦어. 먼저 자', ts: '202603141852' }] };
+T.teacher = { name: '김선생님(도현 고3담임)', unread: 0, reply: 'none', msgs: [] };
+T.yujin = { name: '차유진', unread: 0, reply: 'none', msgs: [] };
+T.detective = { name: '김태윤 경위', unread: 0, reply: 'none', msgs: [] };
 DATA.ads.forEach((a, i) => { T['ad' + i] = { name: a.num, unread: 1, reply: 'none', msgs: [{ from: 'them', d: a.d, t: a.t, text: a.x, ts: a.ts }] }; });
 const totalUnread = () => Object.values(T).reduce((n, t) => n + t.unread, 0);
 const lastOf = (th) => th.msgs[th.msgs.length - 1];
+
+// ───────── 톡 (메신저) ─────────
+const TALK = {
+  profile: { name: '이상철', birthday: '1968년 4월 3일' },
+  friends: [
+    { id: 'dohyun', name: '도현' },
+    { id: 'office', name: '성원아파트 관리사무소' },
+  ],
+  chats: {},
+};
+const talkUnread = (id) => (TALK.chats[id] && TALK.chats[id].unread) || 0;
+function addTalkContact(c) {
+  if (!c || !c.id) return;
+  if (!TALK.friends.find((x) => x.id === c.id)) TALK.friends.push({ id: c.id, name: c.name || c.id });
+}
+function addTalkMsg(id, m, { banner = true } = {}) {
+  const friend = TALK.friends.find((x) => x.id === id);
+  let chat = TALK.chats[id];
+  if (!chat) chat = TALK.chats[id] = { id, name: (friend && friend.name) || id, msgs: [], unread: 0, opened: false };
+  const msg = { from: 'them', d: '2026년 3월 18일 (수)', t: clockStr(), ts: nowTs(), ...m };
+  msg.fresh = true;
+  chat.msgs.push(msg);
+  if (msg.from === 'them') {
+    const top = S.stack[S.stack.length - 1];
+    const viewing = top && top.app === 'talk' && top.id === id;
+    if (!viewing) chat.unread += 1;
+    if (!viewing && banner) showBanner(chat.name, msg.text, id, 'talk');
+    if (viewing) S.autoBottom = true;
+  } else {
+    S.autoBottom = true;
+  }
+  refresh();
+}
+const talkOpenHooks = {};
+function onTalkOpen(id, fn) { talkOpenHooks[id] = fn; }
+function openTalkThread(id) {
+  const chat = TALK.chats[id];
+  if (!chat) return;
+  chat.unread = 0;
+  chat.opened = true;
+  nav(S.stack.length ? 'push' : 'open');
+  if (!S.stack.length) S.stack.push({ app: 'talk', id: null });
+  S.stack.push({ app: 'talk', id });
+  S.autoBottom = true;
+  S.unlocked = true;
+  refresh();
+  const hook = talkOpenHooks[id];
+  if (hook) hook(id, chat);
+  refresh();
+}
+function setTalkChoice(id, opts) {
+  S.talkChoice = id && opts ? { id, opts } : null;
+  refresh();
+}
+function pickTalkChoice(i) {
+  const c = S.talkChoice;
+  if (!c || !c.opts[i]) return;
+  const opt = c.opts[i];
+  S.talkChoice = null;
+  addTalkMsg(c.id, { from: 'me', text: opt.label });
+  if (typeof opt.then === 'function') opt.then();
+  refresh();
+}
+
+function offerReply(threadId, opts) {
+  if (!T[threadId]) return;
+  S.replyOffer = { id: threadId, opts: opts || [] };
+  T[threadId].reply = 'offer';
+  refresh();
+}
+function pickOfferReply(i) {
+  const o = S.replyOffer;
+  if (!o || !o.opts[i]) return;
+  const opt = o.opts[i];
+  S.replyOffer = null;
+  if (T[o.id]) T[o.id].reply = 'none';
+  S.ov = null;
+  addMsg(o.id, nowMsg('me', opt.label));
+  if (typeof opt.then === 'function') opt.then();
+  refresh();
+}
 
 // ───────── 대화 DSL ─────────
 const DIALOGUES = {};
@@ -508,8 +596,8 @@ function switchToCall() {
 // ───────── 훅 ─────────
 const threadOpenHooks = {};
 function onThreadOpen(id, fn) { threadOpenHooks[id] = fn; }
-let acceptHook = null;
-function onAccept(fn) { acceptHook = fn; }
+const acceptHooks = [];
+function onAccept(fn) { acceptHooks.push(fn); }
 const dialHooks = {};
 function onDialContact(id, fn) { dialHooks[id] = fn; }
 let startGameFn = null;
@@ -610,15 +698,15 @@ function addMsg(id, m, { banner = true } = {}) {
     const top = S.stack[S.stack.length - 1];
     const viewing = top && top.app === 'msg' && top.id === id;
     if (!viewing) th.unread += 1;
-    if (!viewing && banner) showBanner(th.name, msg.text, id);
+    if (!viewing && banner) showBanner(th.name, msg.text, id, 'msg');
     if (viewing) S.autoBottom = true;
   } else {
     S.autoBottom = true;
   }
   refresh();
 }
-function showBanner(title, body, id) {
-  S.banner = { title, body, id };
+function showBanner(title, body, id, kind = 'msg') {
+  S.banner = { title, body, id, kind };
   clearGroup('banner');
   later(4200, () => hideBanner(body), 'banner');
   refresh();
@@ -634,6 +722,84 @@ function showMono(text) {
   S.monoN = (S.monoN || 0) + 1;
   clearGroup('mono');
   later(2300, () => { S.mono = null; refresh(); }, 'mono');
+  refresh();
+}
+
+// ───────── CCTV 스크러버 ─────────
+function hms(t) {
+  let v = 19 * 3600 + 5 * 60 + Math.round(t);
+  const h = Math.floor(v / 3600); v -= h * 3600;
+  const m = Math.floor(v / 60); v -= m * 60;
+  return `${pad(h)}:${pad(m)}:${pad(v)}`;
+}
+function openCctv(opts = {}) {
+  S.cctv = {
+    t: opts.start || 0,
+    end: opts.end || 150,
+    win: opts.window || [65, 80],
+    need: (opts.need || 12) * 1000,
+    seen: 0,
+    playing: false,
+    frames: opts.frames || [],
+    onDone: opts.onDone || null,
+  };
+  S.phoneUp = false;
+  if (S.dlg) S.dlg.busy = true;
+  refresh();
+}
+function closeCctv() {
+  const c = S.cctv;
+  if (!c) return;
+  S.cctv = null;
+  clearGroup('cctv');
+  if (S.dlg) { S.dlg.busy = false; runQueue(); }
+  refresh();
+}
+function cctvSeenBetween(a, b) {
+  const c = S.cctv;
+  if (!c) return;
+  const lo = Math.max(Math.min(a, b), c.win[0]);
+  const hi = Math.min(Math.max(a, b), c.win[1]);
+  if (hi > lo) c.seen += (hi - lo) * 1000;
+}
+function setCctvTime(t) {
+  const c = S.cctv;
+  if (!c) return;
+  cctvSeenBetween(c.t, t);
+  c.t = Math.max(0, Math.min(c.end, t));
+  refresh();
+}
+function cctvTick() {
+  const c = S.cctv;
+  if (!c || !c.playing) return;
+  if (c.t >= c.end) { c.playing = false; refresh(); return; }
+  setCctvTime(c.t + 0.1);
+  later(100, cctvTick, 'cctv');
+}
+function toggleCctvPlay() {
+  const c = S.cctv;
+  if (!c) return;
+  c.playing = !c.playing;
+  if (c.playing) { clearGroup('cctv'); later(100, cctvTick, 'cctv'); }
+  else clearGroup('cctv');
+  refresh();
+}
+function cctvStep(dir) {
+  const c = S.cctv;
+  if (!c) return;
+  c.playing = false;
+  clearGroup('cctv');
+  setCctvTime(c.t + dir * 5);
+}
+function cctvDone() {
+  const c = S.cctv;
+  if (!c || c.seen + 1 < c.need) return;
+  const done = c.onDone;
+  S.cctv = null;
+  clearGroup('cctv');
+  S.flags['CCTV.seen'] = true;
+  if (done) done();
+  if (S.dlg) { S.dlg.busy = false; runQueue(); }
   refresh();
 }
 
@@ -823,6 +989,7 @@ function jump(id) {
   S.unlocked = true; S.stack = []; S.ov = null; S.banner = null; S.mono = null;
   S.dlg = null; S.call = null; S.phoneUp = false; S.travel = null; S.routePlace = null;
   S.cine = null; S.phase = 'free'; S.autoBottom = false;
+  S.cctv = null; S.talkChoice = null; S.replyOffer = null; clearGroup('cctv');
   Object.keys(KNOW_BY_SESSION).forEach((sid) => {
     if (numSession(sid) < target) {
       KNOW_BY_SESSION[sid].forEach((k) => { if (/^K/.test(k)) S.know[k] = true; });
@@ -830,7 +997,14 @@ function jump(id) {
     }
   });
   if (target >= 3) S.destinations.push('school');
-  for (const pid of Object.keys(PLACES)) if (target >= 3 && pid !== 'home' && pid !== 'school') { /* later phases define places */ }
+  if (target >= 5) S.destinations.push('police');
+  if (target >= 6) S.destinations.push('mart');
+  if (target >= 4) addContact({ id: 'yujin', name: '차유진', num: '010-XXXX-3927', kind: 'normal', th: 'yujin' });
+  if (target >= 5) addContact({ id: 'detective', name: '김태윤 경위', num: '031-XXX-0100', kind: 'normal', th: 'detective' });
+  if (target >= 7) {
+    grant('KX-03');
+    addContact({ id: 'junho', name: '103호', num: '010-XXXX-6103', kind: 'normal' });
+  }
   const st = SESSIONS[id];
   if (st && st.start) {
     st.start();
@@ -840,8 +1014,10 @@ function jump(id) {
     startSession(id);
     S.phase = 'free';
     S.unlocked = true;
-    refresh();
   }
+  const stEl = $('#status');
+  if (stEl && !['notice', 'title', 'prologue'].includes(S.phase) && !S.cine) stEl.style.display = '';
+  refresh();
 }
 function resumeCheckpoint() {
   const snap = readCheckpoint();
@@ -924,7 +1100,7 @@ function noticeHTML() {
 }
 function titleHTML() {
   const resume = S.hasCheckpoint ? `<button class="alt" data-act="resume">이어하기</button>` : '';
-  return `<div class="title"><div><h1>DONTKNOW</h1><p>아버지의 폰에서 시작한다<br>S1–S2 플레이 가능</p><div class="btns"><button data-act="start">처음부터</button>${resume}</div></div></div>`;
+  return `<div class="title"><div><h1>DONTKNOW</h1><p>아버지의 폰에서 시작한다<br>S1–S6 플레이 가능</p><div class="btns"><button data-act="start">처음부터</button>${resume}</div></div></div>`;
 }
 function headerHTML(title, { left = '', right = '', back = true } = {}) {
   return `<div class="hdr"><div class="lft" ${back ? 'data-act="back"' : ''}>${back ? '<svg viewBox="0 0 12 21"><path d="M10 2 2 10.5l8 8.5"/></svg>' : ''}${esc(left)}</div><h1>${esc(title)}</h1><div class="rgt">${right}</div></div>`;
@@ -963,6 +1139,7 @@ function threadHTML(id) {
   const contact = CT.find((c) => c.th === id);
   const right = contact && contact.kind !== 'none' ? `<span data-act="dial" data-num="${contact.num}" style="display:grid;place-items:center;width:30px;height:30px">${ICON.phone.replace('<svg', '<svg style="width:22px;height:22px;stroke:none"')}</span>` : '';
   let field = '…'; let ready = false; let act = '';
+  if (th.reply === 'offer' && S.replyOffer && S.replyOffer.id === id) { field = '탭해서 답장'; ready = true; act = `data-act="compose" data-id="${id}"`; }
   if (th.reply === 's2' && d && d.channel === 'sms' && d.waiting && threadForWho(d.who) === id) { field = '탭해서 답장'; ready = true; act = `data-act="compose" data-id="${id}"`; }
   if (th.reply === 's2' && d && d.channel === 'call' && threadForWho(d.who) === id) field = '통화 중';
   if (th.reply === 'quick') { field = '탭해서 답장'; ready = true; act = `data-act="compose" data-id="${id}"`; }
@@ -1062,7 +1239,49 @@ function memoHTML(id) {
 
 // 톡·설정·카메라
 function talkHTML() {
-  return `<div class="view" style="background:#fff">${headerHTML('톡', { back: false })}<div class="scroll"><div class="section-h">친구</div><div class="row" style="grid-template-columns:1fr"><div class="txt"><div class="n">나</div><div class="p">상태 메시지 없음</div></div></div><div class="empty">대화가 없습니다.</div></div></div>`;
+  const seg = `<div class="seg2"><button class="${S.talkTab === 'friends' ? 'on' : ''}" data-act="talktab" data-tab="friends">친구</button><button class="${S.talkTab === 'chats' ? 'on' : ''}" data-act="talktab" data-tab="chats">채팅</button></div>`;
+  if (S.talkTab === 'chats') {
+    const ids = Object.keys(TALK.chats).sort((a, b) => {
+      const x = TALK.chats[a].msgs[TALK.chats[a].msgs.length - 1];
+      const y = TALK.chats[b].msgs[TALK.chats[b].msgs.length - 1];
+      return (y ? y.ts : '').localeCompare(x ? x.ts : '');
+    });
+    const rows = ids.map((id) => {
+      const c = TALK.chats[id];
+      const lm = c.msgs[c.msgs.length - 1] || { text: '', ts: '' };
+      return `<div class="row" data-act="talkopen" data-id="${id}" style="grid-template-columns:17px 1fr auto">
+        <span class="dot ${c.unread ? '' : 'off'}"></span>
+        <div class="txt" style="grid-column:2"><div class="n">${esc(c.name)}</div><div class="p">${esc(lm.text)}</div></div>
+        <div class="meta">${lm.ts ? shortDate(lm.ts) : ''}${c.unread ? `<br><span class="unread">${c.unread}</span>` : ''}</div></div>`;
+    }).join('');
+    return `<div class="view" style="background:#fff">${headerHTML('톡', { back: false })}${seg}<div class="scroll list">${rows || '<div class="empty">대화가 없습니다.</div>'}</div></div>`;
+  }
+  const friends = TALK.friends.map((f) => {
+    const chat = TALK.chats[f.id];
+    return `<div class="row" ${chat ? `data-act="talkopen" data-id="${f.id}"` : ''} style="grid-template-columns:1fr auto">
+      <div class="txt"><div class="n">${esc(f.name)}</div>${chat ? `<div class="p">${esc((chat.msgs[chat.msgs.length - 1] || {}).text || '')}</div>` : ''}</div>
+      ${chat && chat.unread ? `<div class="meta"><span class="unread">${chat.unread}</span></div>` : ''}</div>`;
+  }).join('');
+  return `<div class="view" style="background:var(--grouped)">${headerHTML('톡', { back: false })}${seg}<div class="scroll">
+    <div class="talk-profile"><div class="ava"><svg viewBox="0 0 30 30"><circle cx="15" cy="11" r="5.5"/><path d="M5 27c1.4-5.4 5.2-8 10-8s8.6 2.6 10 8z"/></svg></div>
+      <div><div class="n">${esc(TALK.profile.name)}</div><div class="b">생일 ${esc(TALK.profile.birthday)}</div></div></div>
+    <div class="section-h">친구 ${TALK.friends.length}</div>${friends}</div></div>`;
+}
+function talkThreadHTML(id) {
+  const chat = TALK.chats[id];
+  if (!chat) return talkHTML();
+  let body = ''; let lastD = '';
+  chat.msgs.forEach((m) => {
+    if (m.d !== lastD) { body += `<div class="stamp"><b>${esc(m.d)}</b> ${esc(m.t)}</div>`; lastD = m.d; }
+    body += `<div class="row-msg ${m.from === 'me' ? 'me' : ''}"><div class="bub ${m.fresh ? 'pop' : ''}">${esc(m.text)}</div></div>`;
+    m.fresh = false;
+  });
+  const waiting = S.talkChoice && S.talkChoice.id === id;
+  const choices = waiting
+    ? `<div class="talk-choices">${S.talkChoice.opts.map((o, i) => `<button data-act="talkchoose" data-i="${i}">${esc(o.label)}</button>`).join('')}</div>`
+    : '';
+  return `<div class="view talk-thread" style="background:#F7F8FA">${headerHTML(chat.name)}
+    <div class="scroll" data-keep="talkthread"><div class="thread-body">${body}</div></div>${choices}</div>`;
 }
 function settingsHTML() {
   return `<div class="view" style="background:var(--grouped)">${headerHTML('설정', { back: false })}<div class="scroll">
@@ -1084,11 +1303,43 @@ function appView(top) {
     case 'map': return mapHTML(top.id === 'route');
     case 'bank': return bankHTML();
     case 'memo': return memoHTML(top.id);
-    case 'talk': return talkHTML();
+    case 'talk': return top.id ? talkThreadHTML(top.id) : talkHTML();
     case 'settings': return settingsHTML();
     case 'camera': return cameraHTML();
     default: return msgListHTML();
   }
+}
+
+// ───────── 렌더: CCTV ─────────
+function cctvFrame(c) {
+  let k = c.frames.length ? c.frames[0] : null;
+  for (const f of c.frames) if (c.t >= f.at) k = f;
+  return k ? imgPath(k.img) : '';
+}
+function cctvHTML() {
+  const c = S.cctv;
+  if (!c) return '';
+  const ticks = [0, 60, 120].map((at) => `<i style="left:${(at / c.end) * 100}%"></i>`).join('');
+  const ready = c.seen + 1 >= c.need;
+  return `<div class="cctv" data-k="cctv">
+    <div class="cctv-h"><div class="camlabel">CAM 02 · 2026-03-14</div><div class="tc">${hms(c.t)}</div></div>
+    <div class="monitor">
+      <div class="frame" style="background-image:url('${esc(cctvFrame(c))}')"></div>
+      <div class="scan"></div>
+      ${c.playing ? '' : '<div class="pause">일시정지</div>'}
+    </div>
+    <div class="ctrl">
+      <button data-act="cctvStep" data-dir="-1" aria-label="5초 뒤로">◀◀</button>
+      <button data-act="cctvPlay" aria-label="재생">${c.playing ? '❚❚' : '▶'}</button>
+      <button data-act="cctvStep" data-dir="1" aria-label="5초 앞으로">▶▶</button>
+    </div>
+    <div class="timeline">
+      <input id="cctv-range" type="range" min="0" max="${c.end}" step="0.5" value="${c.t}">
+      <div class="ticks">${ticks}</div>
+      <div class="ends"><span>19:05:00</span><span>19:07:30</span></div>
+    </div>
+    <div class="cctv-foot"><button class="cctv-done" data-act="cctvDone" ${ready ? '' : 'disabled'}>확인</button></div>
+  </div>`;
 }
 
 // ───────── 렌더: 대면 장면·이동 ─────────
@@ -1163,6 +1414,7 @@ function renderRoot() {
   if (S.phase === 'notice') html = noticeHTML();
   else if (S.phase === 'title') html = titleHTML();
   else if (S.phase === 'prologue') html = '<div class="blackfill"></div>';
+  else if (S.cctv) { html = cctvHTML(); cls = 'cctv'; }
   else if (S.travel) { html = travelHTML(); cls = 'travel'; }
   else if (inScene) { html = sceneHTML(); cls = 'scene'; }
   else if (!S.unlocked) { html = `<div class="lock" data-k="lock" style="position:absolute;inset:0">${lockHTML()}</div>`; cls = 'lock'; }
@@ -1231,6 +1483,9 @@ function renderOv() {
     if (ov.type === 'quick') {
       h += `<div class="scrim" data-act="closeov"></div><div class="sheet"><div class="grab"></div><h3>답장</h3><div class="group">${T.dispatch.quick.map((q, i) => `<button class="opt blue" data-act="quick" data-i="${i}">${esc(q)}</button>`).join('')}</div><button class="cancel" data-act="closeov">취소</button></div>`;
     }
+    if (ov.type === 'offer' && S.replyOffer) {
+      h += `<div class="scrim" data-act="closeov"></div><div class="sheet"><div class="grab"></div><h3>답장</h3><div class="group">${S.replyOffer.opts.map((o, i) => `<button class="opt blue" data-act="offerPick" data-i="${i}">${esc(o.label)}</button>`).join('')}</div><button class="cancel" data-act="closeov">취소</button></div>`;
+    }
     if (ov.type === 'block') h += `<div class="scrim" data-act="closeov"></div><div class="sheet"><div class="grab"></div><h3>차단된 번호</h3><div class="note-box">${esc(ov.name)}은(는) 차단 목록에 있어 전화를 걸 수 없습니다. 설정 › 차단된 번호에서 해제할 수 있습니다.</div><div class="group" style="margin-top:12px"><button class="opt blue" data-act="closeov" style="justify-content:center">확인</button></div></div>`;
   }
   if (el._h !== h) { morph(el, h); el._h = h; }
@@ -1249,7 +1504,7 @@ function renderDebug() {
     dlg: ${esc(dlg)}<br>
     know: <b>${esc(know)}</b><br>flags: ${esc(flags)}<br>
     destinations: ${S.destinations.join(' / ') || '없음'}<br>
-    <div class="jumps"><button data-act="jump" data-session="S01">S01</button><button data-act="jump" data-session="S02">S02</button><button data-act="jump" data-session="S03">S03</button><button data-act="jump" data-session="S05">S05</button></div>
+    <div class="jumps"><button data-act="jump" data-session="S01">S01</button><button data-act="jump" data-session="S02">S02</button><button data-act="jump" data-session="S03">S03</button><button data-act="jump" data-session="S04">S04</button><button data-act="jump" data-session="S05">S05</button><button data-act="jump" data-session="S06">S06</button><button data-act="jump" data-session="S07">S07</button></div>
     <button data-act="reset">처음부터</button>`;
 }
 
@@ -1278,7 +1533,7 @@ function dial(num) {
 }
 function acceptIncoming() {
   S.ov = null;
-  if (acceptHook && acceptHook() === true) { refresh(); return; }
+  for (const fn of acceptHooks) if (fn() === true) { refresh(); return; }
   refresh();
 }
 function act(name, el) {
@@ -1302,6 +1557,7 @@ function act(name, el) {
     case 'thread': return openThread(el.dataset.id);
     case 'compose': {
       const id = el.dataset.id;
+      if (T[id].reply === 'offer' && S.replyOffer) { S.ov = { type: 'offer' }; return refresh(); }
       if (T[id].reply === 'quick') { S.ov = { type: 'quick' }; return refresh(); }
       if (S.dlg && S.dlg.waiting && S.dlg.channel === 'sms') { S.ov = { type: 'choices' }; return refresh(); }
       return;
@@ -1313,6 +1569,7 @@ function act(name, el) {
       addMsg('dispatch', nowMsg('me', q));
       return;
     }
+    case 'offerPick': return pickOfferReply(Number(el.dataset.i));
     case 'closeov': return closeOv();
     case 'dial': return dial(el.dataset.num);
     case 'accept': return acceptIncoming();
@@ -1320,11 +1577,22 @@ function act(name, el) {
     case 'hangup': return endCall();
     case 'bannerTap': {
       const id = el.dataset.id;
+      const kind = S.banner && S.banner.kind;
       S.banner = null;
-      if (id) { if (!S.unlocked) { nav('unlock'); S.unlocked = true; S.stack = []; } return openThread(id); }
+      if (id) {
+        if (!S.unlocked) { nav('unlock'); S.unlocked = true; S.stack = []; }
+        if (kind === 'talk') return openTalkThread(id);
+        return openThread(id);
+      }
       return refresh();
     }
     case 'tab': S.tab = el.dataset.tab; return refresh();
+    case 'talktab': S.talkTab = el.dataset.tab; return refresh();
+    case 'talkopen': return openTalkThread(el.dataset.id);
+    case 'talkchoose': return pickTalkChoice(Number(el.dataset.i));
+    case 'cctvPlay': return toggleCctvPlay();
+    case 'cctvStep': return cctvStep(Number(el.dataset.dir) || 1);
+    case 'cctvDone': return cctvDone();
     case 'key': S.digits += el.dataset.k; return refresh();
     case 'keycall': if (S.digits) { const n = S.digits; S.digits = ''; return dial(n); } return;
     case 'contact': nav('push'); S.stack.push({ app: 'contacts', id: el.dataset.id }); return refresh();
@@ -1376,7 +1644,10 @@ $('#screen').addEventListener('pointerup', (e) => {
   if (dragY !== null && e.clientY - dragY < -50) act('unlock');
   dragY = null;
 });
-document.addEventListener('input', (e) => { if (e.target.id === 'memo-input') S.memoDraft = e.target.value; });
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'memo-input') S.memoDraft = e.target.value;
+  if (e.target.id === 'cctv-range' && S.cctv) setCctvTime(Number(e.target.value));
+});
 
 // 화면 맞춤
 function fitDevice() {
@@ -1402,8 +1673,10 @@ const API = {
   S, boot, jump, grant, setFlag, choose, runDialogue, refresh,
   has, flag, schedule, nudge, cancelNudge, cancelScheduled, clearGroup, later,
   addContact, addMsg, showMono, openThread, showThread, nav, playCine, defCine,
+  addTalkContact, addTalkMsg, openTalkThread, onTalkOpen, setTalkChoice, offerReply, pickTalkChoice,
+  openCctv, closeCctv, setCctvTime, toggleCctvPlay, cctvStep, cctvDone,
   defDialogue, defPlace, registerDest, onArrive, onThreadOpen, onDialContact, onAccept, defSession, setStartGame,
-  startSession, endSession, startTravel, saveCheckpoint, readCheckpoint, charName,
+  startSession, endSession, startTravel, startRoute, endCall, saveCheckpoint, readCheckpoint, charName,
   clockStr, nowMsg, labelText, visibleOpts, switchToCall,
   SAY, ME, CHOICE, DO, WAIT, MONO, LABEL, GOTO, END,
 };
@@ -1412,9 +1685,11 @@ Object.assign(window, {
   grant, has, setFlag, flag, evalCond,
   schedule, nudge, later, clearGroup,
   addContact, addMsg, showMono, openThread, showThread, nav, refresh,
+  addTalkContact, addTalkMsg, openTalkThread, onTalkOpen, setTalkChoice, offerReply,
   defDialogue, runDialogue, choose, SAY, ME, CHOICE, DO, WAIT, MONO, LABEL, GOTO, END,
   defCine, playCine, defPlace, registerDest, onArrive, onThreadOpen, onDialContact, onAccept, defSession, setStartGame,
-  startSession, endSession, startTravel, switchToCall, saveCheckpoint, readCheckpoint,
+  startSession, endSession, startTravel, startRoute, endCall, switchToCall, saveCheckpoint, readCheckpoint,
+  openCctv, closeCctv, setCctvTime, cctvStep,
   clockStr, nowMsg, fmtDur, advanceClock,
 });
 window.__game = API;

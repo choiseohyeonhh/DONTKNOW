@@ -133,10 +133,11 @@ async function runA(browser) {
   assert(await page.locator('#travel-route').count() === 1, '경로선 누락');
   await page.waitForSelector('.scene .line', { timeout: 5000 });
   const line = await page.locator('.scene .line').innerText();
-  assert(line.includes('S3는 다음 단계에서'), `도착 대사: ${line}`);
-  const arrived = await page.evaluate(() => ({ place: window.__game.S.place, clock: [...window.__game.S.clock] }));
+  assert(line.includes('교문은 나흘 전과 다를 게 없었다'), `도착 대사: ${line}`);
+  const arrived = await page.evaluate(() => ({ place: window.__game.S.place, clock: [...window.__game.S.clock], session: window.__game.S.session }));
   assert(arrived.place === 'school', '도착 장소가 성원고가 아님');
   assert(arrived.clock[0] === 9 && arrived.clock[1] === 0, '이동 도착 시각이 09:00이 아님');
+  assert(arrived.session === 'S03', '도착 후 S3가 시작되지 않음');
 
   await context.close();
 }
