@@ -19,7 +19,7 @@
     SAY('yujin', [], '도현이한테 연락 오거나 뭐 생각나시면 여기로 연락 주세요. 저도 도현이 물건 중에 뭐 나오면 바로 연락드릴게요.'),
     DO(() => {
       G.grant('K-08');
-      G.addContact({ id: 'yujin', name: '차유진', num: '010-XXXX-3927', kind: 'normal', th: 'yujin' });
+      G.addContact({ id: 'yujin', name: '차유진', num: '010-XXXX-4417', kind: 'normal', th: 'yujin' });
       if ((G.S.v.s4_trust_count || 0) >= 2) G.setFlag('F-01');
     }),
     END(),
@@ -85,7 +85,7 @@
   window.s4YujinEnd = function s4YujinEnd() {
     if (G.flag('S04.yujinDone')) return;
     G.setFlag('S04.yujinDone');
-    G.addContact({ id: 'detective', name: '김태윤 경위', num: '031-XXX-0100', kind: 'normal', th: 'detective' });
+    G.addContact({ id: 'detective', name: '성원경찰서 김태윤', num: '010-XXXX-1182', kind: 'normal', th: 'detective' });
     G.schedule('EV.S04.02', 30000, ringDetective, { cond: () => G.S.session === 'S04' && !G.flag('S04.callAccepted') });
     G.later(65000, () => {
       if (G.S.session === 'S04' && !G.flag('S04.callAccepted') && !G.S.ov) ringDetective();

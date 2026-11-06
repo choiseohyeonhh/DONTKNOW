@@ -276,8 +276,8 @@ async function callJunhoOnce(page) {
   await page.click('[data-app="contacts"]');
   await page.waitForSelector('[data-act="contact"][data-id="junho"]', { timeout: 8000 });
   await page.click('[data-act="contact"][data-id="junho"]');
-  await page.waitForSelector('[data-act="dial"][data-num="010-XXXX-6103"]', { timeout: 8000 });
-  await page.click('[data-act="dial"][data-num="010-XXXX-6103"]');
+  await page.waitForSelector('[data-act="dial"][data-num="010-XXXX-0315"]', { timeout: 8000 });
+  await page.click('[data-act="dial"][data-num="010-XXXX-0315"]');
   await page.waitForSelector('.call [data-act="hangup"]', { timeout: 8000 });
 }
 
@@ -287,8 +287,8 @@ async function s7Threat(page) {
   await page.locator('.call [data-act="hangup"]').click();
   await sleep(80);
 
-  await page.waitForSelector('[data-act="dial"][data-num="010-XXXX-6103"]', { timeout: 8000 });
-  await page.click('[data-act="dial"][data-num="010-XXXX-6103"]');
+  await page.waitForSelector('[data-act="dial"][data-num="010-XXXX-0315"]', { timeout: 8000 });
+  await page.click('[data-act="dial"][data-num="010-XXXX-0315"]');
   await waitFn(page, () => {
     const g = window.__game;
     return !!(g.S.dlg && g.S.dlg.id === 'S07.junho.sms' && g.S.dlg.waiting);

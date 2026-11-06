@@ -23,7 +23,11 @@ const S = {
   mono: null,
   autoBottom: false,
   destinations: ['home'],
-  photos: [{ src: 'img/photo_family_2019.jpg' }, { src: 'img/photo_father_son_2022.jpg' }, { src: 'img/photo_graduation_gate.jpg' }],
+  photos: [
+    { id: 'family_2019', src: 'img/photo_family_2019.jpg' },
+    { id: 'father_son_2022', src: 'img/photo_father_son_2022.jpg' },
+    { id: 'graduation_gate', src: 'img/photo_graduation_gate.jpg' },
+  ],
   notes: [],
   memoDraft: '',
   flash: false,
@@ -184,12 +188,16 @@ const CT = [
   { id: 'teacher', name: '김선생님(도현 고3담임)', num: '010-XXXX-7730', kind: 'none', th: 'teacher' },
   { id: 'dispatch', name: '배차실', num: '031-XXX-2200', kind: 'none', th: 'dispatch' },
   { id: 'hangyeol', name: '한결캐피탈', num: '070-XXXX-3301', kind: 'block', th: 'hangyeol' },
-  { id: 'junho', name: '103호', num: '010-XXXX-6103', kind: 'none' },
+  { id: 'detective', name: '성원경찰서 김태윤', num: '010-XXXX-1182', kind: 'normal', th: 'detective' },
+  { id: 'junho_mom', name: '103호', num: '010-XXXX-6103', kind: 'none', th: 'junho_mom' },
 ];
 const ctByNum = (n) => CT.find((c) => c.num === n);
 function addContact(c) {
   if (!c || !c.id) return;
-  if (!CT.find((x) => x.id === c.id)) CT.push({ kind: 'normal', ...c });
+  const found = CT.find((x) => x.id === c.id);
+  if (!found) CT.push({ kind: 'normal', ...c });
+  else if (c.name) { found.name = c.name; if (c.num) found.num = c.num; if (c.th) found.th = c.th; }
+  if (T[c.id] && c.name) T[c.id].name = c.name;
 }
 
 const T = {};
@@ -200,7 +208,9 @@ T.univ = { name: '○○대학교', unread: 2, reply: 'none', msgs: DATA.univ.ma
 T.dohyun = { name: '도현', unread: 0, reply: 'none', msgs: [{ from: 'them', d: '2026년 3월 14일 (토)', t: '18:52', text: '오늘 좀 늦어. 먼저 자', ts: '202603141852' }] };
 T.teacher = { name: '김선생님(도현 고3담임)', unread: 0, reply: 'none', msgs: [] };
 T.yujin = { name: '차유진', unread: 0, reply: 'none', msgs: [] };
-T.detective = { name: '김태윤 경위', unread: 0, reply: 'none', msgs: [] };
+T.detective = { name: '성원경찰서 김태윤', unread: 0, reply: 'none', msgs: [] };
+T.junho = { name: '준호', unread: 0, reply: 'none', msgs: [] };
+T.junho_mom = { name: '103호', unread: 0, reply: 'none', msgs: [] };
 DATA.ads.forEach((a, i) => { T['ad' + i] = { name: a.num, unread: 1, reply: 'none', msgs: [{ from: 'them', d: a.d, t: a.t, text: a.x, ts: a.ts }] }; });
 const totalUnread = () => Object.values(T).reduce((n, t) => n + t.unread, 0);
 const lastOf = (th) => th.msgs[th.msgs.length - 1];
@@ -209,15 +219,15 @@ const lastOf = (th) => th.msgs[th.msgs.length - 1];
 const TALK = {
   profile: { name: '이상철', birthday: '1968년 4월 3일' },
   friends: [
-    { id: 'dohyun', name: '도현' },
-    { id: 'office', name: '성원아파트 관리사무소' },
+    { id: 'dohyun', name: '도현', status: '' },
+    { id: 'office', name: '성원아파트 관리사무소', status: '공지 채널' },
   ],
   chats: {},
 };
 const talkUnread = (id) => (TALK.chats[id] && TALK.chats[id].unread) || 0;
 function addTalkContact(c) {
   if (!c || !c.id) return;
-  if (!TALK.friends.find((x) => x.id === c.id)) TALK.friends.push({ id: c.id, name: c.name || c.id });
+  if (!TALK.friends.find((x) => x.id === c.id)) TALK.friends.push({ id: c.id, name: c.name || c.id, status: c.status || '' });
 }
 function addTalkMsg(id, m, { banner = true } = {}) {
   const friend = TALK.friends.find((x) => x.id === id);
@@ -693,7 +703,10 @@ function arriveAt(dest) {
 // ───────── 메시지 추가 ─────────
 function addMsg(id, m, { banner = true } = {}) {
   let th = T[id];
-  if (!th) th = T[id] = { name: id, unread: 0, reply: 'none', msgs: [] };
+  if (!th) {
+    const c = CT.find((x) => x.id === id);
+    th = T[id] = { name: (c && c.name) || id, unread: 0, reply: 'none', msgs: [] };
+  }
   const msg = { from: 'them', d: '2026년 3월 18일 (수)', t: clockStr(), ts: nowTs(), ...m };
   msg.fresh = true;
   th.msgs.push(msg);
@@ -993,7 +1006,7 @@ function jump(id) {
   S.dlg = null; S.call = null; S.phoneUp = false; S.travel = null; S.routePlace = null;
   S.cine = null; S.phase = 'free'; S.autoBottom = false;
   S.cctv = null; S.talkChoice = null; S.replyOffer = null; clearGroup('cctv');
-  document.body.classList.remove('dk-s13-lock', 's13-choice1', 'dk-s8-silence');
+  document.body.classList.remove('dk-s13-lock', 's13-choice1', 'dk-s8-silence', 'dk-s10-open');
   document.querySelectorAll('.s13-fade').forEach((el) => el.remove());
   ['s10-layer', 's11-layer', 's12-layer'].forEach((lid) => {
     const el = document.getElementById(lid);
@@ -1012,11 +1025,10 @@ function jump(id) {
   if (target >= 3) S.destinations.push('school');
   if (target >= 5) S.destinations.push('police');
   if (target >= 6) S.destinations.push('mart');
-  if (target >= 4) addContact({ id: 'yujin', name: '차유진', num: '010-XXXX-3927', kind: 'normal', th: 'yujin' });
-  if (target >= 5) addContact({ id: 'detective', name: '김태윤 경위', num: '031-XXX-0100', kind: 'normal', th: 'detective' });
+  if (target >= 4) addContact({ id: 'yujin', name: '차유진', num: '010-XXXX-4417', kind: 'normal', th: 'yujin' });
   if (target >= 7) {
     grant('KX-03');
-    addContact({ id: 'junho', name: '103호', num: '010-XXXX-6103', kind: 'normal' });
+    addContact({ id: 'junho', name: '준호', num: '010-XXXX-0315', kind: 'normal', th: 'junho' });
   }
   const st = SESSIONS[id];
   if (st && st.start) {
@@ -1170,7 +1182,7 @@ function phoneHTML() {
     return `<div class="view" style="background:#fff">${headerHTML('키패드', { back: false })}${seg}
       <div class="dial-disp" style="text-align:center;font-size:30px;min-height:58px;padding-top:12px">${esc(S.digits)}</div>
       <div class="dial">${keys.map((k) => `<button data-act="key" data-k="${k}">${k}</button>`).join('')}
-      <span></span><button class="call" data-act="keycall">${ICON.phone.replace('<svg', '<svg style="width:30px;height:30px;stroke:none;fill:#fff"')}</button><span></span></div></div>`;
+      <span></span><button class="callkey" data-act="keycall">${ICON.phone.replace('<svg', '<svg style="width:30px;height:30px;stroke:none;fill:#fff"')}</button><span></span></div></div>`;
   }
   const rows = DATA.calls.map((c) => {
     const label = c.name || c.n;
@@ -1269,13 +1281,15 @@ function talkHTML() {
     }).join('');
     return `<div class="view" style="background:#fff">${headerHTML('톡', { back: false })}${seg}<div class="scroll list">${rows || '<div class="empty">대화가 없습니다.</div>'}</div></div>`;
   }
+  const avatar = '<svg viewBox="0 0 30 30"><circle cx="15" cy="11" r="5.5"/><path d="M5 27c1.4-5.4 5.2-8 10-8s8.6 2.6 10 8z"/></svg>';
   const friends = TALK.friends.map((f) => {
     const chat = TALK.chats[f.id];
-    return `<div class="row" ${chat ? `data-act="talkopen" data-id="${f.id}"` : ''} style="grid-template-columns:1fr auto">
-      <div class="txt"><div class="n">${esc(f.name)}</div>${chat ? `<div class="p">${esc((chat.msgs[chat.msgs.length - 1] || {}).text || '')}</div>` : ''}</div>
-      ${chat && chat.unread ? `<div class="meta"><span class="unread">${chat.unread}</span></div>` : ''}</div>`;
+    const status = f.status || '';
+    return `<div class="row talk-friend" ${chat ? `data-act="talkopen" data-id="${f.id}"` : ''}>
+      <div class="av2" style="grid-column:1">${avatar}</div>
+      <div class="txt" style="grid-column:2"><div class="n">${esc(f.name)}</div><div class="p">${esc(status)}</div></div></div>`;
   }).join('');
-  return `<div class="view" style="background:var(--grouped)">${headerHTML('톡', { back: false })}${seg}<div class="scroll">
+  return `<div class="view" style="background:var(--grouped)">${headerHTML('톡', { back: false })}${seg}<div class="scroll list">
     <div class="talk-profile"><div class="ava"><svg viewBox="0 0 30 30"><circle cx="15" cy="11" r="5.5"/><path d="M5 27c1.4-5.4 5.2-8 10-8s8.6 2.6 10 8z"/></svg></div>
       <div><div class="n">${esc(TALK.profile.name)}</div><div class="b">생일 ${esc(TALK.profile.birthday)}</div></div></div>
     <div class="section-h">친구 ${TALK.friends.length}</div>${friends}</div></div>`;
@@ -1691,7 +1705,7 @@ const API = {
   openCctv, closeCctv, setCctvTime, toggleCctvPlay, cctvStep, cctvDone,
   defDialogue, defPlace, registerDest, onArrive, addArrive, onThreadOpen, addThreadOpen, onDialContact, onAccept, defSession, setStartGame,
   startSession, endSession, startTravel, startRoute, endCall, saveCheckpoint, readCheckpoint, charName,
-  clockStr, nowMsg, labelText, visibleOpts, switchToCall,
+  clockStr, nowMsg, labelText, visibleOpts, switchToCall, faceNext,
   SAY, ME, CHOICE, DO, WAIT, MONO, LABEL, GOTO, END,
 };
 Object.assign(window, {
@@ -1703,7 +1717,7 @@ Object.assign(window, {
   defDialogue, runDialogue, choose, SAY, ME, CHOICE, DO, WAIT, MONO, LABEL, GOTO, END,
   defCine, playCine, defPlace, registerDest, onArrive, addArrive, onThreadOpen, addThreadOpen, onDialContact, onAccept, defSession, setStartGame,
   startSession, endSession, startTravel, startRoute, endCall, switchToCall, saveCheckpoint, readCheckpoint,
-  openCctv, closeCctv, setCctvTime, cctvStep,
+  openCctv, closeCctv, setCctvTime, cctvStep, faceNext,
   clockStr, nowMsg, fmtDur, advanceClock,
 });
 window.__game = API;

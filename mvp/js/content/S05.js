@@ -26,7 +26,7 @@
   function sendKx11() {
     if (G.flag('S05.kx11Sent')) return;
     G.setFlag('S05.kx11Sent');
-    G.addContact({ id: 'detective', name: '김태윤 경위', num: '031-XXX-0100', kind: 'normal', th: 'detective' });
+    G.addContact({ id: 'detective', name: '성원경찰서 김태윤', num: '010-XXXX-1182', kind: 'normal', th: 'detective' });
     G.addMsg('detective', G.nowMsg('them', KX11_TEXT));
   }
 

@@ -117,11 +117,7 @@
     d.queue.length = 0;
     d.queue.unshift(...nodes);
     G.refresh();
-    G.later(30, () => {
-      if (G.S.dlg !== d) return;
-      const el = document.querySelector('.scene .dlg');
-      if (el) el.click();
-    }, 'S09.resume');
+    if (typeof G.faceNext === 'function') G.faceNext();
   }
 
   function openPhotoPicker() {
@@ -152,7 +148,8 @@
       const i = Number(btn.dataset.pi);
       const p = S.photos[i];
       if (!p || !p.src) return;
-      closeAndHandle(String(p.src).indexOf('photo_father_son_2022') >= 0 ? 'father_son' : 'other');
+      const key = p.id || String(p.src);
+      closeAndHandle(key.indexOf('father_son') >= 0 || key.indexOf('photo_father_son_2022') >= 0 ? 'father_son' : 'other');
     });
     function closeAndHandle(result) {
       S.v.s9_pickerOpen = false;
@@ -208,7 +205,7 @@
       }],
       [300000, () => {
         if (G.S.session !== 'S09' || G.flag('S09.done') || G.S.place === 'pharmacy') return;
-        G.addContact({ id: 'yujin', name: '차유진', num: '010-XXXX-3927', kind: 'normal', th: 'yujin' });
+        G.addContact({ id: 'yujin', name: '차유진', num: '010-XXXX-4417', kind: 'normal', th: 'yujin' });
         G.addMsg('yujin', G.nowMsg('them', '아버님, 오늘 많이 피곤하시죠? 오늘은 일찍 쉬세요.'));
       }],
       [450000, () => {

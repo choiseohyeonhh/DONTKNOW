@@ -40,8 +40,8 @@
   function sendJunhoNumber() {
     if (G.has('KX-03')) return;
     G.grant('KX-03');
-    G.addContact({ id: 'junho', name: '103호', num: '010-XXXX-6103', kind: 'normal' });
-    G.addMsg('jihoon', G.nowMsg('them', '준호 번호예요. 010-XXXX-6103. 103호예요.'), { banner: false });
+    G.addContact({ id: 'junho', name: '준호', num: '010-XXXX-0315', kind: 'normal', th: 'junho' });
+    G.addMsg('jihoon', G.nowMsg('them', '준호 번호예요. 010-XXXX-0315.'), { banner: false });
   }
 
   function offerJunho() {

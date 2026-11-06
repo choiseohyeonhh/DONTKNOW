@@ -188,7 +188,7 @@ body { background: var(--stage); color: var(--stage-ink); font-family: var(--fon
 /* 전화 키패드 */
 .dial { display: grid; grid-template-columns: repeat(3, 76px); justify-content: center; gap: 14px 22px; padding: 14px 0 0; }
 .dial button { width: 76px; height: 76px; border-radius: 50%; background: #E9E9EB; display: grid; place-items: center; font-size: 30px; font-weight: 400; }
-.dial button.call { background: var(--green); color: #fff; }
+.dial button.callkey { background: var(--green); color: #fff; }
 .dial .disp { text-align: center; font-size: 30px; min-height: 48px; letter-spacing: .05em; padding-top: 16px; }
 
 /* 지도 */
@@ -359,6 +359,8 @@ body { background: var(--stage); color: var(--stage-ink); font-family: var(--fon
 
 /* ───────── P1: 대면 장면 ───────── */
 .scene { position: absolute; inset: 0; overflow: hidden; color: #fff; background: #0B0D10; --sb-ink: #fff; --ind: rgba(255,255,255,.82); }
+.screen.scene .status { color: #fff; --sb-ink: #fff; }
+.dk-s10-open .status { z-index: 47; color: #fff; --sb-ink: #fff; }
 .scene .bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: brightness(.65) saturate(.88); transform: scale(1.02); animation: sceneIn .8s ease both; }
 @keyframes sceneIn { from { opacity: 0; transform: scale(1.06); } to { opacity: 1; transform: scale(1.02); } }
 .scene .shade { position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.08), rgba(0,0,0,.18) 42%, rgba(0,0,0,.72)); }
@@ -394,6 +396,10 @@ body { background: var(--stage); color: var(--stage-ink); font-family: var(--fon
 .debug .jumps button { margin: 0; padding: 4px 7px; font-size: 11px; }
 
 /* ───────── P2: 톡 ───────── */
+.list .row.talk-friend { grid-template-columns: 42px 1fr auto; gap: 0 12px; padding-left: 16px; }
+.list .row.talk-friend .av2 { grid-column: 1; width: 40px; height: 40px; }
+.list .row.talk-friend .av2 svg { width: 26px; height: 26px; fill: #fff; }
+.list .row.talk-friend .txt .p:empty { display: none; }
 .talk-profile { margin: 10px 16px 2px; padding: 14px; border-radius: 18px; background: #fff; display: flex; align-items: center; gap: 12px; border: .5px solid var(--sep); }
 .talk-profile .ava { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(#B7BDC8,#8C939E); display: grid; place-items: center; }
 .talk-profile .ava svg { width: 28px; height: 28px; fill: #fff; }

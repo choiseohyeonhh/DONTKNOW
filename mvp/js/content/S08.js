@@ -231,7 +231,7 @@ body.dk-s8-silence #cine .tap, body.dk-s8-silence #cine .skip { display: none !i
       if (G.flag('RE.02')) return;
       G.setFlag('RE.02');
       G.setFlag('S08.re02Sent');
-      G.addContact({ id: 'yujin', name: '차유진', num: '010-XXXX-3927', kind: 'normal', th: 'yujin' });
+      G.addContact({ id: 'yujin', name: '차유진', num: '010-XXXX-4417', kind: 'normal', th: 'yujin' });
       G.addMsg('yujin', G.nowMsg('them', '아버님 괜찮으세요? 혹시 집에 이상한 사람 오지 않았어요?'));
       const top = G.S.stack[G.S.stack.length - 1];
       if (top && top.app === 'msg' && top.id === 'yujin') G.grant('KX-08');

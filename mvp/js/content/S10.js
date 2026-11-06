@@ -94,15 +94,20 @@
   function openEnvelopeScene() {
     UI.open = true;
     UI.step = 'entrance';
+    document.body.classList.add('dk-s10-open');
     render();
+    G.refresh();
   }
   function closeEnvelopeScene() {
     UI.open = false;
+    document.body.classList.remove('dk-s10-open');
     render();
+    G.refresh();
   }
 
   function takePhone() {
     UI.open = false;
+    document.body.classList.remove('dk-s10-open');
     render();
     G.setFlag('IT.postit');
     G.grant('K-18');

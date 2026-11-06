@@ -51,7 +51,7 @@ window.__game = {
   playCine, defCine, defDialogue, defPlace, registerDest, onArrive, onThreadOpen,
   onDialContact, onAccept, defSession, setStartGame,
   startSession, endSession, startTravel, startRoute, saveCheckpoint, readCheckpoint,
-  switchToCall, clockStr, nowMsg, visibleOpts,
+  switchToCall, faceNext, clockStr, nowMsg, visibleOpts,
   addTalkContact, addTalkMsg, openTalkThread, onTalkOpen, setTalkChoice, offerReply,
   openCctv, closeCctv, setCctvTime, cctvStep, endCall
 }

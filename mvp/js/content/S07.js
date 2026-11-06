@@ -22,7 +22,7 @@
   function deadCall(text, ms) {
     const S = G.S;
     G.clearGroup('S07.call');
-    S.call = { kind: 'dead', name: '103호', state: 'ring', since: Date.now(), lines: [], deadText: text };
+    S.call = { kind: 'dead', name: '준호', state: 'ring', since: Date.now(), lines: [], deadText: text };
     S.ov = { type: 'call' };
     G.refresh();
     G.later(ms, () => {
@@ -82,7 +82,7 @@
     }
     if (S.ov) return;
     S.v.s7_incoming = true;
-    S.ov = { type: 'incoming', name: '103호', from: 'junho' };
+    S.ov = { type: 'incoming', name: '준호', from: 'junho' };
     G.refresh();
     if (!retry) {
       G.schedule('EV.S07.01.retry', 16000, () => {
@@ -109,8 +109,6 @@
       return;
     }
     ensureJunhoThread();
-    const top = S.stack[S.stack.length - 1];
-    if (!(top && top.app === 'msg' && top.id === 'junho')) G.openThread('junho');
     G.runDialogue('S07.junho.sms.b', { channel: 'sms', who: 'junho' });
   }
 

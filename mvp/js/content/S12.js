@@ -216,7 +216,7 @@
   function callB3() {
     hideS12();
     simulateDeadCall('준호', '받지 않습니다.', () => {
-      G.addContact({ id: 'detective', name: '김태윤 경위', num: '010-XXXX-1182', kind: 'normal', th: 'detective' });
+      G.addContact({ id: 'detective', name: '성원경찰서 김태윤', num: '010-XXXX-1182', kind: 'normal', th: 'detective' });
       G.addMsg('detective', G.nowMsg('them', '박준호 학생 저희가 먼저 데려왔습니다.'));
       G.setFlag('S12.b3');
       setBranchB('B-3');
@@ -319,7 +319,7 @@
     if (AUX.mode === 'junho') {
       morph(el, `<div class="s12-backdrop"></div><div class="s12-sheet">
         <div class="s12-grab"></div><div class="s12-kicker">연락처</div><div class="s12-name">준호</div>
-        <div class="s12-sub">103호 · 010-XXXX-0315</div>
+        <div class="s12-sub">아랫집 103호 · 010-XXXX-0315</div>
         <div class="s12-contact"><div><div class="s12-cn">준호</div><div class="s12-cp">아랫집 · 도현이 친구</div></div>
           <button class="s12-call" data-s12="junho-call" aria-label="전화"><svg viewBox="0 0 34 34"><path d="M11.2 7.3c.7-.1 1.3.3 1.6.9l1.8 3.9c.3.6.1 1.3-.3 1.8l-1.7 1.6a14 14 0 0 0 6 6l1.6-1.7c.5-.5 1.2-.6 1.8-.3l3.9 1.8c.6.3 1 .9.9 1.6l-.5 2.7c-.1.8-.8 1.4-1.6 1.4C15 27 7.3 19 7.3 9.4c0-.8.6-1.5 1.4-1.6z"/></svg></button></div>
         <div class="s12-btns"><button class="ghost" data-s12="junho-later">나중에</button></div>
