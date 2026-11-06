@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DONTKNOW UI 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* 무대: 캐논 장면 팔레트(새벽 청회색, 형광 백색) */
+  --stage: #4A5866;
+  --stage-ink: #E8EEF0;
+  --stage-muted: #B4BEC6;
+
+  /* 아버지 폰 (visual-style.md 2장) */
+  --f-bg: #F4F3F0;
+  --f-fg: #141414;
+  --f-muted: #6B6B6B;
+  --f-accent: #2F6FDE;
+  --f-badge: #E5483B;
+  --f-in: #FFFFFF;
+  --f-out: #DDE8FB;
+  --f-line: #E2E0DB;
+
+  /* 도현 옛 폰 */
+  --o-bg: #0E0F11;
+  --o-fg: #D9DDE3;
+  --o-muted: #7C838C;
+  --o-accent: #8FA3BF;
+  --o-line: #1E2126;
+
+  /* 장면 */
+  --sodium: #E39A3B;
+
+  --sans: "Noto Sans KR", system-ui, sans-serif;
+  --serif: "Noto Serif KR", "Noto Sans KR", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --stage: #2E3843; }
+}
+:root[data-theme="dark"] { --stage: #2E3843; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--stage);
+  color: var(--stage-ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+.page { max-width: 1320px; margin: 0 auto; padding-block: 56px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.intro { max-width: 640px; margin-bottom: 56px; }
+.intro h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 14px; }
+.intro p { font-size: 16px; line-height: 1.7; color: var(--stage-muted); }
+.intro p + p { margin-top: 10px; }
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 64px 40px;
+}
+.item { min-width: 0; }
+.fit { width: 100%; max-width: 390px; margin: 0 auto; }
+.fit-inner { width: 390px; transform-origin: top left; }
+.cap { max-width: 390px; margin: 22px auto 0; }
+.cap h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.cap h2 small { font-weight: 400; color: var(--stage-muted); font-size: 15px; margin-left: 6px; }
+.cap p { font-size: 15px; line-height: 1.65; color: var(--stage-muted); }
+
+/* ───────── 공통 화면 ───────── */
+.screen {
+  position: relative;
+  width: 390px; height: 844px;
+  border-radius: 46px;
+  overflow: hidden;
+  box-shadow: 0 0 0 10px #1A1F25, 0 30px 60px -20px rgba(0,0,0,.55);
+  font-family: var(--sans);
+  font-variant-numeric: tabular-nums;
+  isolation: isolate;
+}
+.sb {
+  position: absolute; inset: 0 0 auto 0; height: 50px;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 0 30px 6px 32px; z-index: 5;
+  font-size: 18px; font-weight: 700;
+}
+.sb .r { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 500; }
+.bars { display: flex; align-items: flex-end; gap: 2px; height: 13px; }
+.bars i { width: 3.5px; background: currentColor; border-radius: 1px; }
+.bars i:nth-child(1){height:5px}.bars i:nth-child(2){height:8px}.bars i:nth-child(3){height:11px}.bars i:nth-child(4){height:13px;opacity:.35}
+.batt { width: 27px; height: 13px; border: 1.6px solid currentColor; border-radius: 4px; padding: 1.5px; position: relative; }
+.batt::after { content:""; position:absolute; right:-4px; top:3.5px; width:2px; height:4px; background: currentColor; border-radius: 0 1px 1px 0; }
+.batt b { display:block; height:100%; background: currentColor; border-radius: 1.5px; }
+.homebar { position: absolute; left: 50%; bottom: 9px; width: 134px; height: 5px; margin-left: -67px; border-radius: 3px; z-index: 6; }
+
+/* ───────── 01 잠금화면 ───────── */
+.lock { background: #F7EBD3 url(img/wall_family_2019_wallpaper.jpg) center/cover; color: var(--f-fg); }
+.lock::after { content:""; position:absolute; inset:0; background: linear-gradient(to bottom, rgba(244,243,240,0) 52%, rgba(20,20,20,.72) 100%); z-index: 0; }
+.lock .clock { position: relative; z-index: 2; text-align: center; margin-top: 96px; }
+.lock .clock .t { font-size: 104px; font-weight: 400; line-height: 1; letter-spacing: -0.04em; }
+.lock .clock .d { font-size: 22px; font-weight: 500; margin-top: 10px; }
+.lock .sum {
+  position: absolute; z-index: 2; left: 16px; right: 16px; bottom: 92px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  background: rgba(250,249,246,.9);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-radius: 22px;
+}
+.lock .sum div { padding: 18px 20px 20px; }
+.lock .sum div + div { border-left: 1px solid var(--f-line); }
+.lock .sum b { display: block; font-size: 64px; font-weight: 700; line-height: 1; color: var(--f-badge); letter-spacing: -0.03em; }
+.lock .sum span { display: block; font-size: 22px; font-weight: 500; margin-top: 8px; }
+.lock .hint { position: absolute; z-index: 2; left: 0; right: 0; bottom: 38px; text-align: center; color: #fff; font-size: 18px; font-weight: 500; text-shadow: 0 1px 6px rgba(0,0,0,.7); }
+.lock .homebar { background: #fff; }
+
+/* ───────── 02 홈 ───────── */
+.home { background: url(img/wall_family_2019_wallpaper.jpg) center/cover; color: #fff; }
+.home::before { content:""; position:absolute; inset:0; background: rgba(28,26,22,.5); z-index: 0; }
+.grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(4, 1fr); row-gap: 26px; padding: 238px 14px 0; }
+.app { display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; }
+.ico { width: 72px; height: 72px; border-radius: 20px; display: grid; place-items: center; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+.ico svg { width: 38px; height: 38px; fill: none; stroke: #fff; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+.app span { font-size: 17px; font-weight: 500; text-shadow: 0 1px 3px rgba(0,0,0,.55); }
+.badge { position: absolute; top: -8px; right: -12px; min-width: 32px; height: 32px; padding: 0 8px; border-radius: 16px; background: var(--f-badge); color: #fff; font-size: 18px; font-weight: 700; display: grid; place-items: center; border: 2.5px solid rgba(255,255,255,.95); }
+.banner {
+  position: absolute; z-index: 4; left: 10px; right: 10px; top: 54px;
+  background: var(--f-in); color: var(--f-fg); border-radius: 22px;
+  padding: 14px 18px 16px; box-shadow: 0 12px 30px -8px rgba(0,0,0,.45);
+}
+.banner .h { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--f-muted); font-weight: 500; }
+.banner .h i { width: 22px; height: 22px; border-radius: 7px; background: var(--f-accent); display: grid; place-items: center; }
+.banner .h i svg { width: 14px; height: 14px; stroke: #fff; fill: none; stroke-width: 2.6; }
+.banner .h em { font-style: normal; margin-left: auto; }
+.banner .n { font-size: 22px; font-weight: 700; margin-top: 8px; }
+.banner .m { font-size: 22px; line-height: 1.4; margin-top: 2px; }
+.banner .more { font-size: 15px; color: var(--f-muted); margin-top: 6px; }
+.home .homebar { background: #fff; }
+
+/* ───────── 03 한결 스레드 ───────── */
+.thread { background: var(--f-bg); color: var(--f-fg); }
+.thread .sb { background: var(--f-bg); }
+.th-head { position: absolute; z-index: 4; top: 50px; left: 0; right: 0; height: 64px; display: flex; align-items: center; gap: 6px; padding: 0 12px 0 8px; background: var(--f-bg); border-bottom: 1px solid var(--f-line); }
+.th-head .back { width: 48px; height: 56px; display: grid; place-items: center; }
+.th-head .back svg { width: 30px; height: 30px; stroke: var(--f-fg); stroke-width: 2.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.th-head .who { font-size: 24px; font-weight: 700; flex: 1; }
+.th-head .menu { width: 44px; text-align: center; font-size: 28px; line-height: 1; color: var(--f-fg); font-weight: 700; }
+.th-body { position: absolute; top: 114px; bottom: 96px; left: 0; right: 0; overflow: hidden; padding: 0 16px; }
+.th-body .scroller { position: relative; top: -40px; }
+.day { text-align: center; font-size: 16px; color: var(--f-muted); margin: 26px 0 14px; }
+.msg { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 10px; }
+.msg p { background: var(--f-in); border: 1px solid var(--f-line); border-radius: 6px 20px 20px 20px; padding: 14px 16px; font-size: 22px; line-height: 1.45; max-width: 290px; word-break: keep-all; }
+.msg time { font-size: 14px; color: var(--f-muted); flex: none; padding-bottom: 4px; }
+.unread { display: flex; align-items: center; gap: 12px; margin: 30px -16px 4px; padding: 0 16px; color: var(--f-accent); font-size: 17px; font-weight: 700; }
+.unread::before, .unread::after { content:""; flex: 1; height: 2px; background: var(--f-accent); opacity: .5; }
+.scrollbar { position: absolute; z-index: 3; right: 4px; top: 124px; bottom: 106px; width: 5px; }
+.scrollbar b { position: absolute; left: 0; right: 0; top: 64%; height: 26px; background: rgba(20,20,20,.38); border-radius: 3px; }
+.th-input { position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; height: 96px; background: var(--f-bg); border-top: 1px solid var(--f-line); padding: 12px 16px 0; }
+.th-input div { height: 52px; border-radius: 26px; background: #E9E7E2; color: #9B9993; font-size: 22px; display: flex; align-items: center; padding: 0 22px; letter-spacing: .1em; }
+.thread .homebar { background: var(--f-fg); }
+
+/* ───────── 04 인터폰 장면 ───────── */
+.scene { background: #6E7F8B; color: #fff; }
+.scene .plate { position: absolute; z-index: 0; width: 700px; left: -154px; top: -257px; }
+.scene .plate img { width: 700px; display: block; }
+.feed { position: absolute; z-index: 1; left: 41px; top: 150px; width: 309px; height: 223px; border-radius: 10px; overflow: hidden; background: #2A2D30; }
+.feed svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.feed .scan { position: absolute; inset: 0; background: repeating-linear-gradient(to bottom, rgba(0,0,0,.22) 0 1px, transparent 1px 3px); }
+.feed .ts { position: absolute; left: 10px; top: 8px; font-size: 12px; font-weight: 500; color: rgba(255,255,255,.75); letter-spacing: .04em; display: flex; align-items: center; gap: 6px; }
+.feed .ts i { width: 7px; height: 7px; border-radius: 50%; background: #E5483B; }
+.scene .shade { position: absolute; z-index: 2; inset: 340px 0 0 0; background: linear-gradient(to bottom, rgba(14,18,22,0) 0, rgba(14,18,22,.9) 76px, rgba(14,18,22,.95) 100%); }
+.line { position: absolute; z-index: 3; left: 24px; right: 24px; top: 430px; }
+.line .who { font-size: 16px; font-weight: 700; color: var(--sodium); margin-bottom: 10px; font-family: var(--sans); }
+.line p { font-family: var(--serif); font-size: 23px; line-height: 1.55; font-weight: 600; word-break: keep-all; }
+.choices { position: absolute; z-index: 3; left: 16px; right: 16px; top: 560px; display: grid; gap: 10px; }
+.choices button { all: unset; display: block; height: 52px; border-radius: 16px; padding: 0 20px; font-family: var(--sans); font-size: 21px; font-weight: 500; line-height: 52px; background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.28); color: #fff; }
+.choices button.on { background: #F4F3F0; color: var(--f-fg); border-color: #F4F3F0; }
+.phone-btn { position: absolute; z-index: 3; right: 20px; bottom: 30px; width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: rgba(255,255,255,.12); }
+.phone-btn svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 2.2; }
+.phone-btn em { position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; border-radius: 50%; background: var(--f-badge); }
+.scene .sb { color: #fff; }
+.scene .homebar { background: rgba(255,255,255,.8); }
+
+/* ───────── 05 옛 폰 메모 ───────── */
+.old { background: var(--o-bg); color: var(--o-fg); }
+.old .sb { font-size: 13px; font-weight: 500; padding: 0 26px 10px 30px; height: 46px; }
+.old .sb .r { font-size: 12px; gap: 6px; }
+.old .bars { height: 10px; } .old .bars i { width: 2.5px; }
+.old .bars i:nth-child(1){height:4px}.old .bars i:nth-child(2){height:6px}.old .bars i:nth-child(3){height:8px}.old .bars i:nth-child(4){height:10px;opacity:1}
+.old .batt { width: 20px; height: 10px; border-width: 1.2px; border-radius: 3px; }
+.old .batt::after { right: -3px; top: 2.5px; height: 3px; }
+.memo-head { position: absolute; top: 46px; left: 0; right: 0; height: 44px; display: flex; align-items: center; padding: 0 14px; color: var(--o-accent); font-size: 14px; gap: 2px; }
+.memo-head svg { width: 18px; height: 18px; stroke: var(--o-accent); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.memo { position: absolute; top: 96px; left: 32px; right: 32px; }
+.memo h3 { font-size: 17px; font-weight: 700; color: #EEF1F5; }
+.memo .meta { font-size: 11.5px; color: var(--o-muted); margin-top: 4px; }
+.memo .goal { font-size: 14px; margin: 18px 0 14px; }
+.rows { display: grid; grid-template-columns: auto 1fr; column-gap: 0; font-size: 14px; line-height: 1.68; }
+.rows dt { color: var(--o-muted); }
+.rows dd { text-align: right; }
+.rows dd.note { grid-column: 1 / -1; text-align: left; color: var(--o-fg); padding: 2px 0; }
+.memo .last { font-size: 14px; margin-top: 14px; }
+.devtabs { position: absolute; left: 0; right: 0; bottom: 28px; display: flex; justify-content: center; }
+.devtabs div { display: flex; border: 1px solid #2A2F36; border-radius: 10px; overflow: hidden; }
+.devtabs span { font-size: 12px; padding: 7px 14px; color: var(--o-muted); }
+.devtabs span.on { background: #1C1F24; color: #EEF1F5; font-weight: 700; }
+.old .homebar { background: #5A6069; width: 110px; margin-left: -55px; height: 4px; bottom: 8px; }
+
+@media (max-width: 480px) {
+  .page { padding-block-start: 36px; }
+  .intro h1 { font-size: 24px; }
+  .board { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .banner { animation: drop .5s cubic-bezier(.2,.8,.2,1) .4s both; }
+  @keyframes drop { from { transform: translateY(-140%); } }
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="intro">
+    <h1>아버지의 폰, 아들의 폰</h1>
+    <p>DONTKNOW UI 시안 5종. 아버지 폰은 밝고, 글자가 크고, 정리되지 않았다. 도현의 옛 폰은 어둡고, 작고, 한 줄도 어긋나지 않는다. 두 폰의 차이가 두 사람의 차이라는 원칙(visual-style 1장)을 화면마다 지켰다.</p>
+    <p>폰 UI는 Noto Sans KR, 장면 대사만 Noto Serif KR. 폰 안의 글과 사람의 목소리를 서체로 나눈다.</p>
+  </header>
+
+  <section class="board">
+
+    <!-- 01 -->
+    <article class="item">
+      <div class="fit"><div class="fit-inner">
+        <div class="screen lock" id="s01">
+          <div class="sb"><span>02:47</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"><b style="width:41%"></b></span>41%</span></div>
+          <div class="clock"><div class="t">02:47</div><div class="d">3월 18일 수요일</div></div>
+          <div class="sum">
+            <div><b>47</b><span>부재중 전화</span></div>
+            <div><b>23</b><span>메시지</span></div>
+          </div>
+          <div class="hint">위로 쓸어서 열기</div>
+          <i class="homebar"></i>
+        </div>
+      </div></div>
+      <div class="cap">
+        <h2>잠금화면<small>S1 · 02:47</small></h2>
+        <p>시계보다 숫자가 무겁다. 47과 23을 화면에서 가장 굵은 글자로 두고, 가족 얼굴은 가리지 않는다. 사진 아래쪽만 살짝 어둡게 눌러 카드가 떠 보이게 했다.</p>
+      </div>
+    </article>
+
+    <!-- 02 -->
+    <article class="item">
+      <div class="fit"><div class="fit-inner">
+        <div class="screen home" id="s02">
+          <div class="sb"><span>02:47</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"><b style="width:41%"></b></span>41%</span></div>
+          <div class="banner">
+            <div class="h"><i><svg viewBox="0 0 24 24"><path d="M4 6h16v10H9l-5 4z"/></svg></i>메시지<em>지금</em></div>
+            <div class="n">정지훈(도현친구)</div>
+            <div class="m">저 할 말 있어요</div>
+            <div class="more">메시지 3개</div>
+          </div>
+          <div class="grid">
+            <div class="app"><div class="ico" style="background:#3C9A5F"><svg viewBox="0 0 24 24"><path d="M6.5 3.5l3 .5 1.3 4-2 1.6a11 11 0 0 0 5.6 5.6l1.6-2 4 1.3.5 3c0 1-1 2-2 2C10 19.5 4.5 14 4.5 5.5c0-1 1-2 2-2z"/></svg><b class="badge">47</b></div><span>전화</span></div>
+            <div class="app"><div class="ico" style="background:#2F6FDE"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><b class="badge">26</b></div><span>메시지</span></div>
+            <div class="app"><div class="ico" style="background:#7A5BC7"><svg viewBox="0 0 24 24"><circle cx="9" cy="10" r="5"/><path d="M14.5 7.5A5 5 0 0 1 20 12a5 5 0 0 1-2 4l.5 3-3-1.5"/></svg></div><span>톡</span></div>
+            <div class="app"><div class="ico" style="background:#E07B39"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5.5 19.5c1.2-3.5 3.6-5 6.5-5s5.3 1.5 6.5 5"/></svg></div><span>연락처</span></div>
+            <div class="app"><div class="ico" style="background:#D9506A"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M3.5 16l5-5 4 4 3-3 5 5"/><circle cx="15.5" cy="9" r="1.3"/></svg></div><span>사진</span></div>
+            <div class="app"><div class="ico" style="background:#2BA3A3"><svg viewBox="0 0 24 24"><path d="M12 3l7 18-7-4-7 4z"/></svg></div><span>길찾기</span></div>
+            <div class="app"><div class="ico" style="background:#3D5A80"><svg viewBox="0 0 24 24"><path d="M3.5 9.5L12 4l8.5 5.5M5.5 10v7M10 10v7M14 10v7M18.5 10v7M3.5 19.5h17"/></svg></div><span>은행</span></div>
+            <div class="app"><div class="ico" style="background:#D4A93A"><svg viewBox="0 0 24 24"><path d="M6 3.5h9l3.5 3.5v13.5H6z"/><path d="M9 11h6.5M9 14.5h6.5M9 18h4"/></svg></div><span>메모</span></div>
+            <div class="app"><div class="ico" style="background:#5B6470"><svg viewBox="0 0 24 24"><path d="M3.5 8h4l1.5-2.5h6L16.5 8h4v11h-17z"/><circle cx="12" cy="13" r="3.5"/></svg></div><span>카메라</span></div>
+            <div class="app"><div class="ico" style="background:#8A8F98"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M5.5 18.5l2.1-2.1M16.4 7.6l2.1-2.1"/></svg></div><span>설정</span></div>
+          </div>
+          <i class="homebar"></i>
+        </div>
+      </div></div>
+      <div class="cap">
+        <h2>홈 화면<small>S1 · 지훈 문자 도착</small></h2>
+        <p>4열 큰 아이콘, 독도 위젯도 없다. 마지막 줄 두 칸이 비어 있다. 지훈 문자 세 통이 들어오는 순간이라 메시지 배지가 23에서 26이 된다. 배너는 위에서 한 번만 떨어진다.</p>
+      </div>
+    </article>
+
+    <!-- 03 -->
+    <article class="item">
+      <div class="fit"><div class="fit-inner">
+        <div class="screen thread" id="s03">
+          <div class="sb"><span>19:52</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"><b style="width:19%"></b></span>19%</span></div>
+          <div class="th-head">
+            <span class="back"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></span>
+            <span class="who">1600-XXXX</span>
+            <span class="menu">⋮</span>
+          </div>
+          <div class="th-body"><div class="scroller">
+            <div class="msg"><p>[한결캐피탈] 9월 상환금 2,200,000원 입금 확인되었습니다. (입금자: 이도*)</p><time>09:55</time></div>
+            <div class="unread">읽지 않은 메시지 11건</div>
+            <div class="day">2025년 10월 25일 토요일</div>
+            <div class="msg"><p>[한결캐피탈] 10월 상환금 2,200,000원 입금 확인되었습니다. (입금자: 이도*)</p><time>09:43</time></div>
+            <div class="day">2025년 11월 5일 수요일</div>
+            <div class="msg"><p>[한결캐피탈] 11월 자동이체 출금이 잔액 부족으로 처리되지 않았습니다. 재출금 예정일: 11월 10일</p><time>06:12</time></div>
+          </div></div>
+          <div class="scrollbar"><b></b></div>
+          <div class="th-input"><div>…</div></div>
+          <i class="homebar"></i>
+        </div>
+      </div></div>
+      <div class="cap">
+        <h2>한결캐피탈 문자 스레드<small>S11 · 스크롤 중</small></h2>
+        <p>34건을 22px로 읽으면 화면에 두세 통밖에 안 들어간다. 그 길이가 연출이다. 금액은 고정폭 숫자, 링크·강조 없음. "이도*"는 플레이어가 스스로 찾아야 해서 하이라이트하지 않는다. 입력창은 비활성.</p>
+      </div>
+    </article>
+
+    <!-- 04 -->
+    <article class="item">
+      <div class="fit"><div class="fit-inner">
+        <div class="screen scene" id="s04">
+          <div class="plate"><img src="img/scene_intercom.jpg" alt="현관 벽의 인터폰 패널"></div>
+          <div class="feed">
+            <svg viewBox="0 0 309 223" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 .5"/></feComponentTransfer><feComposite in2="SourceGraphic" operator="in"/></filter>
+                <filter id="soft"><feGaussianBlur stdDeviation="5"/></filter>
+                <radialGradient id="lamp" cx=".5" cy="0" r=".9"><stop offset="0" stop-color="#9AA0A4"/><stop offset="1" stop-color="#3A3E42"/></radialGradient>
+              </defs>
+              <rect width="309" height="223" fill="url(#lamp)"/>
+              <rect x="22" y="0" width="22" height="223" fill="#55595D"/>
+              <g filter="url(#soft)" fill="#16191C">
+                <ellipse cx="166" cy="96" rx="46" ry="56"/>
+                <path d="M70 223c6-58 44-82 96-82s90 24 96 82z"/>
+              </g>
+              <ellipse cx="150" cy="80" rx="14" ry="9" fill="#C9CDCF" opacity=".18" filter="url(#soft)"/>
+              <rect width="309" height="223" fill="#000" filter="url(#grain)" opacity=".9"/>
+            </svg>
+            <div class="scan"></div>
+            <div class="ts"><i></i>현관 16:10:42</div>
+          </div>
+          <div class="shade"></div>
+          <div class="sb"><span>16:10</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"><b style="width:27%"></b></span>27%</span></div>
+          <div class="line">
+            <div class="who">인터폰</div>
+            <p>"도현이가 나한테 약을 줬어! 줘야 돼, 도현이가 준대!"</p>
+          </div>
+          <div class="choices">
+            <button class="on">무슨 약.</button>
+            <button>도현이 없다.</button>
+            <button>…</button>
+          </div>
+          <div class="phone-btn"><svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg><em></em></div>
+          <i class="homebar"></i>
+        </div>
+      </div></div>
+      <div class="cap">
+        <h2>인터폰 장면과 선택지<small>S8 · 16:10</small></h2>
+        <p>인터폰 화면을 크게 당겨 남자의 얼굴이 화질 뒤에 숨게 했다. 대사는 명조, 화자명은 나트륨등 주황. 선택지는 사람이 고르는 거라 폰 글꼴로 남겼다. 우하단은 폰 꺼내기, 빨간 점은 미확인 알림.</p>
+      </div>
+    </article>
+
+    <!-- 05 -->
+    <article class="item">
+      <div class="fit"><div class="fit-inner">
+        <div class="screen old" id="s05">
+          <div class="sb"><span>오후 7:58</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"><b style="width:62%"></b></span></span></div>
+          <div class="memo-head"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>메모</div>
+          <div class="memo">
+            <h3>남은 거</h3>
+            <div class="meta">2026. 2. 25. 오후 11:11</div>
+            <div class="goal">목표: 내가 4천</div>
+            <dl class="rows">
+              <dt>2024.08</dt><dd>74,200,000</dd>
+              <dt>2024.09</dt><dd>73,000,000</dd>
+              <dt>2024.10</dt><dd>71,200,000</dd>
+              <dt>2024.11</dt><dd>69,200,000</dd>
+              <dt>2024.12</dt><dd>68,000,000</dd>
+              <dt>2025.01</dt><dd>65,900,000</dd>
+              <dt>2025.02</dt><dd>63,800,000</dd>
+              <dt>2025.03</dt><dd>61,500,000</dd>
+              <dt>2025.04</dt><dd>59,200,000</dd>
+              <dd class="note">2025.04 — 약국 시작. 이제 좀 빨라짐</dd>
+              <dt>2025.05</dt><dd>56,600,000</dd>
+              <dt>2025.06</dt><dd>53,800,000</dd>
+              <dt>2025.07</dt><dd>51,800,000</dd>
+              <dt>2025.08</dt><dd>49,000,000</dd>
+              <dt>2025.09</dt><dd>46,000,000</dd>
+              <dt>2025.10</dt><dd>43,000,000</dd>
+              <dt>2025.11</dt><dd>40,500,000</dd>
+              <dt>2025.12</dt><dd>37,200,000</dd>
+              <dt>2026.01</dt><dd>34,700,000</dd>
+              <dt>2026.02</dt><dd>31,400,000</dd>
+            </dl>
+            <div class="last">대학 가기 전에 반은 하고 싶었는데</div>
+          </div>
+          <div class="devtabs"><div><span>아버지 폰</span><span class="on">도현 폰</span></div></div>
+          <i class="homebar"></i>
+        </div>
+      </div></div>
+      <div class="cap">
+        <h2>도현 옛 폰 · 메모 "남은 거"<small>S11</small></h2>
+        <p>같은 게임 안에서 글자 크기가 22px에서 14px로 떨어진다. 12시간제, 배지 없음, 숫자는 오른쪽 끝까지 한 줄로 맞춘다. 아래 기기 탭에서 아버지 폰으로 돌아간다.</p>
+      </div>
+    </article>
+
+  </section>
+</main>
+<script>
+(function () {
+  function fit() {
+    document.querySelectorAll('.fit').forEach(function (w) {
+      var s = Math.min(1, w.clientWidth / 390);
+      var inner = w.firstElementChild;
+      inner.style.transform = 'scale(' + s + ')';
+      w.style.height = (844 * s) + 'px';
+    });
+  }
+  fit();
+  window.addEventListener('resize', fit);
+})();
+</script>
+</body>
+</html>
