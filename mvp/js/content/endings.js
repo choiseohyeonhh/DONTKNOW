@@ -614,4 +614,5 @@ body.s13-choice1 .scene .choices button:first-child:active{background:rgba(255,2
   G.resolveEnding = resolveEnding;
   window.resolveEnding = resolveEnding;
   window.DKEndings = { resolveEnding, decide, playEnding };
+  if (typeof G.defSession === 'function') G.defSession('S14', () => resolveEnding());
 })();

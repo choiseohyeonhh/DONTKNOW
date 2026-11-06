@@ -95,10 +95,4 @@
     }, 'av01');
   });
 
-  G.onArrive('school', () => {
-    G.defDialogue('S03.placeholder', [
-      G.SAY('father', [], '(S3는 다음 단계에서)'),
-    ]);
-    G.runDialogue('S03.placeholder', { channel: 'face', who: 'father', scene: 'scene_school_gate' });
-  });
 })();

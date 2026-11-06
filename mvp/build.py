@@ -29,10 +29,18 @@ def inline_images(text):
 
 
 html = (HERE / 'index.html').read_text(encoding='utf-8')
-css = (HERE / 'style.css').read_text(encoding='utf-8')
-css = css.replace('fonts/PretendardVariable.woff2', data_uri(HERE / 'fonts' / 'PretendardVariable.woff2'))
-css = inline_images(css)
-html = html.replace('<link rel="stylesheet" href="style.css">', '<style>\n' + css + '\n</style>')
+
+
+def inline_css(m):
+    css_path = HERE / m.group(1)
+    css = css_path.read_text(encoding='utf-8')
+    if (HERE / 'fonts' / 'PretendardVariable.woff2').exists():
+        css = css.replace('fonts/PretendardVariable.woff2', data_uri(HERE / 'fonts' / 'PretendardVariable.woff2'))
+    css = inline_images(css)
+    return '<style>\n' + css + '\n</style>'
+
+
+html = re.sub(r'<link rel="stylesheet" href="([^"]+)">', inline_css, html)
 html = inline_images(html)
 
 assets = {}

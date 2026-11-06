@@ -128,6 +128,7 @@ function grant(...ids) {
 }
 const has = (k) => !!S.know[k];
 function setFlag(...ids) { for (const k of ids.flat()) if (k) S.flags[k] = true; }
+function clearFlag(...ids) { for (const k of ids.flat()) if (k) S.flags[k] = false; }
 const flag = (k) => !!S.flags[k];
 function evalCond(c) {
   if (c == null) return true;
@@ -595,7 +596,8 @@ function switchToCall() {
 
 // ───────── 훅 ─────────
 const threadOpenHooks = {};
-function onThreadOpen(id, fn) { threadOpenHooks[id] = fn; }
+function onThreadOpen(id, fn) { if (!id || typeof fn !== 'function') return; (threadOpenHooks[id] = threadOpenHooks[id] || []).push(fn); }
+function addThreadOpen(id, fn) { onThreadOpen(id, fn); }
 const acceptHooks = [];
 function onAccept(fn) { acceptHooks.push(fn); }
 const dialHooks = {};
@@ -613,7 +615,8 @@ function registerDest(id) {
   if (!id || !PLACES[id]) return;
   if (!S.destinations.includes(id)) S.destinations.push(id);
 }
-function onArrive(id, fn) { ARRIVE[id] = fn; }
+function onArrive(id, fn) { if (!id || typeof fn !== 'function') return; (ARRIVE[id] = ARRIVE[id] || []).push(fn); }
+function addArrive(id, fn) { onArrive(id, fn); }
 function travelMin(from, to) {
   const p = PLACES[to];
   return (p && p.travelMin && p.travelMin[from]) || 20;
@@ -681,8 +684,8 @@ function arriveAt(dest) {
   S.navAnim = null;
   refresh();
   later(180, () => {
-    const fn = ARRIVE[dest];
-    if (fn) fn(dest);
+    const fns = ARRIVE[dest] || [];
+    if (fns.length) fns.forEach((fn) => { try { fn(dest); } catch (err) { console.error(err); } });
     else { S.phase = 'free'; refresh(); }
   }, 'travel');
 }
@@ -826,8 +829,8 @@ function openThread(id) {
   S.autoBottom = true;
   S.unlocked = true;
   refresh();
-  const hook = threadOpenHooks[id];
-  if (hook) hook(id, th, prevUnread);
+  const hooks = threadOpenHooks[id] || [];
+  hooks.forEach((fn) => { try { fn(id, th, prevUnread); } catch (e) { console.error(e); } });
   refresh();
 }
 
@@ -990,6 +993,16 @@ function jump(id) {
   S.dlg = null; S.call = null; S.phoneUp = false; S.travel = null; S.routePlace = null;
   S.cine = null; S.phase = 'free'; S.autoBottom = false;
   S.cctv = null; S.talkChoice = null; S.replyOffer = null; clearGroup('cctv');
+  document.body.classList.remove('dk-s13-lock', 's13-choice1', 'dk-s8-silence');
+  document.querySelectorAll('.s13-fade').forEach((el) => el.remove());
+  ['s10-layer', 's11-layer', 's12-layer'].forEach((lid) => {
+    const el = document.getElementById(lid);
+    if (el) { el.classList.remove('show'); el.style.display = 'none'; }
+  });
+  const endEl = document.getElementById('dk-ending');
+  if (endEl) { endEl.className = 'dk-ending'; endEl.innerHTML = ''; }
+  if (window.closeS11UI) { try { window.closeS11UI(); } catch (e) {} }
+  if (window.OldPhone) { try { window.OldPhone.reset(); } catch (e) {} }
   Object.keys(KNOW_BY_SESSION).forEach((sid) => {
     if (numSession(sid) < target) {
       KNOW_BY_SESSION[sid].forEach((k) => { if (/^K/.test(k)) S.know[k] = true; });
@@ -1100,7 +1113,7 @@ function noticeHTML() {
 }
 function titleHTML() {
   const resume = S.hasCheckpoint ? `<button class="alt" data-act="resume">이어하기</button>` : '';
-  return `<div class="title"><div><h1>DONTKNOW</h1><p>아버지의 폰에서 시작한다<br>S1–S6 플레이 가능</p><div class="btns"><button data-act="start">처음부터</button>${resume}</div></div></div>`;
+  return `<div class="title"><div><h1>DONTKNOW</h1><p>아버지의 폰에서 시작한다<br>S1–S14 · 엔딩 4종</p><div class="btns"><button data-act="start">처음부터</button>${resume}</div></div></div>`;
 }
 function headerHTML(title, { left = '', right = '', back = true } = {}) {
   return `<div class="hdr"><div class="lft" ${back ? 'data-act="back"' : ''}>${back ? '<svg viewBox="0 0 12 21"><path d="M10 2 2 10.5l8 8.5"/></svg>' : ''}${esc(left)}</div><h1>${esc(title)}</h1><div class="rgt">${right}</div></div>`;
@@ -1504,7 +1517,7 @@ function renderDebug() {
     dlg: ${esc(dlg)}<br>
     know: <b>${esc(know)}</b><br>flags: ${esc(flags)}<br>
     destinations: ${S.destinations.join(' / ') || '없음'}<br>
-    <div class="jumps"><button data-act="jump" data-session="S01">S01</button><button data-act="jump" data-session="S02">S02</button><button data-act="jump" data-session="S03">S03</button><button data-act="jump" data-session="S04">S04</button><button data-act="jump" data-session="S05">S05</button><button data-act="jump" data-session="S06">S06</button><button data-act="jump" data-session="S07">S07</button></div>
+    <div class="jumps">${['S01','S02','S03','S04','S05','S06','S07','S08','S09','S10','S11','S12','S13','S14'].map((id) => `<button data-act="jump" data-session="${id}">${id}</button>`).join('')}</div>
     <button data-act="reset">처음부터</button>`;
 }
 
@@ -1670,24 +1683,25 @@ function boot() {
 
 // ───────── 전역 API ─────────
 const API = {
-  S, boot, jump, grant, setFlag, choose, runDialogue, refresh,
+  S, boot, jump, grant, setFlag, clearFlag, choose, runDialogue, refresh,
   has, flag, schedule, nudge, cancelNudge, cancelScheduled, clearGroup, later,
+  showBanner, hideBanner, openDead, addArrive, addThreadOpen,
   addContact, addMsg, showMono, openThread, showThread, nav, playCine, defCine,
   addTalkContact, addTalkMsg, openTalkThread, onTalkOpen, setTalkChoice, offerReply, pickTalkChoice,
   openCctv, closeCctv, setCctvTime, toggleCctvPlay, cctvStep, cctvDone,
-  defDialogue, defPlace, registerDest, onArrive, onThreadOpen, onDialContact, onAccept, defSession, setStartGame,
+  defDialogue, defPlace, registerDest, onArrive, addArrive, onThreadOpen, addThreadOpen, onDialContact, onAccept, defSession, setStartGame,
   startSession, endSession, startTravel, startRoute, endCall, saveCheckpoint, readCheckpoint, charName,
   clockStr, nowMsg, labelText, visibleOpts, switchToCall,
   SAY, ME, CHOICE, DO, WAIT, MONO, LABEL, GOTO, END,
 };
 Object.assign(window, {
   S, DATA,
-  grant, has, setFlag, flag, evalCond,
-  schedule, nudge, later, clearGroup,
+  grant, has, setFlag, clearFlag, flag, evalCond,
+  schedule, nudge, later, clearGroup, showBanner, hideBanner, openDead,
   addContact, addMsg, showMono, openThread, showThread, nav, refresh,
   addTalkContact, addTalkMsg, openTalkThread, onTalkOpen, setTalkChoice, offerReply,
   defDialogue, runDialogue, choose, SAY, ME, CHOICE, DO, WAIT, MONO, LABEL, GOTO, END,
-  defCine, playCine, defPlace, registerDest, onArrive, onThreadOpen, onDialContact, onAccept, defSession, setStartGame,
+  defCine, playCine, defPlace, registerDest, onArrive, addArrive, onThreadOpen, addThreadOpen, onDialContact, onAccept, defSession, setStartGame,
   startSession, endSession, startTravel, startRoute, endCall, switchToCall, saveCheckpoint, readCheckpoint,
   openCctv, closeCctv, setCctvTime, cctvStep,
   clockStr, nowMsg, fmtDur, advanceClock,

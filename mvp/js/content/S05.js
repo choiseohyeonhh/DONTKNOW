@@ -34,6 +34,7 @@
     if (G.flag('S05.done')) return;
     G.setFlag('S05.done');
     G.endSession('S05');
+    G.registerDest('police');
     G.registerDest('mart');
     G.later(2000, sendKx11, 'S05.end');
     G.later(6000, () => {

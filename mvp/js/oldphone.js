@@ -266,7 +266,7 @@
   function appHeader(title, back = true) {
     return `<div class="op-hdr" data-k="op-hdr">
       <button class="op-lft" ${back ? 'data-op="op-back"' : ''} aria-label="뒤로">${back ? '<svg viewBox="0 0 12 21"><path d="M10 2 2 10.5l8 8.5"/></svg>' : ''}</button>
-      <h1>${esc(title)}</h1><span class="op-rgt"></span></div>`;
+      <h1>${esc(title)}</h1><span class="op-rgt"><button class="op-homebtn" data-op="op-home">홈</button></span></div>`;
   }
   const svgMsg = '<svg viewBox="0 0 24 24"><path d="M4 5h16v11H10l-6 4z"/></svg>';
   const svgMemo = '<svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>';
@@ -692,6 +692,13 @@
         if (app === 'voice') { OP.view = 'recorder'; render(); return; }
         if (app === 'photos') { mark('PH.o.photos'); OP.view = 'photos'; render(); return; }
         if (app === 'calc') { OP.view = 'calc'; render(); return; }
+        return;
+      }
+      case 'op-home': {
+        pauseVm();
+        OP.view = 'home';
+        OP.preview = null;
+        render();
         return;
       }
       case 'op-back': {
