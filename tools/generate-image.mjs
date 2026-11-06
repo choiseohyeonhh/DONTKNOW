@@ -77,15 +77,19 @@ async function main() {
 
   const url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(creds.CLOUDFLARE_ACCOUNT_ID)}/ai/run/${MODEL}`;
   let res;
-  try {
-    res = await fetch(url, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${creds.CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-  } catch (e) {
-    console.error(`네트워크 오류: ${e.cause?.code || e.message} (api.cloudflare.com 접근 허용 여부 확인)`);
-    process.exit(4);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${creds.CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    } catch (e) {
+      console.error(`네트워크 오류: ${e.cause?.code || e.message} (api.cloudflare.com 접근 허용 여부 확인)`);
+      process.exit(4);
+    }
+    if (res.status < 500) break; // 5xx만 재시도(일시 오류)
+    await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
   }
   const text = await res.text();
   let json;
