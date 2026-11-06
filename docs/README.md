@@ -66,7 +66,7 @@ docs/
 ├── content/
 │   ├── repayment-ledger.md  father-phone-data.md  old-phone-data.md
 │   ├── clues.md             locations.md          absence-dates.md
-│   ├── art-assets.md        audio-assets.md
+│   ├── art-assets.md        art-prompts.md        audio-assets.md
 ├── ui/
 │   ├── visual-style.md  overlays.md  meta-screens.md
 │   ├── father-phone/
