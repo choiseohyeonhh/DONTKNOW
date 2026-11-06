@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Cloudflare Workers AI (FLUX.1 schnell) 이미지 생성 CLI. 의존성 없음(Node 18+).
-// 사용: node tools/generate-image.mjs --prompt "..." [--name hall] [--steps 4] [--dir assets/generated] [--style cartoon] [--dry-run]
+// 사용: node tools/generate-image.mjs --prompt "..." [--name hall | --file fixed.jpg] [--steps 4] [--dir assets/generated] [--style cartoon] [--dry-run]
 // FLUX.1 schnell은 prompt, steps(1~8)만 받는다(seed·size·negative_prompt 불가).
 // 프록시 환경(클라우드 세션)에서는 NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=<CA번들> 필요.
 // 인증: CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN (프로세스 환경변수 우선, 없으면 documents/.env, .env 순). 값은 출력하지 않는다.
@@ -61,7 +61,7 @@ async function main() {
   const body = { prompt, steps };
 
   const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
-  const file = `${slug(args.name || args.prompt)}-${stamp}.jpg`;
+  const file = args.file ? args.file : `${slug(args.name || args.prompt)}-${stamp}.jpg`; // --file: 고정 파일명(덮어씀)
   const outDir = resolve(root, args.dir);
 
   const creds = getCredentials(root);
