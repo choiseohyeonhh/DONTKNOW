@@ -28,6 +28,7 @@
 | ART.scene.interrogation_glass | 진술실 유리창 너머 도현의 실루엣(얼굴 보이지 않음 → B+에서 고개를 듦: 실루엣의 각도만 변함) | S14 B | 없음 | P1 |
 | ART.scene.dohyun_room_newphone | 도현의 방, 책상 위 새 폰 화면만 밝음 | S14 D | 화면 빛 | P1 |
 | ART.scene.morning_empty | 다음 날 아침, 식탁 | S14 C | 없음 | P1 |
+| ART.cine.hall_morning | home_hall_night와 같은 구도, 08:40 흐린 아침빛, 문은 닫힘 | CN-01 (S2→S3) | 없음 | P1 |
 
 ## 2. 사진 (ART.photo.*) — 폰 안의 사진
 

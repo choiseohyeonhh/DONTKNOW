@@ -10,8 +10,9 @@ const DEBUG = Q.has('debug');
 
 // ───────── 상태 ─────────
 const S = {
-  phase: 'title',            // title | s1 | s2 | done
-  black: false,
+  phase: 'notice',           // notice | title | prologue | s1 | s2 | s2end | done
+  navAnim: null,             // 다음 렌더에 줄 전환 애니메이션
+  cine: null,                // 재생 중인 시네마틱
   clock: [2, 47],
   unlocked: false,
   stack: [],                 // 앱 내비게이션 [{app, id}]
@@ -143,6 +144,7 @@ const visibleOpts = (it) => it.opts.filter((o) => (!o.call || S.s2.mode === 'cal
 // ───────── 메시지 추가 ─────────
 function addMsg(id, m, { banner = true } = {}) {
   const th = T[id];
+  m.fresh = true;
   th.msgs.push(m);
   if (m.from === 'them') {
     const viewing = S.stack.length && S.stack[S.stack.length - 1].app === 'msg' && S.stack[S.stack.length - 1].id === id;
@@ -156,8 +158,15 @@ function addMsg(id, m, { banner = true } = {}) {
 }
 function showBanner(title, body, id) {
   S.banner = { title, body, id };
-  later(4200, () => { if (S.banner && S.banner.body === body) { S.banner = null; refresh(); } }, 'banner');
+  clearGroup('banner');
+  later(4200, () => hideBanner(body), 'banner');
   refresh();
+}
+function hideBanner(body) {
+  if (!S.banner || (body && S.banner.body !== body)) return;
+  const el = $('#overlay .banner');
+  if (el) el.classList.add('out');
+  later(280, () => { S.banner = null; refresh(); }, 'banner');
 }
 function showMono(text) {
   S.mono = text;
@@ -176,12 +185,13 @@ function openThread(id) {
     S.flags['FX-02'] = true;
     th.divider = th.unread;
     th.unread = 0;
-    S.stack = [{ app: 'msg', id }];
+    nav(S.stack.length ? 'push' : 'open');
+    S.stack = [{ app: 'msg', id: null }, { app: 'msg', id }];
     S.autoBottom = true;
     refresh();
     later(1200, () => {
       showMono('…나중에.');
-      later(350, () => { S.stack = []; refresh(); }, 'av01');
+      later(350, () => { if (S.stack.length) { nav('homeSlow'); S.stack = []; refresh(); } }, 'av01');
     }, 'av01');
     return;
   }
@@ -192,32 +202,42 @@ function openThread(id) {
     clearGroup('nudge1');
     if (S.phase === 's1' && S.jihoonEventDone) startS2('msg');
   }
+  nav(S.stack.length ? 'push' : 'open');
+  if (!S.stack.length) S.stack.push({ app: 'msg', id: null });
   S.stack.push({ app: 'msg', id });
   S.autoBottom = true;
   refresh();
 }
 
 // ───────── S1 진행 ─────────
-function startGame() {
+function startPrologue() {
+  S.phase = 'prologue';
+  refresh();
+  playCine('CN-00', startS1);
+}
+function startS1() {
   S.phase = 's1';
-  S.black = true;
   S.clock = [2, 47];
   S.unlocked = false;
   S.stack = [];
+  S.navAnim = 'phoneup';                           // 복도 스틸 위로 폰이 올라온다 (S01.md 2장)
   refresh();
-  later(2000, () => { S.black = false; refresh(); }, 'boot');
-  later(10000, jihoonEvent, 'ev');                 // S1 EV.S01.01 지훈 3연발 (실시간 10초)
+  later(10000, jihoonEvent, 'ev');                 // EV.S01.01: 잠금화면이 올라온 순간부터 실시간 10초
   later(90000, () => nudgeJihoon90(), 'nudge1');
   later(180000, () => nudgeJihoon180(), 'nudge1');
   later(300000, () => { if (S.phase === 's1') showMono('…지훈이.'); }, 'nudge1');
-  later(450000, () => { if (S.phase === 's1' && !S.jihoonOpened) openThread('jihoon'); }, 'nudge1');
-  refresh();
+  later(450000, () => { if (S.phase === 's1' && !S.jihoonOpened) { S.unlocked = true; openThread('jihoon'); } }, 'nudge1');
 }
 function jihoonEvent() {
   if (S.jihoonEventDone || S.phase !== 's1') return;
   S.jihoonEventDone = true;
   const lines = ['아저씨 자고 계세요', '도현이가 말하지 말라고 했는데요', '저 할 말 있어요'];
-  lines.forEach((t, i) => later(i * 1000, () => addMsg('jihoon', nowMsg('them', t))));
+  lines.forEach((t, i) => later(i * 1000, () => {
+    addMsg('jihoon', nowMsg('them', t));
+    // 이미 지훈 스레드를 보고 있었다면 세 번째 문자가 도착한 순간이 '열람'이다
+    const top = S.stack[S.stack.length - 1];
+    if (i === lines.length - 1 && S.phase === 's1' && top && top.app === 'msg' && top.id === 'jihoon') startS2('msg');
+  }));
   refresh();
 }
 function nudgeJihoon90() {
@@ -320,10 +340,15 @@ function endS2() {
     S.nav.push('성원고');
     S.flags['MO.02'] = true;
   }, 'end');
-  later(4500, () => { S.clock = [3, 30]; S.black = true; refresh(); later(1500, () => {
-    S.clock = [8, 40]; S.black = false; S.stack = []; S.unlocked = false; S.phase = 'done';
-    S.ov = { type: 'done' }; refresh();
-  }, 'end'); }, 'end');
+  later(4300, () => {
+    S.clock = [3, 30];
+    playCine('CN-01', () => {
+      S.clock = [8, 40]; S.stack = []; S.unlocked = false; S.phase = 'done';
+      S.navAnim = 'phoneup';
+      refresh();
+      later(1600, () => { S.ov = { type: 'done' }; refresh(); }, 'end');
+    });
+  }, 'end');
 }
 
 // ───────── 통화 ─────────
@@ -375,10 +400,115 @@ function endCall() {
   refresh();
 }
 
+// ───────── 화면 전환 ─────────
+// 현재 화면을 복제해 떠나는 애니메이션을 주고(ghost), 새 화면에는 들어오는 애니메이션을 준다.
+const GHOST = { home: 'ghost-close', homeSlow: 'ghost-close-slow', pop: 'ghost-pop', unlock: 'ghost-up' };
+function nav(type) {
+  S.navAnim = type;
+  const g = GHOST[type];
+  const cur = $('#root').firstElementChild;
+  if (!g || !cur) return;
+  const ghost = document.createElement('div');
+  ghost.className = `ghost ${g}`;
+  ghost.appendChild(cur.cloneNode(true));
+  $('#screen').insertBefore(ghost, $('#overlay'));
+  const kill = () => ghost.remove();
+  ghost.addEventListener('animationend', kill);
+  setTimeout(kill, 900);
+}
+function closeOv() {
+  if (!S.ov || S.ov.type === 'call') return;
+  const el = $('#overlay');
+  el.classList.add('closing');
+  setTimeout(() => { el.classList.remove('closing'); S.ov = null; refresh(); }, 230);
+}
+
+// ───────── 스틸컷 시네마틱 (docs/ui/cinematics.md) ─────────
+const IMG = { hall_night: 'img/hall_night.jpg' };
+const CINE = {
+  'CN-00': { skip: true, cuts: [
+    { text: '2026년 3월 18일 수요일', dur: 2800 },
+    { img: 'hall_night', origin: '50% 55%', from: 'scale(1.02)', to: 'scale(1.1) translateY(1%)', dur: 5600, stamp: '02:47' },
+    { img: 'hall_night', origin: '47% 74%', from: 'scale(2.2)', to: 'scale(2.35)', dur: 4200, stamp: '02:47' },
+  ] },
+  'CN-01': { skip: true, cuts: [
+    { img: 'hall_night', origin: '47% 74%', from: 'scale(2.35)', to: 'scale(1.7)', dur: 4200, stamp: '03:30' },
+    { roll: ['03:30', '08:40'], dur: 2800 },
+    { img: 'hall_night', filter: 'morning', origin: '50% 55%', from: 'scale(1.0)', to: 'scale(1.06)', dur: 4400, stamp: '08:40' },
+  ] },
+};
+const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function playCine(id, done) {
+  const c = CINE[id];
+  S.cine = { id, i: -1, done };
+  S.flags[id] = true;
+  const el = $('#cine');
+  el.className = 'cine show';
+  el.innerHTML = `${c.skip ? '<button class="skip" data-act="skipCine">건너뛰기</button>' : ''}<div class="tap">탭하면 다음 장면</div>`;
+  el.dataset.act = 'cineTap';
+  nextCut();
+}
+function nextCut() {
+  if (!S.cine) return;
+  clearGroup('cine');
+  const c = CINE[S.cine.id];
+  S.cine.i += 1;
+  if (S.cine.i >= c.cuts.length) return endCine();
+  const cut = c.cuts[S.cine.i];
+  const el = $('#cine');
+  const div = document.createElement('div');
+  div.className = 'cut';
+  if (cut.img) {
+    const kb = document.createElement('div');
+    kb.className = `kb ${cut.filter || ''}`;
+    kb.style.backgroundImage = `url(${IMG[cut.img]})`;
+    kb.style.transformOrigin = cut.origin || '50% 50%';
+    kb.style.transform = REDUCED ? cut.to : cut.from;
+    div.appendChild(kb);
+    if (!REDUCED) requestAnimationFrame(() => requestAnimationFrame(() => {
+      kb.style.transition = `transform ${cut.dur + 1400}ms cubic-bezier(.3,.1,.4,1)`;
+      kb.style.transform = cut.to;
+    }));
+  }
+  if (cut.text) div.insertAdjacentHTML('beforeend', `<div class="txt">${esc(cut.text)}</div>`);
+  if (cut.stamp) div.insertAdjacentHTML('beforeend', `<div class="stamp">${esc(cut.stamp)}</div>`);
+  if (cut.roll) {
+    div.insertAdjacentHTML('beforeend', `<div class="roll">${cut.roll[0]}</div>`);
+    const toMin = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+    const a = toMin(cut.roll[0]); const b = toMin(cut.roll[1]);
+    const t0 = performance.now(); const span = Math.min(1900, cut.dur - 600) / SPEED;
+    const rollEl = div.querySelector('.roll');
+    const tick = (now) => {
+      const k = Math.min(1, (now - t0) / span);
+      const e = 1 - Math.pow(1 - k, 3);
+      const v = Math.round(a + (b - a) * e);
+      rollEl.textContent = `${pad(Math.floor(v / 60))}:${pad(v % 60)}`;
+      if (k < 1 && rollEl.isConnected) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+  el.appendChild(div);
+  requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('on')));
+  const olds = [...el.querySelectorAll('.cut')].slice(0, -1);
+  setTimeout(() => olds.forEach((o) => o.remove()), 1400);
+  later(cut.dur, nextCut, 'cine');
+}
+function endCine() {
+  if (!S.cine) return;
+  clearGroup('cine');
+  const done = S.cine.done;
+  S.cine = null;
+  const el = $('#cine');
+  delete el.dataset.act;
+  done();
+  el.classList.add('out');
+  setTimeout(() => { el.className = 'cine'; el.innerHTML = ''; }, 820);
+}
+
 // ───────── 렌더: 상태바 ─────────
 function renderStatus() {
   const el = $('#status');
-  const hide = S.phase === 'title';
+  const hide = ['notice', 'title', 'prologue'].includes(S.phase);
   el.style.display = hide ? 'none' : '';
   if (hide) return;
   el.innerHTML = `<span>${clockStr()}</span><span class="r"><span class="sig"><i></i><i></i><i></i><i></i></span><svg class="wifi" viewBox="0 0 16 12"><path d="M8 2.2c2.4 0 4.6.9 6.2 2.5l1.3-1.3A10.6 10.6 0 0 0 8 .4C5.1.4 2.4 1.5.5 3.4l1.3 1.3A8.8 8.8 0 0 1 8 2.2zm0 3.6c1.4 0 2.7.5 3.6 1.4l1.3-1.3A6.9 6.9 0 0 0 8 4c-1.9 0-3.6.7-4.9 1.9l1.3 1.3c1-.9 2.2-1.4 3.6-1.4zM8 9.4 9.7 11a2.4 2.4 0 0 0-3.4 0z"/></svg><span class="bat"><span class="lvl" style="width:10px"></span>41</span></span>`;
@@ -415,6 +545,9 @@ function homeHTML() {
   <div class="search"><svg viewBox="0 0 12 12"><circle cx="5" cy="5" r="3.6"/><path d="M7.7 7.7 11 11"/></svg>검색</div>
   <div class="dock">${dock}</div>`;
 }
+function noticeHTML() {
+  return `<div class="notice"><div><p>이 게임에는 약물 범죄, 채무, 실종을 다루는 내용이 포함되어 있습니다.</p><p>소리를 켜고, 이어폰을 권합니다.</p><button data-act="noticeOk">계속</button></div></div>`;
+}
 function titleHTML() {
   return `<div class="title"><div><h1>DONTKNOW</h1><p>튜토리얼 프로토타입 · S1–S2<br>아버지의 폰에서 시작한다</p><button data-act="start">시작</button></div></div>`;
 }
@@ -444,9 +577,10 @@ function threadHTML(id) {
     if (i === divAt) body += `<div class="newmark">읽지 않은 메시지 ${th.divider}개</div>`;
     if (m.from === 'sys') { body += `<div class="sysline">${esc(m.text)}</div>`; return; }
     if (m.d !== lastD) { body += `<div class="stamp"><b>${esc(m.d)}</b> ${esc(m.t)}</div>`; lastD = m.d; }
-    body += `<div class="row-msg ${m.from === 'me' ? 'me' : ''}"><div class="bub">${esc(m.text)}</div></div>`;
+    body += `<div class="row-msg ${m.from === 'me' ? 'me' : ''}"><div class="bub ${m.fresh ? 'pop' : ''}">${esc(m.text)}</div></div>`;
+    m.fresh = false;
   });
-  if (id === 'jihoon' && S.s2.typing && S.s2.mode === 'msg') body += `<div class="row-msg"><div class="bub typing">···</div></div>`;
+  if (id === 'jihoon' && S.s2.typing && S.s2.mode === 'msg') body += `<div class="row-msg"><div class="bub typing"><i></i><i></i><i></i></div></div>`;
   const contact = CT.find((c) => c.th === id);
   const right = contact && contact.kind !== 'none' ? `<span data-act="dial" data-num="${contact.num}" style="display:grid;place-items:center;width:30px;height:30px">${ICON.phone.replace('<svg', '<svg style="width:22px;height:22px;stroke:none"')}</span>` : '';
   let field = '…'; let ready = false; let act = '';
@@ -578,7 +712,9 @@ function renderRoot() {
   const screen = $('#screen');
   const keep = [...root.querySelectorAll('[data-keep]')].map((el) => [el.dataset.keep, el.scrollTop]);
   let html; let cls = '';
-  if (S.phase === 'title') html = titleHTML();
+  if (S.phase === 'notice') html = noticeHTML();
+  else if (S.phase === 'title') html = titleHTML();
+  else if (S.phase === 'prologue') html = '<div class="blackfill"></div>';
   else if (!S.unlocked) { html = `<div class="lock" style="position:absolute;inset:0">${lockHTML()}</div>`; cls = 'lock'; }
   else if (!S.stack.length) { html = `<div class="home" style="position:absolute;inset:0">${homeHTML()}</div>`; cls = 'home'; }
   else { html = `<div class="view-wrap" style="position:absolute;inset:0;background:#fff">${appView(S.stack[S.stack.length - 1])}</div>`; }
@@ -586,16 +722,19 @@ function renderRoot() {
   if (root._h !== html) {
     root.innerHTML = html;
     root._h = html;
+    if (S.navAnim && root.firstElementChild) root.firstElementChild.classList.add(`anim-${S.navAnim === 'homeSlow' ? 'home' : S.navAnim}`);
     keep.forEach(([k, v]) => { const el = root.querySelector(`[data-keep="${k}"]`); if (el) el.scrollTop = v; });
   }
+  S.navAnim = null;
   if (S.autoBottom) {
     const th = root.querySelector('[data-keep="thread"]');
     if (th) th.scrollTop = th.scrollHeight;
     S.autoBottom = false;
   }
   const hi = $('#homeind');
-  hi.disabled = !S.unlocked || S.phase === 'title';
-  hi.style.display = S.phase === 'title' ? 'none' : '';
+  const meta = ['notice', 'title', 'prologue'].includes(S.phase);
+  hi.disabled = !S.unlocked || meta;
+  hi.style.display = meta ? 'none' : '';
 }
 
 // ───────── 렌더: 오버레이 ─────────
@@ -607,7 +746,7 @@ function callHTML() {
   let subs = '';
   if (c.state === 'talk') {
     const last = c.lines.slice(-3);
-    subs = last.map((l, i) => `<div class="sub ${l.who === 'me' ? 'me' : ''} ${i < last.length - 1 ? 'old' : ''}">${l.who === 'me' ? '나: ' : ''}${esc(l.text)}</div>`).join('');
+    subs = last.map((l, i) => `<div class="sub ${l.who === 'me' ? 'me' : ''} ${i < last.length - 1 ? 'old' : 'fresh'}">${l.who === 'me' ? '나: ' : ''}${esc(l.text)}</div>`).join('');
   }
   let choices = '';
   const w = S.s2.waiting;
@@ -627,7 +766,6 @@ function callHTML() {
 function renderOv() {
   const el = $('#overlay');
   let h = '';
-  if (S.black) h += '<div class="black"></div>';
   if (S.banner) h += `<div class="banner" data-act="bannerTap" data-id="${S.banner.id || ''}"><div class="appic" style="background:linear-gradient(#5EE07A,#2DBE4E)">${'<svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#fff"><path d="M12 3.5c5 0 9 3.3 9 7.5s-4 7.5-9 7.5c-1 0-2-.1-2.9-.4L4.5 20l1.2-3.6C4 15 3 13.1 3 11c0-4.2 4-7.5 9-7.5z"/></svg>'}</div><div><div class="t">${esc(S.banner.title)}</div><div class="b">${esc(S.banner.body)}</div></div><div class="time">지금</div></div>`;
   if (S.mono) h += `<div class="mono"><span>${esc(S.mono)}</span></div>`;
   const ov = S.ov;
@@ -674,18 +812,21 @@ function refresh() {
 // ───────── 입력 ─────────
 function act(name, el) {
   switch (name) {
-    case 'start': return startGame();
+    case 'noticeOk': S.phase = 'title'; return refresh();
+    case 'start': return startPrologue();
+    case 'skipCine': return endCine();
+    case 'cineTap': return nextCut();
     case 'reset': return location.reload();
-    case 'unlock': S.unlocked = true; S.stack = []; return refresh();
-    case 'home': if (S.unlocked) { S.stack = []; S.ov = S.ov && S.ov.type === 'done' ? S.ov : null; refresh(); } return;
+    case 'unlock': if (S.unlocked) return; nav('unlock'); S.unlocked = true; S.stack = []; return refresh();
+    case 'home': if (S.unlocked && S.stack.length) { nav('home'); S.stack = []; S.ov = S.ov && S.ov.type === 'done' ? S.ov : null; refresh(); } return;
     case 'open': {
       const app = el.dataset.app;
-      if (!S.unlocked) S.unlocked = true;
+      if (!S.unlocked) { nav('unlock'); S.unlocked = true; } else nav('open');
       S.stack.push({ app, id: null });
       if (app === 'phone') S.tab = 'recent';
       return refresh();
     }
-    case 'back': S.stack.pop(); return refresh();
+    case 'back': nav(S.stack.length > 1 ? 'pop' : 'home'); S.stack.pop(); return refresh();
     case 'thread': return openThread(el.dataset.id);
     case 'compose': {
       const id = el.dataset.id;
@@ -700,7 +841,7 @@ function act(name, el) {
       addMsg('dispatch', nowMsg('me', q));
       return;
     }
-    case 'closeov': if (S.ov && S.ov.type !== 'done') { S.ov = null; refresh(); } return;
+    case 'closeov': return closeOv();
     case 'dial': return dial(el.dataset.num);
     case 'accept': {
       S.ov = null;
@@ -708,23 +849,24 @@ function act(name, el) {
       if (S.phase === 's2' && S.s2.mode === 'msg') return switchToCall();
       return refresh();
     }
-    case 'decline': if (S.ov && S.ov.type === 'incoming') { S.ov = null; refresh(); } return;
+    case 'decline': if (S.ov && S.ov.type === 'incoming') closeOv(); return;
     case 'hangup': return endCall();
     case 'bannerTap': {
       const id = el.dataset.id;
       S.banner = null;
-      if (id) return openThread(id);
+      if (id) { if (!S.unlocked) { nav('unlock'); S.unlocked = true; S.stack = []; } return openThread(id); }
       return refresh();
     }
     case 'tab': S.tab = el.dataset.tab; return refresh();
     case 'key': S.digits += el.dataset.k; return refresh();
     case 'keycall': if (S.digits) { const n = S.digits; S.digits = ''; return dial(n); } return;
-    case 'contact': S.stack.push({ app: 'contacts', id: el.dataset.id }); return refresh();
-    case 'photo': S.stack.push({ app: 'photos', id: Number(el.dataset.i) }); return refresh();
-    case 'newnote': S.stack.push({ app: 'memo', id: 'new' }); return refresh();
+    case 'contact': nav('push'); S.stack.push({ app: 'contacts', id: el.dataset.id }); return refresh();
+    case 'photo': nav('push'); S.stack.push({ app: 'photos', id: Number(el.dataset.i) }); return refresh();
+    case 'newnote': nav('push'); S.stack.push({ app: 'memo', id: 'new' }); return refresh();
     case 'savenote': {
       const v = ($('#memo-input') || {}).value || '';
       if (v.trim()) S.notes.unshift({ text: v.trim(), d: '3월 18일' });
+      nav('pop');
       S.stack.pop();
       S.memoDraft = '';
       return refresh();
@@ -737,7 +879,7 @@ function act(name, el) {
       return;
     }
     case 'startnav': return showMono('안내는 다음 단계에서 붙는다.');
-    case 'route': S.stack.push({ app: 'map', id: 'route' }); return refresh();
+    case 'route': nav('push'); S.stack.push({ app: 'map', id: 'route' }); return refresh();
     case 'open-route': return;
     default: return;
   }
@@ -747,14 +889,14 @@ document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-act]');
   if (!el) return;
   if (el.disabled) return;
-  if (el.dataset.act === 'home' && (!S.unlocked || S.phase === 'title')) return;
+  if (el.dataset.act === 'home' && (!S.unlocked || ['notice', 'title', 'prologue'].includes(S.phase))) return;
   e.stopPropagation();
   act(el.dataset.act, el);
 });
 
 // 잠금화면: 위로 쓸기
 let dragY = null;
-$('#screen').addEventListener('pointerdown', (e) => { if (S.phase !== 'title' && !S.unlocked) dragY = e.clientY; });
+$('#screen').addEventListener('pointerdown', (e) => { if (['s1', 's2', 's2end', 'done'].includes(S.phase) && !S.unlocked && !S.cine) dragY = e.clientY; });
 $('#screen').addEventListener('pointerup', (e) => {
   if (dragY !== null && e.clientY - dragY < -50) act('unlock');
   dragY = null;
@@ -775,9 +917,9 @@ function fitDevice() {
 window.addEventListener('resize', fitDevice);
 fitDevice();
 
-S.phase = 'title';
+S.phase = 'notice';
 refresh();
 
 // 테스트 훅 (디버그 시에만)
-if (DEBUG) window.__tut = { S, T, choose, startGame, refresh };
+if (DEBUG) window.__tut = { S, T, choose, startPrologue, refresh, playCine };
 })();

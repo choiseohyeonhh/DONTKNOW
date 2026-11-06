@@ -108,6 +108,11 @@ First-person view of a teenage boy's bedroom in the dark. A neatly made bed, a s
 
 ### 2.2 학교 (S3)
 
+**ART.cine.hall_morning** — CN-01 · 9:16 · P1 · *(home_hall_night와 같은 구도)*
+```
+Same composition as the night hallway: first-person view in an apartment hallway, a closed bedroom door straight ahead with the gap under it still dark. It is 8:40 a.m.: flat, cloudy morning light from the living-room window at the far end, pale grey-blue, no sun patches. Slippers in the same place, shoe-cabinet corner, light switch, pale photo frame. Nothing moved since the night. Quiet, tired, nobody visible.
+```
+
 **ART.scene.school_gate** — 9:16 · P1
 ```
 First-person view standing before a Korean high-school main gate on an overcast morning around 8:40. Iron sliding gate partly open, a concrete gatepost with a blank nameplate (no text), tall zelkova trees casting soft shadows on the ground, an empty schoolyard beyond, a distant single faceless silhouette near the building entrance. Palette: fluorescent-white overcast #E8EEF0 with muted greens. Slightly nostalgic, slightly cold.

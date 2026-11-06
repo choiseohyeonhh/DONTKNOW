@@ -68,7 +68,7 @@ docs/
 │   ├── clues.md             locations.md          absence-dates.md
 │   ├── art-assets.md        art-prompts.md        audio-assets.md
 ├── ui/
-│   ├── visual-style.md  overlays.md  meta-screens.md
+│   ├── visual-style.md  overlays.md  meta-screens.md  cinematics.md  mockups.md
 │   ├── father-phone/
 │   │   ├── overview.md  phone.md  messages.md  talk.md  contacts.md
 │   │   ├── photos.md  navigation.md  bank.md  memo.md  settings.md  camera.md

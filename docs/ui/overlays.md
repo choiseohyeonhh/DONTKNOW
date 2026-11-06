@@ -48,7 +48,8 @@
 
 | ID | 내용 | 길이 |
 |---|---|---|
-| FS.timejump | 시계 롤링 + 암전 + 새 시각 | 2.5s |
+| FS.timejump | 시계 롤링 + 암전 + 새 시각. S2→S3는 CN-01이 흡수 | 2.5s |
+| FS.cine | 스틸컷 시네마틱(`ui/cinematics.md`) | 8~16s |
 | FS.device_switch | 기기 전환 | 0.4s |
 | FS.pin_silence | PIN 해제 후 정적(화면 유지, 입력 무시) | 2.0s |
 | FS.travel | 이동 화면(`ui/scenes/travel.md`) | 3~5s |

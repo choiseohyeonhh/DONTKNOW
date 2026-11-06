@@ -13,11 +13,11 @@ def data_uri(rel):
 
 html = (HERE / 'index.html').read_text(encoding='utf-8')
 css = (HERE / 'style.css').read_text(encoding='utf-8')
-for rel in ['fonts/PretendardVariable.woff2', 'img/wallpaper_toned.jpg', 'img/photo_family_2019.jpg', 'img/photo_father_son_2022.jpg', 'img/photo_graduation_gate.jpg']:
+for rel in ['fonts/PretendardVariable.woff2']:
     css = css.replace(rel, data_uri(rel))
 data_js = (HERE / 'data.js').read_text(encoding='utf-8')
 app_js = (HERE / 'app.js').read_text(encoding='utf-8')
-for rel in ['img/photo_family_2019.jpg', 'img/photo_father_son_2022.jpg', 'img/photo_graduation_gate.jpg']:
+for rel in ['img/photo_family_2019.jpg', 'img/photo_father_son_2022.jpg', 'img/photo_graduation_gate.jpg', 'img/hall_night.jpg']:
     app_js = app_js.replace(rel, data_uri(rel))
 html = html.replace('<link rel="stylesheet" href="style.css">', '<style>\n' + css + '\n</style>')
 html = html.replace('<script src="data.js"></script>', '<script>\n' + data_js + '\n</script>')
