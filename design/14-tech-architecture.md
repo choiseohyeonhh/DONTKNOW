@@ -24,7 +24,7 @@ game/
   js/
     core/
       state.js        단일 상태 트리, 변경 API, 이벤트 로그
-      clock.js        게임 시계(실시간×6, 수첩 열면 정지, 접근성 모드)
+      clock.js        게임 시계(실시간×5 — v6.1, 수첩 열면 정지, 접근성 모드)
       scheduler.js    EV 예약·조건 재평가·오프라인 대기열
       net.js          온라인/오프라인·동기화 적용(원격 삭제·지우기 실행)
       visibility.js   "지금 이 항목이 보이는가" 판정(층·온라인·삭제·게이트)
@@ -33,7 +33,7 @@ game/
       save.js         자동 저장·슬롯·버전 마이그레이션
     os/
       shell.js        잠금화면·홈·상태바·제어 센터·알림·검색 UI
-      apps/*.js       앱 18종(06 문서). 앱은 world 데이터만 읽고 state를 통해서만 바꾼다
+      apps/*.js       앱 25종(06·19 문서). 앱은 world 데이터만 읽고 state를 통해서만 바꾼다
     notebook/
       notebook.js     5탭 UI
       cards.js        카드 생성(facets·strength)
