@@ -1,5 +1,7 @@
 # DONTKNOW 문서 지도
 
+> **v6에서 대체됨(2026-11).** 이 폴더(v5.4)는 폐기된 설계로 보관만 한다. 현재 캐논은 [`design/`](../design/README.md)이다. 폐기·계승 목록은 `design/16-consistency-and-legacy.md`.
+
 > 캐논은 `bible.md`(v5.4) 하나다. 이 폴더의 나머지 문서는 전부 **bible을 구현 가능한 단위로 쪼갠 세부 설계**다.
 > 설계 문서와 bible이 충돌하면 bible이 이긴다. `review/canon-issues.md`의 ISSUE-01~34는 **전부 채택되어 bible v5.3에 반영**됐다(bible 0.1.3). 설계 문서 본문의 `[ISSUE-xx]` 태그는 그 결정의 출처 표시다.
 
