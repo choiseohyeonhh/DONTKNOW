@@ -6,12 +6,12 @@
 
 ## 읽는 법
 
-- **A**는 맨 위에 두고 중요도(치명 → 높음 → 보통) 순으로 정렬했다. 각 항목은 선택지·현재 가정·추천·영향 문서를 적는다. 추천은 결정이 아니다.
+- **A**는 맨 위에 두고 중요도(치명 → 높음 → 보통) 순으로 정렬했다. 각 항목은 선택지·현재 가정·추천·영향 문서를 적는다. **A 36건은 2026-11-09 추천안 채택으로 전부 결정됐다.**
 - **B**는 문서가 이미 정한 기본값이다. 구현자는 이 값으로 진행하고, 바꿀 때만 이 표를 갱신·통보한다.
 - **C**는 다른 문서에서 이미 해결됐거나 질문이 성립하지 않는 항목이다.
 - "치명" = 그대로 구현하면 캐논 모순이나 엔딩 판정 오류가 생기는 항목.
 
-총 **182개** 병합 항목: A 36 · B 125 · C 21.
+총 **182개** 병합 항목: A 36 · B 125 · C 21. **A 36건 전부 결정됨(2026-11-09, 추천안 채택).**
 
 ---
 
@@ -19,332 +19,368 @@
 
 ### 치명
 
-#### Q-OPEN-001 — 엔딩 B에서 번호판 신고(F-PLATE-SENT)를 배제하지 않는 문제 · **치명**
+#### Q-OPEN-001 — 엔딩 B에서 번호판 신고(F-PLATE-SENT)를 배제하지 않는 문제 · **치명** · 결정됨
 
 - 출처: [01-product/PROGRESSION_AND_ENDINGS.md:305](../01-product/PROGRESSION_AND_ENDINGS.md) · [06-execution/ACCEPTANCE_CRITERIA.md:309](../06-execution/ACCEPTANCE_CRITERIA.md)
 - 쟁점: B 조건은 `F-MAIL = deleted ∧ ¬(F-REC-SENT ∨ F-NAME-SENT)`라서, 번호판만 경찰에 보낸 뒤 예약 메일을 삭제하면 B가 된다. 그런데 6.4의 "위협 해소"에는 `F-PLATE-SENT`가 포함된다.
 - 선택지: ① 현행 유지(번호판 신고는 B를 막지 않는다) / ② B 조건에 `¬F-PLATE-SENT` 추가(위협 해소 3종 모두 B를 막는다) / ③ B를 "F-REC-SENT·F-NAME-SENT·F-PLATE-SENT가 모두 거짓"으로 재정의
 - 현재 가정: 현행(번호판 신고를 B에서 배제하지 않음).
 - 추천: ② — B는 "위협을 해소하지 않은 채 조용히 넘어간" 결말이므로, 번호판 신고도 해소로 보아 B를 막아야 6.4의 위협 해소 정의와 일치한다.
+- **결정(2026-11-09):** 추천안 채택 — ② B 조건에 `¬F-PLATE-SENT`를 추가한다(`F-MAIL = deleted ∧ ¬(F-REC-SENT ∨ F-NAME-SENT ∨ F-PLATE-SENT)`).
 - 영향 문서: `01-product/PROGRESSION_AND_ENDINGS.md` 6.4, `06-execution/ACCEPTANCE_CRITERIA.md` AC-059
 
-#### Q-OPEN-002 — 원격 지우기 뒤 녹음이 남아 있으면 엔딩 D가 나가지 않는 문제 · **치명**
+#### Q-OPEN-002 — 원격 지우기 뒤 녹음이 남아 있으면 엔딩 D가 나가지 않는 문제 · **치명** · 결정됨
 
 - 출처: [01-product/PROGRESSION_AND_ENDINGS.md:306](../01-product/PROGRESSION_AND_ENDINGS.md)
 - 쟁점: `F-WIPED`가 참이고 `F-REC`가 `synced`/`sent`이며 `F-LOC ≠ exact`이면 D의 세 번째 조건(`F-WIPED ∧ F-REC=lost ∧ F-LOC≠exact`)에 걸리지 않아 B/C로 떨어진다.
 - 선택지: ① 현행 유지(녹음 보존·송부는 D를 막는 유효한 대응) / ② `F-WIPED ∧ F-LOC≠exact`이면 F-REC와 무관하게 D / ③ D 조건에서 F-REC=lost를 빼고 F-WIPED만 본다
 - 현재 가정: 현행(D는 녹음이 유실됐을 때만).
 - 추천: ① — 녹음 보존·송부는 원격 지우기의 실질적 대응이고, 위치를 밝히지 못한 책임은 B/C의 서사로 남긴다.
+- **결정(2026-11-09):** 추천안 채택 — ① 현행 유지. 녹음 보존·송부는 D를 막는 유효한 대응이며, 위치 미확인 책임은 B/C의 서사로 남긴다.
 - 영향 문서: `01-product/PROGRESSION_AND_ENDINGS.md` 6.1·6.4, `03-features/MAIL_AND_CLOUD_SPECIFICATION.md`
 
-#### Q-OPEN-003 — V-11 결과 플래그가 F-NAME과 F-NAME-SENT로 갈리는 문제 · **치명**
+#### Q-OPEN-003 — V-11 결과 플래그가 F-NAME과 F-NAME-SENT로 갈리는 문제 · **치명** · 결정됨
 
 - 출처: [01-product/PROGRESSION_AND_ENDINGS.md:307](../01-product/PROGRESSION_AND_ENDINGS.md)
 - 쟁점: V-11의 결과 표기는 `F-NAME`인데 6.1 플래그 표에는 `F-NAME-SENT`만 있다. 엔딩 판정과 린터가 어느 이름을 읽어야 하는지 불명확하다.
 - 선택지: ① `F-NAME`은 `F-NAME-SENT`의 약칭(같은 플래그) / ② `F-NAME`을 별도 플래그로 추가 / ③ 모든 표기를 `F-NAME-SENT`로 통일
-- 현재 가정: 현행(V-11 표만 F-NAME).
+- 현재 가정: 현행(V-11 표만 약칭 표기).
 - 추천: ③ — 플래그 표가 단일 출처이므로 V-11 결과를 `F-NAME-SENT`로 고쳐 이름을 하나로 만든다.
+- **결정(2026-11-09):** 추천안 채택 — ③ 모든 표기를 `F-NAME-SENT`로 통일한다(`F-NAME` 단독 표기 제거).
 - 영향 문서: `01-product/ACTION_PROOF.md` V-11, `01-product/PROGRESSION_AND_ENDINGS.md` 6.1, 콘텐츠 린터
 
 ### 높음
 
-#### Q-OPEN-004 — 디자인 기둥 P1~P7의 충돌 우선순위 · **높음**
+#### Q-OPEN-004 — 디자인 기둥 P1~P7의 충돌 우선순위 · **높음** · 결정됨
 
 - 출처: [00-foundation/Bible.md:106](../00-foundation/Bible.md) · [00-foundation/PRODUCT_PRINCIPLES.md:75](../00-foundation/PRODUCT_PRINCIPLES.md)
 - 쟁점: P1~P7이 충돌할 때의 서열이 없다. 3.2의 후보 안(상황별 3개)은 확정이 아니다.
 - 선택지: ① 표 순서(P1→P7)를 그대로 우선순위로 / ② P4(모든 진실은 두 길 이상)를 최우선 / ③ 3.2의 상황별 후보 안 3개를 그대로 채택(P2/P4, P3/P4, P5/P1)
 - 현재 가정: 3.2의 상황별 후보 안(미확정).
 - 추천: ③ — 단일 서열은 P3/P4 충돌에서 진행 불능을 만들 수 있고, 이미 기둥별 예외 원칙이 문서화되어 있다.
+- **결정(2026-11-09):** 추천안 채택 — ③ 3.2의 상황별 후보 안 3개(P2/P4, P3/P4, P5/P1)를 그대로 채택한다. 단일 서열은 두지 않는다.
 - 영향 문서: `00-foundation/PRODUCT_PRINCIPLES.md` 3.2, `00-foundation/Bible.md`, 전체 설계 문서
 
-#### Q-OPEN-005 — 한결캐피탈(이상철) 괄호 안 이름의 의미 · **높음**
+#### Q-OPEN-005 — 한결캐피탈(이상철) 괄호 안 이름의 의미 · **높음** · 결정됨
 
 - 출처: [01-product/CHARACTERS.md:163](../01-product/CHARACTERS.md) · [01-product/EVIDENCE_LEDGER.md:244](../01-product/EVIDENCE_LEDGER.md) · [01-product/NARRATIVE_CANON.md:195](../01-product/NARRATIVE_CANON.md)
 - 쟁점: "한결캐피탈(이상철)"의 괄호가 채무자(아버지) 표기인지 수취인 표기인지 문면만으로 갈리지 않는다. E-83 상세는 "채무자 이상철"이다.
 - 선택지: ① 채무자(아버지) 표기로 통일 / ② 수취인 표기 / ③ 거래 표시는 "한결캐피탈", 괄호는 "채무자 이상철"로 분리
 - 현재 가정: 현행(괄호 병기, 상세는 채무자).
 - 추천: ③ — E-83 상세와 Bible 3장 5항("수수료가 한결캐피탈(이상철)로 갔다")이 아버지 빚 상환임을 가리킨다. 괄호를 채무자 이름으로 고정한다.
+- **결정(2026-11-09):** 추천안 채택 — ③ 거래 표시는 "한결캐피탈", 괄호는 "채무자 이상철"로 분리한다.
 - 영향 문서: `01-product/NARRATIVE_CANON.md` 핵심 진실 4, `01-product/CHARACTERS.md` P-01, `01-product/EVIDENCE_LEDGER.md` E-83
 
-#### Q-OPEN-006 — E-05 입금 19건과 아버지 자동이체 24회의 관계 · **높음**
+#### Q-OPEN-006 — E-05 입금 19건과 아버지 자동이체 24회의 관계 · **높음** · 결정됨
 
 - 출처: [01-product/EVIDENCE_LEDGER.md:243](../01-product/EVIDENCE_LEDGER.md)
 - 쟁점: E-05는 한결캐피탈 "입금 확인" 19건(입금자 "이도*")인데, 연대기의 아버지 자동이체는 24회(2024.03~2026.02)다.
 - 선택지: ① 19건은 도현 명의 입금, 24회는 아버지 자동이체로 별개 흐름 / ② 19건을 24회로 정정 / ③ 24회를 19회로 정정
 - 현재 가정: 현행(19건과 24회 병존).
 - 추천: ① — E-05 입금자는 "이도*"(도현), 연대기는 아버지 계좌다. 두 흐름을 합치지 않고 각각 남긴다.
+- **결정(2026-11-09):** 추천안 채택 — ① 19건은 도현 명의 입금, 24회는 아버지 자동이체로 별개 흐름이다.
 - 영향 문서: `01-product/EVIDENCE_LEDGER.md` E-05, `01-product/NARRATIVE_CANON.md` 3.1, `03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md`
 
-#### Q-OPEN-007 — F-MOVED 트리거의 우선순위(장소 입력 vs EV-27) · **높음**
+#### Q-OPEN-007 — F-MOVED 트리거의 우선순위(장소 입력 vs EV-27) · **높음** · 결정됨
 
 - 출처: [01-product/USER_FLOWS.md:194](../01-product/USER_FLOWS.md) · [03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md:333](../03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md)
 - 쟁점: DH≤2에서 해담·207·성원구청로 31을 입력하거나 EV-27(한끼 재주문)이 일어나면 F-MOVED가 된다. 두 조건이 겹칠 때의 순서·중복 처리가 없다.
 - 선택지: ① EV-27 우선 / ② 장소 입력 우선 / ③ 먼저 발생한 트리거를 1회만 적용(F-MOVED 불리언의 멱등 처리)
 - 현재 가정: 현행(미정).
 - 추천: ③ — F-MOVED는 불리언이고 도주는 1회 사건이므로, 동시 발생해도 "게임 60분 뒤 1회"로 처리하면 순서 문제가 사라진다.
+- **결정(2026-11-09):** 추천안 채택 — ③ 먼저 발생한 트리거를 1회만 적용한다(F-MOVED 불리언 멱등, 게임 60분 뒤 1회).
 - 영향 문서: `01-product/PROGRESSION_AND_ENDINGS.md` 4.1, `01-product/USER_FLOWS.md`, `03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md`, `03-features/MAPS_AND_MOBILITY_SPECIFICATION.md`
 
-#### Q-OPEN-008 — 단톡 글 시각 3/16과 EV-41 3/17 22:30의 불일치 · **높음**
+#### Q-OPEN-008 — 단톡 글 시각 3/16과 EV-41 3/17 22:30의 불일치 · **높음** · 결정됨
 
 - 출처: [02-design/SCREEN_SPECIFICATIONS.md:2035](../02-design/SCREEN_SPECIFICATIONS.md) · [03-features/MESSAGING_SPECIFICATION.md:214, 428](../03-features/MESSAGING_SPECIFICATION.md)
 - 쟁점: MESSAGING 3.8은 단톡 "경영 26 새내기"의 글 "도현이 휴학한대?"를 3/16으로, PROGRESSION EV-41은 3/17 22:30으로 적는다.
 - 선택지: ① EV-41의 3/17 22:30을 정본으로 하고 방 표를 정정 / ② 3/16을 정본으로 하고 EV-41을 정정 / ③ 3/16 기존 글 + 3/17 새 글 2건으로 분리
 - 현재 가정: 현행(문서마다 다름).
 - 추천: ① — EV 표가 게임 중 사건의 단일 출처이고, 3/17 밤 사건군(EV-40·42·44)과도 일관된다.
+- **결정(2026-11-09):** 추천안 채택 — ① EV-41의 3/17 22:30을 정본으로 하고 메신저 방 표를 정정한다.
 - 영향 문서: `03-features/MESSAGING_SPECIFICATION.md` 3.8, `01-product/PROGRESSION_AND_ENDINGS.md` EV-41, `02-design/SCREEN_SPECIFICATIONS.md` 채팅 목록
 
-#### Q-OPEN-009 — 지훈 스토리 3/15와 EV-40 3/17 21:40의 관계 · **높음**
+#### Q-OPEN-009 — 지훈 스토리 3/15와 EV-40 3/17 21:40의 관계 · **높음** · 결정됨
 
 - 출처: [03-features/SNS_SPECIFICATION.md:184, 391, 538](../03-features/SNS_SPECIFICATION.md)
 - 쟁점: SNS 8.5는 지훈의 보관 스토리 "…"를 3/15로, PROGRESSION EV-40은 3/17 21:40 스토리 "…"(검은 화면)로 적는다.
 - 선택지: ① EV-40의 3/17 21:40 단일 스토리 / ② 3/15 보관 스토리 + 3/17 새 스토리 2건 / ③ 3/15을 정본으로 하고 EV-40 삭제
 - 현재 가정: 현행(8.5 표 3/15 + EV-40 별도 사건).
 - 추천: ② — "24시간 지난 보관"과 "게임 중 새 스토리"는 다른 상태이고, 조회 흔적도 각각 남아야 한다.
+- **결정(2026-11-09):** 추천안 채택 — ② 3/15 보관 스토리 + 3/17 새 스토리 2건으로 둔다(조회 흔적 각각).
 - 영향 문서: `03-features/SNS_SPECIFICATION.md` 8.5, `01-product/PROGRESSION_AND_ENDINGS.md` EV-40, `01-product/TRACES_AND_REACTIONS.md`
 
-#### Q-OPEN-010 — 게임 시간 배율(×4 / ×5 / 행동 단위) · **높음**
+#### Q-OPEN-010 — 게임 시간 배율(×4 / ×5 / 행동 단위) · **높음** · 결정됨
 
 - 출처: [IMPLEMENTATION_ROADMAP](IMPLEMENTATION_ROADMAP.md) 열린 결정 표
 - 쟁점: design/15 5절의 열린 결정. 17 문서는 ×4를 추천하지만 확정은 아니다.
 - 선택지: ① ×4 + 옵션 / ② ×5 / ③ 행동 단위
 - 현재 가정: ×4 + 옵션(design/15 5절 추천, 일반 165분 → 07:50 종료).
 - 추천: ① — 화면을 읽는 시간도 흐르므로 ×5는 일반 165분 목표를 넘긴다.
+- **결정(2026-11-09):** 추천안 채택 — ① ×4 + 옵션. 일반 165분 → 07:50 종료.
 - 영향 문서: `01-product/BUSINESS_RULES.md`, `01-product/PLAYTIME_BUDGET.md`, `04-tech/STATE_MANAGEMENT.md`, [IMPLEMENTATION_ROADMAP](IMPLEMENTATION_ROADMAP.md) 열린 결정 표(구 15 문서 5절)
 
-#### Q-OPEN-011 — 해담 근거의 최소 노출 수(T2 6곳 vs 4곳) · **높음**
+#### Q-OPEN-011 — 해담 근거의 최소 노출 수(T2 6곳 vs 4곳) · **높음** · 결정됨
 
 - 출처: [IMPLEMENTATION_ROADMAP](IMPLEMENTATION_ROADMAP.md) 열린 결정 표
 - 쟁점: design/15 5절의 열린 결정. 진짜 은신처 해담고시텔 207의 T2 근거를 몇 곳까지 둘지.
 - 선택지: ① 6곳 유지 / ② 4곳으로 줄임 / ③ 2곳으로 줄임
 - 현재 가정: 6곳 유지(design/15 5절 추천).
 - 추천: ① — 미끼(청운 304)를 쓴 대가로 진짜 위치는 P4(모든 진실은 두 길 이상)에 맞게 넉넉히 둔다.
+- **결정(2026-11-09):** 추천안 채택 — ① T2 6곳 유지.
 - 영향 문서: `01-product/LOCATIONS.md` 5절, `01-product/EVIDENCE_LEDGER.md`, 콘텐츠 린터
 
-#### Q-OPEN-012 — 원격 지우기 후 엔딩 연출(즉시 vs 1분) · **높음**
+#### Q-OPEN-012 — 원격 지우기 후 엔딩 연출(즉시 vs 1분) · **높음** · 결정됨
 
 - 출처: [IMPLEMENTATION_ROADMAP](IMPLEMENTATION_ROADMAP.md) 열린 결정 표
 - 쟁점: design/15 5절의 열린 결정. EV-08 원격 지우기가 일어난 뒤 엔딩까지의 연출.
 - 선택지: ① 즉시 엔딩 판정 / ② 초기 설정 화면에서 1분 머문 뒤 엔딩 / ③ 설정 화면에서 추가 조작을 허용한 뒤 엔딩
 - 현재 가정: 초기 설정 화면에서 1분 머문 뒤(design/15 5절 추천).
 - 추천: ② — "안녕하세요" 초기 설정 화면의 정적이 이 엔딩의 연출이다.
+- **결정(2026-11-09):** 추천안 채택 — ② 초기 설정 화면에서 1분 머문 뒤 엔딩.
 - 영향 문서: `01-product/PROGRESSION_AND_ENDINGS.md` 6.4, `03-features/MAIL_AND_CLOUD_SPECIFICATION.md` 5절, `03-features/SYSTEM_SHELL_SPECIFICATION.md` 시네마틱
 
-#### Q-OPEN-013 — 정체 숨김 분기의 MVP 포함 여부 · **높음**
+#### Q-OPEN-013 — 정체 숨김 분기의 MVP 포함 여부 · **높음** · 결정됨
 
 - 출처: [01-product/FEATURE_SPECIFICATION.md:112](../01-product/FEATURE_SPECIFICATION.md) · [06-execution/DEVELOPMENT_PHASES.md:146](../06-execution/DEVELOPMENT_PHASES.md) · [IMPLEMENTATION_ROADMAP](IMPLEMENTATION_ROADMAP.md) 열린 결정 표
 - 쟁점: design/15 5절의 열린 결정. 부계정·하린과 묶인 정체 숨김 분기(′ 상태)를 MVP에 넣을지.
 - 선택지: ① MVP 포함 / ② 본편(P8)으로 미룸
 - 현재 가정: 본편(P8).
 - 추천: ② — 부계정·하린 대화와 함께 묶여 있고 MVP 96분 계산 밖이다.
+- **결정(2026-11-09):** 추천안 채택 — ② 본편(P8)으로 미룬다.
 - 영향 문서: `01-product/FEATURE_SPECIFICATION.md` FEAT-61~67, `06-execution/IMPLEMENTATION_ROADMAP.md`, `03-features/SNS_SPECIFICATION.md`, `03-features/MAIL_AND_CLOUD_SPECIFICATION.md`
 
-#### Q-OPEN-014 — 루프 부계정(@dontknow__)의 MVP 포함 여부 · **높음**
+#### Q-OPEN-014 — 루프 부계정(@dontknow__)의 MVP 포함 여부 · **높음** · 결정됨
 
 - 출처: [01-product/FEATURE_SPECIFICATION.md:112](../01-product/FEATURE_SPECIFICATION.md) · [06-execution/DEVELOPMENT_PHASES.md:146](../06-execution/DEVELOPMENT_PHASES.md) · [IMPLEMENTATION_ROADMAP](IMPLEMENTATION_ROADMAP.md) 열린 결정 표
 - 쟁점: design/15 5절의 열린 결정. G-04 부계정 로그인과 부계정 게시물 열람을 MVP에 넣을지.
 - 선택지: ① MVP 포함 / ② 본편(P8)으로 미룸
 - 현재 가정: 본편(P8).
 - 추천: ② — 부계정 경로는 EV-09·EV-10·TR-10과 정체 숨김 분기를 함께 끌고 와 MVP 범위를 넘는다.
+- **결정(2026-11-09):** 추천안 채택 — ② 본편(P8)으로 미룬다.
 - 영향 문서: `01-product/FEATURE_SPECIFICATION.md` FEAT-61~67, `06-execution/IMPLEMENTATION_ROADMAP.md`, `03-features/SNS_SPECIFICATION.md`
 
-#### Q-OPEN-015 — 플레이어의 리포스트·인용·답글·새 게시물 발행에 대한 NPC 반응 · **높음**
+#### Q-OPEN-015 — 플레이어의 리포스트·인용·답글·새 게시물 발행에 대한 NPC 반응 · **높음** · 결정됨
 
 - 출처: [02-design/SCREEN_SPECIFICATIONS_SNS_SETTINGS.md:1844](../02-design/SCREEN_SPECIFICATIONS_SNS_SETTINGS.md) · [03-features/SNS_SPECIFICATION.md:76, 210, 226, 541](../03-features/SNS_SPECIFICATION.md)
 - 쟁점: 플레이어의 공개 반응을 TR-14 계열 흔적으로 처리하고 새 NPC 대사를 만들지 않는다. 새 게시물 발행도 같은 규칙으로 둘지, 발행 자체를 막을지 정해야 한다.
 - 선택지: ① 발행·리포스트·인용·답글 모두 허용, 새 NPC 반응 없이 TR-14 계열 흔적만 / ② 발행만 허용, 리포스트·인용은 막음 / ③ 공개 반응·발행을 모두 막음
 - 현재 가정: ①(발행 허용, 새 NPC 반응·단서·플래그 없음).
 - 추천: ① — P3("보는 것도 흔적")을 지키되 새 대사를 만들지 않아 앎 매트릭스와 분량 리스크를 피한다.
+- **결정(2026-11-09):** 추천안 채택 — ① 발행·리포스트·인용·답글 모두 허용, 새 NPC 반응 없이 TR-14 계열 흔적만.
 - 영향 문서: `03-features/SNS_SPECIFICATION.md` 4.1·8, `01-product/TRACES_AND_REACTIONS.md` TR-14, 콘텐츠 린터, `01-product/PROGRESSION_AND_ENDINGS.md`
 
-#### Q-OPEN-016 — 잠금화면 알림 미리보기와 설정 기본값의 충돌 · **높음**
+#### Q-OPEN-016 — 잠금화면 알림 미리보기와 설정 기본값의 충돌 · **높음** · 결정됨
 
 - 출처: [03-features/SYSTEM_SHELL_SPECIFICATION.md:84, 461](../03-features/SYSTEM_SHELL_SPECIFICATION.md)
 - 쟁점: SYSTEM_SHELL·BUSINESS_RULES는 잠금화면에서 메시지·톡·메일·은행 첫 줄을 보여 준다고 하고, SETTINGS 7절은 나머지를 "잠금 해제 시"로 둔다.
 - 선택지: ① 잠금화면에서 메시지·톡·메일·은행 첫 줄, 블링크·루프 DM은 "새 메시지" / ② 전부 "잠금 해제 시" / ③ 앱별 설정 기본값을 전부 "안 함"
 - 현재 가정: ①(설정의 "잠금 해제 시"는 해제 후 알림 센터 표시 규칙으로 해석).
 - 추천: ① — 프롤로그의 핵심 정보(은행 지급정지·경찰·지훈)가 잠금화면에서 보여야 첫 동기가 생긴다.
+- **결정(2026-11-09):** 추천안 채택 — ① 잠금화면에서 메시지·톡·메일·은행 첫 줄, 블링크·루프 DM은 "새 메시지".
 - 영향 문서: `03-features/SYSTEM_SHELL_SPECIFICATION.md` 3·4절, `03-features/SETTINGS_SPECIFICATION.md` 7절, `01-product/BUSINESS_RULES.md` 9절
 
-#### Q-OPEN-017 — 다크 모드의 플레이어 전환 허용 여부 · **높음**
+#### Q-OPEN-017 — 다크 모드의 플레이어 전환 허용 여부 · **높음** · 결정됨
 
 - 출처: [00-foundation/REQUIREMENTS.md:145](../00-foundation/REQUIREMENTS.md) · [03-features/SETTINGS_SPECIFICATION.md:455](../03-features/SETTINGS_SPECIFICATION.md) · [03-features/SYSTEM_SHELL_SPECIFICATION.md:75, 465](../03-features/SYSTEM_SHELL_SPECIFICATION.md)
 - 쟁점: 게임 시작 시 다크(도현의 설정)는 확정이다. 설정에서 라이트/다크/자동 전환을 플레이어가 바꿀 수 있는지는 열려 있다.
 - 선택지: ① 허용(스토리 영향 없음) / ② 시작 다크 고정(전환 불가) / ③ 허용하되 스토리 시점에 자동 복귀
 - 현재 가정: 허용·스토리 영향 없음.
 - 추천: ① — 접근성(대비·눈부심) 이점이 있고, 테마는 상태만 바꾸며 단서·플래그를 만들지 않는다.
+- **결정(2026-11-09):** 추천안 채택 — ① 허용(스토리 영향 없음).
 - 영향 문서: `03-features/SETTINGS_SPECIFICATION.md`, `03-features/SYSTEM_SHELL_SPECIFICATION.md`, `02-design/ACCESSIBILITY.md`, 전체 화면 명세
 
-#### Q-OPEN-018 — 예약 메일(EV-21)의 오프라인 발송과 엔딩 판정 · **높음**
+#### Q-OPEN-018 — 예약 메일(EV-21)의 오프라인 발송과 엔딩 판정 · **높음** · 결정됨
 
 - 출처: [04-tech/BACKEND_ARCHITECTURE.md:171](../04-tech/BACKEND_ARCHITECTURE.md)
 - 쟁점: EV-21은 3/18 09:00 발송·엔딩 판정이다. 오프라인일 때 다음 온라인에 발송할지, 09:00에 발송된 것으로 간주해 판정할지 캐논이 명시적이지 않다.
 - 선택지: ① 서버에서 대기하다 다음 온라인에 발송 / ② 09:00에 발송된 것으로 간주하고 엔딩 판정 / ③ 오프라인이면 삭제와 동일하게 처리
 - 현재 가정: ①(서버 대기 → 다음 온라인 발송).
 - 추천: ② — 엔딩 판정 시각이 3/18 09:00으로 고정이므로, 오프라인 여부로 결말이 달라지면 안 된다.
+- **결정(2026-11-09):** 추천안 채택 — ② 3/18 09:00에 발송된 것으로 간주하고 엔딩을 판정한다.
 - 영향 문서: `04-tech/BACKEND_ARCHITECTURE.md`, `01-product/PROGRESSION_AND_ENDINGS.md` 3.2·6.4, `03-features/MAIL_AND_CLOUD_SPECIFICATION.md`
 
-#### Q-OPEN-019 — 일시정지 제스처와 단일 포인터 대체 · **높음**
+#### Q-OPEN-019 — 일시정지 제스처와 단일 포인터 대체 · **높음** · 결정됨
 
 - 출처: [02-design/ACCESSIBILITY.md:336, 388](../02-design/ACCESSIBILITY.md) · [02-design/INTERACTION_SPECIFICATIONS.md:413](../02-design/INTERACTION_SPECIFICATIONS.md) · [03-features/SYSTEM_SHELL_SPECIFICATION.md:189, 462](../03-features/SYSTEM_SHELL_SPECIFICATION.md)
 - 쟁점: 캐논은 일시정지를 "세 손가락 길게 / Esc"로 정의한다. 세 손가락은 WCAG 2.5.1의 단일 포인터 대체가 없고 모바일 브라우저·OS 제스처와 충돌할 수 있다.
 - 선택지: ① 세 손가락 500ms + 상태바 시각 1.5초 + Esc / ② 세 손가락만 / ③ 상태바 시각 길게 + Esc
 - 현재 가정: ①(세 손가락 + 상태바 시각 + Esc).
 - 추천: ① — 세 손가락을 유지하되 접근성·브라우저 충돌을 상태바 시각 길게로 우회한다.
+- **결정(2026-11-09):** 추천안 채택 — ① 세 손가락 500ms + 상태바 시각 1.5초 + Esc.
 - 영향 문서: `02-design/INTERACTION_SPECIFICATIONS.md`, `03-features/SYSTEM_SHELL_SPECIFICATION.md`, `02-design/ACCESSIBILITY.md`
 
-#### Q-OPEN-020 — 음성 메모 전사 퍼즐과 자막 접근성 · **높음**
+#### Q-OPEN-020 — 음성 메모 전사 퍼즐과 자막 접근성 · **높음** · 결정됨
 
 - 출처: [02-design/ACCESSIBILITY.md:302, 387](../02-design/ACCESSIBILITY.md)
 - 쟁점: 음성 메모 전사가 퍼즐(설정에서 켜야 함)인데, 접근성상 자막 기본 제공과 긴장 관계다.
 - 선택지: ① 퍼즐 유지 + 접근성 "자막 항상 켜기" 설정 추가 / ② 전사 기본 켜짐 / ③ 전사 없음
 - 현재 가정: ①(퍼즐 유지 + "자막 항상 켜기" 제안).
 - 추천: ① — 퍼즐을 유지하면서 접근성 설정으로 우회 경로를 제공한다.
+- **결정(2026-11-09):** 추천안 채택 — ① 퍼즐 유지 + 접근성 "자막 항상 켜기" 설정 추가.
 - 영향 문서: `02-design/ACCESSIBILITY.md`, `03-features/MEDIA_SPECIFICATION.md`, `03-features/PERSONAL_DATA_APPS_SPECIFICATION.md`, `02-design/SCREEN_SPECIFICATIONS_APPS.md`
 
-#### Q-OPEN-021 — 블링크 60초·잠금 30초 실시간 타이머의 기준과 일시정지 · **높음**
+#### Q-OPEN-021 — 블링크 60초·잠금 30초 실시간 타이머의 기준과 일시정지 · **높음** · 결정됨
 
 - 출처: [02-design/SCREEN_SPECIFICATIONS.md:2041](../02-design/SCREEN_SPECIFICATIONS.md) · [03-features/SECURE_MESSAGING_SPECIFICATION.md:238](../03-features/SECURE_MESSAGING_SPECIFICATION.md) · [04-tech/AUTHENTICATION_AND_SECURITY.md:244, 245](../04-tech/AUTHENTICATION_AND_SECURITY.md) · [04-tech/BACKEND_ARCHITECTURE.md:170](../04-tech/BACKEND_ARCHITECTURE.md) · [04-tech/DATABASE_SCHEMA.md:712](../04-tech/DATABASE_SCHEMA.md) · [04-tech/STATE_MANAGEMENT.md:492](../04-tech/STATE_MANAGEMENT.md)
 - 쟁점: 블링크 60초 삭제와 잠금 30초 대기가 실시간인지 게임 분 환산인지, 일시정지·시네마틱에서 멈추는지 캐논이 명시적이지 않다.
 - 선택지: ① 블링크 60초·잠금 30초 모두 실시간, 일시정지·시네마틱에서 정지 / ② 모두 게임 시계로 환산 / ③ 블링크만 실시간
 - 현재 가정: 실시간, 일시정지 시 정지(추천).
 - 추천: ① — "읽고 60초 뒤 삭제"의 체감과 잠금 대기의 목적을 지키고, 일시정지에서는 플레이어를 벌하지 않는다.
+- **결정(2026-11-09):** 추천안 채택 — ① 블링크 60초·잠금 30초 모두 실시간, 일시정지·시네마틱에서 정지.
 - 영향 문서: `03-features/SECURE_MESSAGING_SPECIFICATION.md`, `04-tech/AUTHENTICATION_AND_SECURITY.md`, `04-tech/BACKEND_ARCHITECTURE.md`, `04-tech/STATE_MANAGEMENT.md`, `04-tech/DATABASE_SCHEMA.md`
 
 ### 보통
 
-#### Q-OPEN-022 — P0/P1 화면 우선순위(잠금 키패드·앱 전환기·일시정지 하위·은행 로그인) · **보통**
+#### Q-OPEN-022 — P0/P1 화면 우선순위(잠금 키패드·앱 전환기·일시정지 하위·은행 로그인) · **보통** · 결정됨
 
 - 출처: [02-design/NAVIGATION_ARCHITECTURE.md:691](../02-design/NAVIGATION_ARCHITECTURE.md) · [02-design/SCREEN_SPECIFICATIONS.md:2032, 2033, 2040](../02-design/SCREEN_SPECIFICATIONS.md) · [02-design/SCREEN_SPECIFICATIONS_APPS.md:3355](../02-design/SCREEN_SPECIFICATIONS_APPS.md)
 - 쟁점: 인벤토리는 일부 화면을 P1로 두는데 작업 지시서는 P0 상세를 요구했다. 문서는 `P1*`(P1 유지, 상세만 P0 밀도)로 처리했다.
 - 선택지: ① P0로 승격 / ② P1 유지 + 상세만 P0 밀도 / ③ 별도 `P0*` 표기
 - 현재 가정: P1 유지 + 상세만 P0 밀도(34개 P0 집계 불변).
 - 추천: ② — 화면 인벤토리 우선순위와 P0 34개 집계를 흔들지 않는다.
+- **결정(2026-11-09):** 추천안 채택 — ② P1 유지 + 상세만 P0 밀도(34개 P0 집계 불변).
 - 영향 문서: `02-design/NAVIGATION_ARCHITECTURE.md` 3절, `02-design/SCREEN_SPECIFICATIONS.md`, `06-execution/ACCEPTANCE_CRITERIA.md`
 
-#### Q-OPEN-023 — 수동 슬롯·"다시 보기"의 MVP 포함 여부 · **보통**
+#### Q-OPEN-023 — 수동 슬롯·"다시 보기"의 MVP 포함 여부 · **보통** · 결정됨
 
 - 출처: [00-foundation/PROJECT_SCOPE.md:98](../00-foundation/PROJECT_SCOPE.md) · [01-product/FEATURE_SPECIFICATION.md:112, 114](../01-product/FEATURE_SPECIFICATION.md) · [06-execution/ACCEPTANCE_CRITERIA.md:307](../06-execution/ACCEPTANCE_CRITERIA.md)
 - 쟁점: MVP는 자동 저장만이고 수동 슬롯 3·"다시 보기"는 본편으로 분류했다. SYSTEM_SHELL·지시서는 자동+수동 3을 전제한다.
 - 선택지: ① MVP 제외(자동 저장만), 본편에서 수동 슬롯 3·다시 보기 / ② MVP에 수동 슬롯 3 포함 / ③ MVP에 수동 슬롯 1만 포함
 - 현재 가정: ①(자동 저장만).
 - 추천: ① — MVP 96분 계산과 일치하고, 저장 손실은 자동 저장으로 완화한다.
+- **결정(2026-11-09):** 추천안 채택 — ① MVP 제외(자동 저장만), 본편에서 수동 슬롯 3·다시 보기.
 - 영향 문서: `00-foundation/REQUIREMENTS.md`, `03-features/SYSTEM_SHELL_SPECIFICATION.md`, `01-product/FEATURE_SPECIFICATION.md` FEAT-54, `06-execution/ACCEPTANCE_CRITERIA.md` AC-062·064
 
-#### Q-OPEN-024 — E-102 "추천 부업" 카드의 추천 지면과 단서 판정 · **보통**
+#### Q-OPEN-024 — E-102 "추천 부업" 카드의 추천 지면과 단서 판정 · **보통** · 결정됨
 
 - 출처: [03-features/SNS_SPECIFICATION.md:70, 536](../03-features/SNS_SPECIFICATION.md)
 - 쟁점: 추천 지면에도 같은 크리에이티브가 뜨고, 단서 판정은 하이라이트에서만 한다. 두 서술의 관계를 확정해야 한다.
 - 선택지: ① 추천 지면=같은 크리에이티브의 광고, 단서 판정은 하이라이트만 / ② 추천 지면에서도 단서 판정 / ③ 추천 지면에서 제거
 - 현재 가정: ①(광고 지면과 단서 지면 분리).
 - 추천: ① — E-102의 중복 판정을 막고, 광고 노출과 단서 획득을 분리한다.
+- **결정(2026-11-09):** 추천안 채택 — ① 추천 지면은 같은 크리에이티브의 광고, 단서 판정은 하이라이트만.
 - 영향 문서: `03-features/SNS_SPECIFICATION.md` 4.1·8.5, `01-product/EVIDENCE_LEDGER.md` E-102
 
-#### Q-OPEN-025 — A-15 하린 글의 300자 초과 처리 · **보통**
+#### Q-OPEN-025 — A-15 하린 글의 300자 초과 처리 · **보통** · 결정됨
 
 - 출처: [03-features/SNS_SPECIFICATION.md:188, 537](../03-features/SNS_SPECIFICATION.md)
 - 쟁점: A-15는 계좌번호·피해 호소를 담아 300자를 넘을 수 있다. 글 게시물 300자 규칙과 충돌한다.
 - 선택지: ① "장문 글" 예외 허용 / ② 300자 안으로 압축 / ③ 스레드 2개로 분할
 - 현재 가정: 300자 규칙 + 초과 가능(미확정).
 - 추천: ② — 글 게시물 규칙을 예외 없이 유지하고 계좌·호소 문장만 남긴다.
+- **결정(2026-11-09):** 추천안 채택 — ② 300자 안으로 압축한다.
 - 영향 문서: `03-features/SNS_SPECIFICATION.md` 8.5, `01-product/EVIDENCE_LEDGER.md` E-47
 
-#### Q-OPEN-026 — 블링크 "이 기기에만 저장"과 읽음·캡처 신호 전송의 관계 · **보통**
+#### Q-OPEN-026 — 블링크 "이 기기에만 저장"과 읽음·캡처 신호 전송의 관계 · **보통** · 결정됨
 
 - 출처: [03-features/SECURE_MESSAGING_SPECIFICATION.md:237](../03-features/SECURE_MESSAGING_SPECIFICATION.md)
 - 쟁점: MAIL 1절의 "서버에서 대기: 블링크 미전송 읽음"과 "이 기기에만 저장"이 충돌해 보인다.
 - 선택지: ① 본문은 기기에만, 읽음·캡처 상태 신호만 전송(현행) / ② 완전 로컬(상태 신호도 다음 대화에) / ③ "서버 대기" 문구 삭제
 - 현재 가정: ①(문구는 "이 대화는 이 기기에만 저장됩니다"로 한정).
 - 추천: ① — 캐논의 삭제·캡처 알림을 유지하면서 암호학적 보장은 주장하지 않는다.
+- **결정(2026-11-09):** 추천안 채택 — ① 본문은 기기에만, 읽음·캡처 상태 신호만 전송.
 - 영향 문서: `03-features/SECURE_MESSAGING_SPECIFICATION.md` 1·4절, `03-features/MAIL_AND_CLOUD_SPECIFICATION.md`, `04-tech/AUTHENTICATION_AND_SECURITY.md` 4절
 
-#### Q-OPEN-027 — 튜브 시청 기록이 NPC에게 가는 흔적인지 · **보통**
+#### Q-OPEN-027 — 튜브 시청 기록이 NPC에게 가는 흔적인지 · **보통** · 결정됨
 
 - 출처: [03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md:55, 254](../03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md)
 - 쟁점: FEATURE는 튜브의 "남기는 흔적"을 시청 기록으로 적지만 TR 표에 대응 TR이 없다.
 - 선택지: ① 플레이어의 로컬 수사 기록만(현행) / ② TR 추가 / ③ 도현·실장에게 보이는 흔적
 - 현재 가정: ①(로컬 수사 기록만).
 - 추천: ① — TR 표에 없는 흔적을 새로 만들면 반응·분량이 늘고 P3 범위가 흔들린다.
+- **결정(2026-11-09):** 추천안 채택 — ① 플레이어의 로컬 수사 기록만.
 - 영향 문서: `03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md` 2·6절, `01-product/TRACES_AND_REACTIONS.md`, `01-product/FEATURE_SPECIFICATION.md`
 
-#### Q-OPEN-028 — 모아 쪽지 읽음이 익명7(민지)에게 가는 흔적인지 · **보통**
+#### Q-OPEN-028 — 모아 쪽지 읽음이 익명7(민지)에게 가는 흔적인지 · **보통** · 결정됨
 
 - 출처: [03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md:142, 157, 168, 255](../03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md)
 - 쟁점: FEATURE는 모아의 "남기는 흔적"을 쪽지 읽음으로 적지만 TR 표에 대응 TR이 없다.
 - 선택지: ① 앱 안의 읽음 시각만(현행) / ② 익명7에게 읽음 표시 / ③ TR 추가
 - 현재 가정: ①(앱 안 상태만).
 - 추천: ① — 쪽지 읽음은 수사 기록이고, 민지 반응은 V-09·EV-25 경로로 이미 설계되어 있다.
+- **결정(2026-11-09):** 추천안 채택 — ① 앱 안의 읽음 시각만.
 - 영향 문서: `03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md` 3·6절, `01-product/TRACES_AND_REACTIONS.md`
 
-#### Q-OPEN-029 — 무료 체험("첫 온라인까지")의 종료·저장·재개 규칙 · **보통**
+#### Q-OPEN-029 — 무료 체험("첫 온라인까지")의 종료·저장·재개 규칙 · **보통** · 결정됨
 
 - 출처: [00-foundation/Bible.md:107](../00-foundation/Bible.md) · [00-foundation/REQUIREMENTS.md:146](../00-foundation/REQUIREMENTS.md)
 - 쟁점: "수익 모델 = 프리미엄 단품(무료 체험: 첫 온라인까지)"만 있고 종료 지점·저장·재개 규칙이 없다.
 - 선택지: ① 첫 온라인까지 체험, 종료 시 자동 저장·구매 후 같은 세이브 재개 / ② 체험 없음(유료 단품) / ③ 첫 온라인 + 30분까지 체험
 - 현재 가정: 첫 온라인까지(규칙 미정).
 - 추천: ① — 제품 가정과 일치하고, 체험 종료가 진행 손실로 느껴지지 않게 한다.
+- **결정(2026-11-09):** 추천안 채택 — ① 첫 온라인까지 체험, 종료 시 자동 저장·구매 후 같은 세이브 재개.
 - 영향 문서: `00-foundation/Bible.md`, `00-foundation/PROJECT_SCOPE.md`, `01-product/BUSINESS_RULES.md`, `01-product/PRD.md`
 
-#### Q-OPEN-030 — 다국어·결제·웹뷰 포장의 범위와 일정 · **보통**
+#### Q-OPEN-030 — 다국어·결제·웹뷰 포장의 범위와 일정 · **보통** · 결정됨
 
 - 출처: [00-foundation/PROJECT_SCOPE.md:97](../00-foundation/PROJECT_SCOPE.md)
 - 쟁점: 다국어·결제 구현·웹뷰 포장의 일정과 범위가 원본에 없다. 문서는 "현재 계획에 없음"으로만 기록했다.
 - 선택지: ① 현재 계획 없음(한국어 단일·결제 미구현) / ② 웹뷰 포장만 P8 / ③ 다국어·결제를 P9 이후
 - 현재 가정: ①(현재 계획 없음).
 - 추천: ① — MVP·본편 범위를 흔들지 않는다.
+- **결정(2026-11-09):** 추천안 채택 — ① 현재 계획 없음(한국어 단일·결제 미구현).
 - 영향 문서: `00-foundation/PROJECT_SCOPE.md`, `05-quality/DEPLOYMENT_ARCHITECTURE.md`, `00-foundation/Bible.md`
 
-#### Q-OPEN-031 — 1차 배포 채널(정적 호스팅 vs 파일 공유) · **보통**
+#### Q-OPEN-031 — 1차 배포 채널(정적 호스팅 vs 파일 공유) · **보통** · 결정됨
 
 - 출처: [05-quality/DEPLOYMENT_ARCHITECTURE.md:235](../05-quality/DEPLOYMENT_ARCHITECTURE.md)
 - 쟁점: `file://`에서 localStorage·history 동작이 브라우저·OS 버전마다 다르다.
 - 선택지: ① 정적 호스팅 1차 + 파일 공유 보조 / ② 파일 공유 1차 / ③ 앱 스토어 웹뷰 포장 1차
 - 현재 가정: 정적 호스팅 1차, 파일 공유 보조(추천).
 - 추천: ① — `file://`의 저장·뒤로가기 편차를 피하고, 오프라인은 파일 공유로 보조한다.
+- **결정(2026-11-09):** 추천안 채택 — ① 정적 호스팅 1차 + 파일 공유 보조.
 - 영향 문서: `05-quality/DEPLOYMENT_ARCHITECTURE.md`, `04-tech/AUTHENTICATION_AND_SECURITY.md` CSP, `05-quality/TESTING_STRATEGY.md`
 
-#### Q-OPEN-032 — 배포 후 오류 제보 경로 · **보통**
+#### Q-OPEN-032 — 배포 후 오류 제보 경로 · **보통** · 결정됨
 
 - 출처: [05-quality/DEPLOYMENT_ARCHITECTURE.md:238](../05-quality/DEPLOYMENT_ARCHITECTURE.md)
 - 쟁점: 오류 수집을 하지 않으므로 플레이어 제보 경로를 제품 차원에서 정해야 한다.
 - 선택지: ① 외부 채널 없음(문서대로) / ② 배포 페이지에 메일 링크 / ③ 배포 페이지에 정적 폼 링크
 - 현재 가정: 외부 채널 없음.
 - 추천: ① — 서버 없는 단일 HTML 원칙을 유지하고, 필요하면 배포 페이지에 정적 안내만 둔다.
+- **결정(2026-11-09):** 추천안 채택 — ① 외부 채널 없음(배포 페이지에 정적 안내만 둘 수 있다).
 - 영향 문서: `05-quality/DEPLOYMENT_ARCHITECTURE.md`, `05-quality/ERROR_HANDLING.md`
 
-#### Q-OPEN-033 — 녹음 성우와 오디오 예산 · **보통**
+#### Q-OPEN-033 — 녹음 성우와 오디오 예산 · **보통** · 결정됨
 
 - 출처: [IMPLEMENTATION_ROADMAP](IMPLEMENTATION_ROADMAP.md) 열린 결정 표
 - 쟁점: design/15 5절의 열린 결정. 음성 메모 42분 전체를 성우로 녹음할지, 자막만 쓸지.
 - 선택지: ① MVP 자막, 본편 성우 / ② 자막만 / ③ 자막 + 핵심 4구간 클립만
 - 현재 가정: MVP 자막, 본편 성우(design/15 5절 추천).
 - 추천: ① — 오디오 350KB 예산으로 42분 전체를 담을 수 없고, MVP는 캐논대로 자막만 쓴다.
+- **결정(2026-11-09):** 추천안 채택 — ① MVP 자막, 본편 성우.
 - 영향 문서: `03-features/MEDIA_SPECIFICATION.md`, `04-tech/FILE_AND_MEDIA_MANAGEMENT.md`, `02-design/ACCESSIBILITY.md`
 
-#### Q-OPEN-034 — 제목 표기(DONTKNOW vs @dontknow__) · **보통**
+#### Q-OPEN-034 — 제목 표기(DONTKNOW vs @dontknow__) · **보통** · 결정됨
 
 - 출처: [IMPLEMENTATION_ROADMAP](IMPLEMENTATION_ROADMAP.md) 열린 결정 표
 - 쟁점: design/15 5절의 열린 결정. 제목을 `DONTKNOW`로 쓸지, `@dontknow__` 로고 변형으로 쓸지.
 - 선택지: ① DONTKNOW / ② @dontknow__ / ③ 언더바 두 개를 숨기는 변형
 - 현재 가정: 언더바 두 개를 숨기는 변형(design/15 5절 추천).
 - 추천: ③ — 세 겹 의미를 유지하면서 UI에서 밈 표기처럼 보이지 않게 한다.
+- **결정(2026-11-09):** 추천안 채택 — ③ 언더바 두 개를 숨기는 변형.
 - 영향 문서: `00-foundation/Bible.md`, `02-design/ICONOGRAPHY_AND_IMAGERY.md`, 프롤로그·엔딩 시네마틱
 
-#### Q-OPEN-035 — 아빠 톡방 목록 배지 6의 해석 · **보통**
+#### Q-OPEN-035 — 아빠 톡방 목록 배지 6의 해석 · **보통** · 결정됨
 
 - 출처: [02-design/SCREEN_SPECIFICATIONS.md:2034](../02-design/SCREEN_SPECIFICATIONS.md)
 - 쟁점: 캐논은 "아버지의 톡 6통, 전부 1"이라고만 적는다. 6통 각각의 "1"을 목록 배지 6으로 합산하는 해석이 맞는지.
 - 선택지: ① 목록 배지 6 + 대화방 각 말풍선 "1" / ② 목록 배지 없음 / ③ 6통을 대화 1개로 합침
 - 현재 가정: ①(목록 배지 6).
 - 추천: ① — DH-3에서 6통의 "1"이 한꺼번에 사라지는 연출과 일치한다.
+- **결정(2026-11-09):** 추천안 채택 — ① 목록 배지 6 + 대화방 각 말풍선 "1".
 - 영향 문서: `02-design/SCREEN_SPECIFICATIONS.md`, `03-features/MESSAGING_SPECIFICATION.md`, `01-product/PROGRESSION_AND_ENDINGS.md` 4.1
 
-#### Q-OPEN-036 — 강민석 구독자 수 표기(4.3만 vs 43.2k vs 4만) · **보통**
+#### Q-OPEN-036 — 강민석 구독자 수 표기(4.3만 vs 43.2k vs 4만) · **보통** · 결정됨
 
 - 출처: [01-product/CHARACTERS.md:164](../01-product/CHARACTERS.md) · [03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md:258](../03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md)
 - 쟁점: CHARACTERS P-05·A-16은 "4.3만/43.2k", NARRATIVE는 "구독자 4만", VIDEO는 4.3만을 쓴다.
 - 선택지: ① 4.3만으로 통일(43.2k는 같은 값의 정밀 표기) / ② 4만으로 통일 / ③ 43.2k를 정본으로
 - 현재 가정: 4.3만.
 - 추천: ① — 인물·계정·튜브가 같은 값을 쓰고, 43.2k는 같은 값의 정밀 표기로 본다.
+- **결정(2026-11-09):** 추천안 채택 — ① 4.3만으로 통일(43.2k는 같은 값의 정밀 표기).
 - 영향 문서: `01-product/CHARACTERS.md` P-05·A-16, `01-product/NARRATIVE_CANON.md`, `03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md`, `03-features/SNS_SPECIFICATION.md`
 
 ---
@@ -519,7 +555,7 @@
 | design/15 5절 열린 결정 | 7 (그중 5개는 q.json에 없음) |
 | 입력 합계 | 254 |
 | 병합 후 | 182 |
-| A. 서현 결정 필요 | 36 (치명 3 · 높음 18 · 보통 15) |
+| A. 서현 결정 필요(A 36건 전부 결정됨, 2026-11-09, 추천안 채택) | 36 (치명 3 · 높음 18 · 보통 15) |
 | B. 기본값 확정 | 125 |
 | C. 해결됨·무효 | 21 |
 

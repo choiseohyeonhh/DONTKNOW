@@ -81,19 +81,19 @@ MVP가 이 넷을 재미있게 만들지 못하면 본편 확장은 의미가 �
 | 모바일 웹 성능 | 로딩 | WebP·긴 변 1100px, 단일 HTML 9MB 이내, 지연 로드 |
 | iOS Safari 제스처 충돌 | 조작감 | 게임 내 버튼 대체, 실기기 테스트 P1부터 |
 
-## 5. 열린 결정 (P0에서 서현이 정할 것)
+## 5. 열린 결정 (2026-11-09 확정)
 
-**아래 "추천"은 원본의 추천이며 확정이 아니다. 모든 행의 상태는 "서현 확정 필요"다.** 확정 결과는 [`OPEN_QUESTIONS.md`](./OPEN_QUESTIONS.md)에 기록하고 이 표의 상태를 갱신한다.
+**아래 7건은 2026-11-09 추천안 채택으로 확정됐다.** 확정 결과는 [`OPEN_QUESTIONS.md`](./OPEN_QUESTIONS.md)에 기록했고, 이 표의 상태도 "확정(2026-11-09)"으로 갱신했다.
 
 | 항목 | 선택지 | 추천 | 상태 |
 |---|---|---|---|
-| 시간 흐름 | ×4 / ×5 / 행동 단위 | **×4** + 옵션. 판정 UI가 없어져 생각하는 시간도 흐르므로 ×5에서 늦춤. 일반 165분 → 07:50 종료 | 서현 확정 필요 → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
-| 해담 근거 최소 노출 | 지금처럼 T2 6곳 / 4곳으로 줄임 | **6곳 유지.** 미끼를 쓴 대가로 진짜 위치는 넉넉하게 | 서현 확정 필요 → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
-| 원격 지우기 후 | 즉시 엔딩 / 초기 설정 화면에서 1분 머문 뒤 엔딩 | **1분 머문 뒤.** "안녕하세요" 화면의 정적이 이 엔딩의 연출 | 서현 확정 필요 → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
-| 정체 숨김 MVP 포함 | 포함 / 본편 | **본편** | 서현 확정 필요 → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
-| 루프 부계정 MVP 포함 | 포함 / 본편 | **본편** | 서현 확정 필요 → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
-| 녹음 성우 | 자막만 / 성우 | MVP 자막, 본편 성우 | 서현 확정 필요 → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
-| 제목 표기 | DONTKNOW / @dontknow__ 로고 변형 | 언더바 두 개를 숨기는 변형 | 서현 확정 필요 → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
+| 시간 흐름 | ×4 / ×5 / 행동 단위 | **×4** + 옵션. 판정 UI가 없어져 생각하는 시간도 흐르므로 ×5에서 늦춤. 일반 165분 → 07:50 종료 | 확정(2026-11-09) → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
+| 해담 근거 최소 노출 | 지금처럼 T2 6곳 / 4곳으로 줄임 | **6곳 유지.** 미끼를 쓴 대가로 진짜 위치는 넉넉하게 | 확정(2026-11-09) → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
+| 원격 지우기 후 | 즉시 엔딩 / 초기 설정 화면에서 1분 머문 뒤 엔딩 | **1분 머문 뒤.** "안녕하세요" 화면의 정적이 이 엔딩의 연출 | 확정(2026-11-09) → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
+| 정체 숨김 MVP 포함 | 포함 / 본편 | **본편** | 확정(2026-11-09) → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
+| 루프 부계정 MVP 포함 | 포함 / 본편 | **본편** | 확정(2026-11-09) → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
+| 녹음 성우 | 자막만 / 성우 | MVP 자막, 본편 성우 | 확정(2026-11-09) → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
+| 제목 표기 | DONTKNOW / @dontknow__ 로고 변형 | 언더바 두 개를 숨기는 변형 | 확정(2026-11-09) → [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) |
 
 ## 6. 구현 착수 전제: P0 설계 잠금
 
@@ -102,7 +102,7 @@ P0 완료 판정은 다음 8개가 모두 참일 때만 한다. 상세 인수 �
 | # | 조건 | 판정 |
 |---|---|---|
 | 1 | [`REQUIREMENTS`](../00-foundation/REQUIREMENTS.md)의 REQ-F 75·REQ-N 24가 이 문서 묶음과 모순되지 않는다 | 서현 승인 |
-| 2 | 5절 열린 결정 7건의 상태가 "확정"으로 바뀌고 [`OPEN_QUESTIONS`](./OPEN_QUESTIONS.md)에 기록된다 | 서현 승인 |
+| 2 | 5절 열린 결정 7건의 상태가 "확정(2026-11-09)"으로 바뀌고 [`OPEN_QUESTIONS`](./OPEN_QUESTIONS.md)에 기록된다 | 서현 승인 |
 | 3 | [`FRONTEND_ARCHITECTURE`](../04-tech/FRONTEND_ARCHITECTURE.md) 1절 모듈 트리가 동결된다(새 모듈 0) | 서현 승인 |
 | 4 | [`NAVIGATION_ARCHITECTURE`](../02-design/NAVIGATION_ARCHITECTURE.md) 화면 인벤토리 178개(P0 34 / P1 144)와 [`DEVELOPMENT_PHASES`](./DEVELOPMENT_PHASES.md)의 SCR 배정이 일치한다 | 서현 승인 |
 | 5 | [`TESTING_STRATEGY`](../05-quality/TESTING_STRATEGY.md)의 테스트 이름·합격 기준이 동결된다 | 서현 승인 |

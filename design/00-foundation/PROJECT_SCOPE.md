@@ -27,7 +27,7 @@
 | 데스크톱 | 390×844 폰 프레임 중앙, 양옆은 도현의 방 책상(정적 배경, 정보 없음) | [[SYSTEM_SHELL_SPECIFICATION](../03-features/SYSTEM_SHELL_SPECIFICATION.md)](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 1절 |
 | 배포 형태 | 단일 HTML 파일(이미지·폰트 인라인), 정적 호스팅. 외부 CDN·라이브러리 없음 | [[SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md)](../04-tech/SYSTEM_ARCHITECTURE.md) 1절, 지시서 3.1 |
 | 오프라인 | 설치 없이 로컬 파일/정적 호스팅으로 플레이. 게임 중 네트워크 불필요 | [[SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md)](../04-tech/SYSTEM_ARCHITECTURE.md) 1절 |
-| 추후 | 웹뷰 앱 포장 | [[PRODUCT_PRINCIPLES](PRODUCT_PRINCIPLES.md)](PRODUCT_PRINCIPLES.md) 1절 |
+| 추후 | 웹뷰 앱 포장은 현재 계획 없음 | [[PRODUCT_PRINCIPLES](PRODUCT_PRINCIPLES.md)](PRODUCT_PRINCIPLES.md) 1절 |
 
 - 기준 프레임 **390×844**, 지원 폭 **320~430**(폰). 데스크톱은 화면 높이에 맞춰 **0.75~1.25배** 범위에서 축소·확대한다.
 - 글꼴은 Pretendard. Apple 에셋·SF 폰트·SF Symbols·특정 화면 복제 금지(지시서 2절).
@@ -71,7 +71,7 @@
 | 서버·DB·인증 서버·네트워크 API | **현재 계획에 없음.** 게임 속 "온라인/동기화/실시간"은 모두 클라이언트 안의 시뮬레이션 | [[SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md)](../04-tech/SYSTEM_ARCHITECTURE.md) 1절, 지시서 3.1 |
 | 실제 사용자 계정·실제 메시지 송수신 | **현재 계획에 없음.** 앱은 게임 속 가상 앱, 상대는 대본이 있는 NPC | 지시서 0절 |
 | 다국어 | **현재 계획에 없음.** 한국어 단일 | 지시서(문서에 근거 없음) |
-| 결제·수익화 구현 | **현재 계획에 없음.** 수익 모델은 프리미엄 단품 가정만 있음 | [[PRODUCT_PRINCIPLES](PRODUCT_PRINCIPLES.md)](PRODUCT_PRINCIPLES.md) 1절 |
+| 결제·수익화 구현 | **현재 계획에 없음.** 수익 모델은 프리미엄 단품이며 무료 체험은 첫 온라인까지(종료 시 자동 저장·구매 후 같은 세이브 재개) | [[PRODUCT_PRINCIPLES](PRODUCT_PRINCIPLES.md)](PRODUCT_PRINCIPLES.md) 1절 |
 | 아버지 폰 UI, 대면 장면, 장소 일러스트, 선택지 트리 | **명시적 제외** | [[PRODUCT_PRINCIPLES](PRODUCT_PRINCIPLES.md)](PRODUCT_PRINCIPLES.md) 6절 |
 | 실제 서비스 연동·소셜 로그인 | **현재 계획에 없음** | [[SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md)](../04-tech/SYSTEM_ARCHITECTURE.md) 1절 |
 | 아날로그 판정·카드·결론 빈칸 | **폐기** | [[BUSINESS_RULES](../01-product/BUSINESS_RULES.md)](../01-product/BUSINESS_RULES.md) 1절 |
@@ -94,5 +94,5 @@
 
 ## 확인 사항
 
-- **Q-OPEN-05:** 다국어·결제·웹뷰 포장의 일정과 범위는 원본에 없다. 이 문서는 "현재 계획에 없음"으로만 기록했다. 사업 계획 확정 시 갱신한다.
-- **Q-OPEN-06:** MVP에서 "수동 슬롯"이 제외([IMPLEMENTATION_ROADMAP](../06-execution/IMPLEMENTATION_ROADMAP.md))이나, [SYSTEM_SHELL_SPECIFICATION](../03-features/SYSTEM_SHELL_SPECIFICATION.md)과 지시서는 "자동 저장 + 수동 슬롯 3"을 전제한다. MVP는 자동 저장만, 본편에서 수동 슬롯 3을 포함하는 것으로 해석했다. P0 확정 필요.
+- **Q-OPEN-05:** 다국어·결제·웹뷰 포장은 현재 계획에 없다(한국어 단일·결제 미구현). (해결 — Q-OPEN-030 결정)
+- **Q-OPEN-06:** MVP는 자동 저장만, 수동 슬롯 3은 본편(P8)에서 포함한다. (해결 — Q-OPEN-023 결정)

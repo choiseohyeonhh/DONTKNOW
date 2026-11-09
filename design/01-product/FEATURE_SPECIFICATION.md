@@ -109,6 +109,6 @@
 
 ## 확인 사항
 
-- **Q-OPEN-13:** FEAT-61~67(부계정·하린 대화·정체 숨김·후일담 변주·사운드·수동 슬롯·정식 스틸)은 [IMPLEMENTATION_ROADMAP](../06-execution/IMPLEMENTATION_ROADMAP.md)의 "본편 제외"를 기능 단위로 옮긴 것이다. 요구사항은 REQ-F-071~075·REQ-F-062로 매핑했다.
+- **Q-OPEN-13:** FEAT-61~67(부계정·하린 대화·정체 숨김·후일담 변주·사운드·수동 슬롯·정식 스틸)은 [IMPLEMENTATION_ROADMAP](../06-execution/IMPLEMENTATION_ROADMAP.md)의 "본편 제외"를 기능 단위로 옮긴 것이다. 요구사항은 REQ-F-071~075·REQ-F-062로 매핑했다. 부계정·정체 숨김은 본편(P8)으로 확정한다. (해결 — Q-OPEN-013·014 결정)
 - **Q-OPEN-14:** 앱 30종의 상세 명세 문서 경로는 지시서 4절의 03-features 배정을 따랐다. 각 문서가 확정되면 FEAT별 화면 목록(SCR-)·데이터 필드 링크를 이 표에 추가한다.
-- **Q-OPEN-15:** FEAT-54 "다시 보기"는 [BUSINESS_RULES](BUSINESS_RULES.md)에 있으나 [IMPLEMENTATION_ROADMAP](../06-execution/IMPLEMENTATION_ROADMAP.md) MVP 목록에 없다. 본편으로 분류했다. P7에서 MVP 포함 여부를 재검토할 수 있다.
+- **Q-OPEN-15:** FEAT-54 "다시 보기"와 수동 슬롯은 본편으로 확정한다(MVP는 자동 저장만). (해결 — Q-OPEN-023 결정)

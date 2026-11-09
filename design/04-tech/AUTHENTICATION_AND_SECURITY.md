@@ -241,7 +241,7 @@
 ## 확인 사항
 
 - `Q-OPEN-T17`: 은행(110221)의 오답 잠금 없음은 [COMMERCE_AND_FINANCE](../03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md)가 확정했다. 부계정 메일 코드의 만료 시간(이 문서는 10분)·1회용 여부·재전송 횟수는 캐논에 없어 설계로 두었다. 총괄이 확정해야 한다.
-- `Q-OPEN-T18`: 기기 잠금 30초 대기를 **실시간**으로 둘지, 게임 시계 정지와 함께 멈출지 캐논이 명시적이지 않다. 이 문서는 실시간으로 적었다. [STATE_MANAGEMENT](./STATE_MANAGEMENT.md) 9절과 일치하는지 확인 필요.
-- `Q-OPEN-T19`: 블링크 60초 삭제가 실시간 60초인지 게임 분 환산인지 [BACKEND_ARCHITECTURE](./BACKEND_ARCHITECTURE.md) Q-OPEN-T07과 같은 미결이다.
+- `Q-OPEN-T18`: 기기 잠금 30초 대기는 **실시간**이며 일시정지·시네마틱에서 멈춘다. (해결 — Q-OPEN-021 결정)
+- `Q-OPEN-T19`: 블링크 60초 삭제는 **실시간 60초**이며 일시정지·시네마틱에서 멈춘다. (해결 — Q-OPEN-021 결정)
 - `Q-OPEN-T20`: CSP의 `frame-ancestors`는 `<meta>`에서 무시될 수 있다. 정적 호스팅 시 HTTP 헤더로도 줄지, 파일 공유만 지원할지 [DEPLOYMENT_ARCHITECTURE](../05-quality/DEPLOYMENT_ARCHITECTURE.md)에서 확정해야 한다.
 - `Q-OPEN-T21`: "디버그 코드 제거 빌드"를 만들지 여부는 [API_SPECIFICATION](./API_SPECIFICATION.md) Q-OPEN-T15와 같은 미결이다.

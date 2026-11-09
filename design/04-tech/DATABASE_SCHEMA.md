@@ -270,7 +270,7 @@ erDiagram
 | `contact` | `name`, `phone` | `birthday`, `company`, `memo`, `favorite` | `{ "name":"아빠", "phone":"010-XXXX-0403", "birthday":"1968-04-03" }` |
 | `calendar` | `title`, `startAt`, `allDay` | `repeat`, `location` | `{ "title":"엄마", "startAt":"2026-11-02T00:00:00+09:00", "repeat":"yearly" }` |
 | `call` | `direction`, `number`, `durationSec` | `contactId` | `{ "direction":"out", "number":"1588-XXXX", "durationSec":852 }` |
-| `transaction` | `direction`, `amount`, `counterparty` | `memo`, `balanceAfter`, `accountNumber` | `{ "direction":"out", "amount":3400000, "counterparty":"한결캐피탈(이상철)" }` |
+| `transaction` | `direction`, `amount`, `counterparty` | `memo`, `balanceAfter`, `accountNumber` | `{ "direction":"out", "amount":3400000, "counterparty":"한결캐피탈(채무자 이상철)" }` |
 | `file` | `name`, `mime`, `size` | `receivedFrom`, `receivedVia`, `receivedAt` | `{ "name":"교육자료.pdf", "mime":"application/pdf", "receivedFrom":"민석의 폰" }` |
 | `setting` | `path`, `value` | `updatedAt`, `sourceDevice` | `{ "path":"wifi.known.HAEDAM_2F", "value":true, "sourceDevice":"D-02" }` |
 | `order` | `store`, `items`, `address`, `payment` | `request`, `orderDevice` | `{ "store":"한끼", "items":["컵밥 1"], "address":"성원구청로 31, 해담고시텔 207호", "payment":"만나서 현금 결제" }` |
@@ -709,4 +709,4 @@ python3 game/tools/lint_content.py --content game/content --strict
 - `Q-OPEN-T10`: `items/*.json`의 `kind` enum과 `data` 스키마는 이 문서가 정의했지만, 03-features 작성자가 앱별 데이터 필드를 더 추가할 수 있다. 추가 필드는 허용하되(선택 필드), 필수 필드 변경은 이 문서를 갱신해야 한다.
 - `Q-OPEN-T11`: 세이브 `schemaVersion`을 3으로 시작하는 이유는 v6.0·v6.1의 폐기된 세이브와 구분하기 위해서다. 실제 첫 구현은 1로 시작하고 이 문서를 고칠지, 3을 유지할지 총괄이 정해야 한다(추천: 첫 구현 1, 마이그레이션 테스트를 위해 1→2→3 체인을 인위적으로 만들지 않는다).
 - `Q-OPEN-T12`: 린터 L14의 "T2 항목이 `online` 없이 열리지 않는가"는 캐시 규칙([SYSTEM_ARCHITECTURE](SYSTEM_ARCHITECTURE.md) 4.1: 한 번 온라인에서 본 T2는 오프라인에서도 캐시로 보임)과 충돌하지 않도록 "최초 노출은 online"으로 검사해야 한다. 구현 시 캐시 예외를 명시해야 한다.
-- `Q-OPEN-T13`: 블링크 60초 삭제의 세이브 표현(실시간 초를 게임 분으로 환산할지)은 [BACKEND_ARCHITECTURE](./BACKEND_ARCHITECTURE.md) Q-OPEN-T07과 같은 미결이다.
+- `Q-OPEN-T13`: 블링크 60초 삭제는 실시간 60초이며 일시정지·시네마틱에서 멈춘다. 게임 분으로 환산하지 않는다. (해결 — Q-OPEN-021 결정)

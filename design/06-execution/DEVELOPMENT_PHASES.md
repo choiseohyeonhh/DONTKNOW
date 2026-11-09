@@ -160,7 +160,7 @@ flowchart TD
 ## 확인 사항
 
 - **Q-OPEN-D01:** P2 게이트 `p2_reaction.spec.js`, P1 게이트 `p1_shell.spec.js`는 [`FRONTEND_ARCHITECTURE`](../04-tech/FRONTEND_ARCHITECTURE.md) 1절의 고정 테스트 목록에 없다. 단계 게이트를 위해 필요한 신규 테스트 파일로, 모듈 트리 변경은 아니다. 총괄이 테스트 목록에 추가할지 정한다.
-- **Q-OPEN-D02:** P8의 부계정·하린·정체 숨김 경로 테스트 `route_side.js`도 신규 이름이다. [`TESTING_STRATEGY`](../05-quality/TESTING_STRATEGY.md) 9절 실행 명령에 추가할지 정한다.
+- **Q-OPEN-D02:** P8의 부계정·하린·정체 숨김 경로 테스트 `route_side.js`도 신규 이름이다. [`TESTING_STRATEGY`](../05-quality/TESTING_STRATEGY.md) 9절 실행 명령에 추가할지 정한다. 부계정·정체 숨김은 본편(P8)으로 확정한다. (해결 — Q-OPEN-013·014 결정)
 - **Q-OPEN-D03:** P6 아트를 P4·P5와 병행할 수 있는 범위(아이콘·타일만 먼저)는 일정이 아니라 순서의 문제다. 이 문서는 "P1 이후 시작 가능, 최종 교체는 P5 뒤"로만 정했다.
 - **Q-OPEN-D04:** WP-06의 빈 앱 30종은 `apps/*.js` 30개 파일을 모두 만든다. [`FRONTEND_ARCHITECTURE`](../04-tech/FRONTEND_ARCHITECTURE.md) 1절의 파일명 고정(시계 앱 `clockapp.js`)을 그대로 따른다. `clock.js`와 혼동하지 않는다.
 - **Q-OPEN-D05:** [`TESTING_STRATEGY`](../05-quality/TESTING_STRATEGY.md) 5.2절의 시각 회귀 화면 중 메일 목록·카메라 서랍 ID는 [`NAVIGATION_ARCHITECTURE`](../02-design/NAVIGATION_ARCHITECTURE.md) 3절 인벤토리에 없다. 이 문서는 가장 가까운 `SCR-MAIL-INBOX`·`SCR-CAM-VIEWFINDER`로 매핑했다. 테스트 기준 화면 ID를 인벤토리에 맞춰 정정할지 총괄이 정한다.

@@ -72,7 +72,7 @@ flowchart LR
 | 동영상·커뮤니티 서버(튜브·모아) | 영상·댓글·익명 글·쪽지 | `content/items/tube.json`, `moa.json`, `scheduler` | 정적 콘텐츠 + 시간 사건 |
 | 메신저 서버(톡·메시지) | 방·메시지·읽음 "1"·다중기기 | `content/items/talk.json`, `message.json`, `trace.js`, `dialogue.js` | 읽음은 TR-02, 온라인일 때 전송 |
 | 보안 메신저 서버(블링크) | 60초 삭제·캡처 알림·단일 기기 | `apps/blink.js`, `trace.js`, `state.apps.blink` | 읽음 후 실시간 60초. 일시정지 동작은 확인 사항 |
-| 메일 서버 | 수신·발신·예약 발송·첨부 | `content/items/mail.json`, `scheduler`, `net.js` | 예약은 `events.json` EV-21, 온라인 필요 |
+| 메일 서버 | 수신·발신·예약 발송·첨부 | `content/items/mail.json`, `scheduler`, `net.js` | 예약은 `events.json` EV-21. 09:00에 발송 간주(오프라인 포함) |
 | 기기 찾기 서버 | 슬레이트 위치·소리·기기 지우기 | `content/items/find.json`, `net.js`, `events.json` | 온라인 필요, 반경 300m |
 | 푸시 알림 서버 | 배너·알림 센터 | `os/shell.js`, `scheduler`, `state.device.notifications` | 배너 4초, 방해 금지면 센터만 |
 | 계정 인증 | 잠금·메모·은행·부계정·블링크 | `os/shell.js`, `apps/settings/*`, `apps/blink.js`, `state.apps.*` | 실제 인증 없음. 로컬 문자열 비교 |
@@ -167,6 +167,6 @@ flowchart LR
 
 ## 확인 사항
 
-- `Q-OPEN-T07`: 블링크의 "읽고 60초 뒤 삭제"는 [SECURE_MESSAGING_SPECIFICATION](../03-features/SECURE_MESSAGING_SPECIFICATION.md)가 **실시간 60초**로 확정했다. 다만 일시정지 메뉴·시네마틱에서 카운트다운을 멈출지는 명시가 없다. 이 문서는 실시간 60초를 따르고, 일시정지 시 정지하는 쪽을 추천한다. 총괄이 확정해야 한다.
-- `Q-OPEN-T08`: 예약 메일 발송(EV-21)이 오프라인일 때 다음 온라인에 발송되는지, 아니면 09:00에 발송된 것으로 간주하고 엔딩 판정하는지 캐논이 명시적이지 않다. [12](../01-product/PROGRESSION_AND_ENDINGS.md) 3.2는 "삭제됐으면 무발생 → 엔딩 판정"만 말한다. 이 문서는 "서버에서 대기 → 다음 온라인 발송"으로 가정했다. 총괄 확인 필요.
+- `Q-OPEN-T07`: 블링크의 "읽고 60초 뒤 삭제"는 **실시간 60초**이며 일시정지 메뉴·시네마틱에서 카운트다운을 멈춘다. (해결 — Q-OPEN-021 결정)
+- `Q-OPEN-T08`: 예약 메일 발송(EV-21)은 오프라인이어도 3/18 09:00에 발송된 것으로 간주하고 엔딩을 판정한다. (해결 — Q-OPEN-018 결정)
 - `Q-OPEN-T09`: 향후 백엔드 도입은 제품 결정이므로 이 문서는 조건만 적는다. P0 설계 잠금에서 "도입 안 함"을 재확인해야 한다.

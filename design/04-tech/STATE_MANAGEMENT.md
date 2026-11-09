@@ -489,4 +489,4 @@ requestAnimationFrame 루프
 - `Q-OPEN-T22`: 시간 흐름 끄기에서 "앱 전환 1회 = 게임 1분"의 '앱 전환' 정의(앱 열기만인지, 앱 간 이동인지)를 [04](../01-product/BUSINESS_RULES.md) 5절은 명시하지 않는다. 이 문서는 "홈에서 다른 앱을 여는 것" 1회로 본다. 총괄 확인 필요.
 - `Q-OPEN-T23`: `ui.stack`을 세이브에 저장해 정확히 복원할지, 항상 홈에서 시작할지 결정이 필요하다. 이 문서는 저장·복원을 기본으로 하되 실패 시 홈 복구로 적었다. 추천: 저장·복원.
 - `Q-OPEN-T24`: 동기화 점(`syncDotUntil`)을 게임 1분으로 둔 것은 연출이다. 실제 캐논은 "깜빡이면 지금 무언가 오가는 중"만 정한다([05](../03-features/SYSTEM_SHELL_SPECIFICATION.md)).
-- `Q-OPEN-T25`: 블링크 60초·잠금 30초 대기처럼 실시간 타이머와 게임 시계가 섞이는 지점의 일시정지 동작은 [BACKEND_ARCHITECTURE](./BACKEND_ARCHITECTURE.md) Q-OPEN-T07·[AUTHENTICATION_AND_SECURITY](./AUTHENTICATION_AND_SECURITY.md) Q-OPEN-T18과 함께 확정해야 한다.
+- `Q-OPEN-T25`: 블링크 60초·잠금 30초 대기는 모두 실시간이며 일시정지·시네마틱에서 멈춘다. (해결 — Q-OPEN-021 결정)

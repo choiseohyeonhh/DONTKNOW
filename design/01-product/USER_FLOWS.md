@@ -63,7 +63,7 @@ flowchart TD
     H -->|비행기 모드 유지| M[지우기 명령 대기<br/>다음 온라인 순간 실행]
     H -->|시러스 암호 변경<br/>기기 암호 070921 필요| N[지우기 취소<br/>슬레이트 로그아웃 → DH-X<br/>도현 연락 끊김]
     H -->|아무것도 안 함| O[EV-08 원격 지우기<br/>EV-06+30 = T+66 · DH 2 미만]
-    O --> P[지우는 중 8초<br/>→ 안녕하세요 초기 설정 1분<br/>→ 즉시 엔딩 판정]
+    O --> P[지우는 중 8초<br/>→ 안녕하세요 초기 설정 1분<br/>→ 엔딩 판정]
     I --> Q[EV-19 두 번째 기회<br/>EV-06+15 = T+51 · DH-1 · 답장 없음 · 온라인]
     Q --> R[도현: 혹시 집이에요?]
 ```
@@ -153,7 +153,7 @@ flowchart TD
 
 **판정 조건([PROGRESSION_AND_ENDINGS](PROGRESSION_AND_ENDINGS.md) 6.4, 위에서부터 처음 맞는 것):**
 1. **D 읽음:** `F-WIPE-SLATE` **또는** (`F-LEAK` ∧ ¬(`F-GO` ∧ `F-LOC=exact`)) **또는** (`F-WIPED` ∧ `F-REC=lost` ∧ `F-LOC ≠ exact`).
-2. **B 모르는 척:** `F-MAIL=deleted` ∧ ¬(`F-REC-SENT` ∨ `F-NAME-SENT`).
+2. **B 모르는 척:** `F-MAIL=deleted` ∧ ¬(`F-REC-SENT` ∨ `F-NAME-SENT` ∨ `F-PLATE-SENT`).
 3. **A 알았어:** `F-GO` ∧ `F-LOC=exact` ∧ **위협 해소** ∧ `F-CONFESS`.
 4. **A′ 말하지 않은 것:** `F-GO` ∧ `F-LOC=exact` ∧ **위협 해소** ∧ ¬`F-CONFESS`.
 5. **C 늦은 답장:** 그 외 전부.
@@ -169,7 +169,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     A[게임 중] --> B{일시정지}
-    B -->|모바일: 화면 위 가장자리<br/>세 손가락 길게| C[일시정지 메뉴]
+    B -->|모바일: 화면 위 가장자리<br/>세 손가락 500ms / 상태바 시각 1.5초| C[일시정지 메뉴]
     B -->|데스크톱: Esc| C
     C --> D[계속]
     C --> E[막혔을 때<br/>가장 이른 미완료 목표에 3단계 힌트]
@@ -191,6 +191,6 @@ flowchart TD
 
 ## 확인 사항
 
-- **Q-OPEN-20:** "위치 추적" 흐름에서 F-MOVED의 성원스파 이동은 DH≤2에서 해담·207·성원구청로 31을 입력하거나 EV-27(재주문)이 일어날 때다. 두 조건의 우선순위·동시 발생 시 처리는 [PROGRESSION_AND_ENDINGS](PROGRESSION_AND_ENDINGS.md) 4.1에 명시되지 않았다. 구현 시 이벤트 순서를 확정해야 한다.
+- **Q-OPEN-20:** "위치 추적" 흐름에서 F-MOVED의 성원스파 이동은 DH≤2에서 해담·207·성원구청로 31을 입력하거나 EV-27(재주문)이 일어날 때다. 먼저 발생한 트리거를 1회만 적용한다(F-MOVED 멱등). (해결 — Q-OPEN-007 결정)
 - **Q-OPEN-21:** 일시정지 메뉴의 "설정(소리)"은 MVP에서 소리 자체가 제외되어 있다. MVP에서는 항목을 숨기거나 비활성으로 둔다. P0에서 확정한다.
 - **Q-OPEN-22:** 엔딩 판정 도식의 논리식은 [PROGRESSION_AND_ENDINGS](PROGRESSION_AND_ENDINGS.md) 6.4를 그대로 옮겼다. 연산자 우선순위(∧·∨·¬)는 문서 표기를 따랐으며, 구현 시 명시적 괄호로 고정한다.

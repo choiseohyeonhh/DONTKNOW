@@ -1577,7 +1577,7 @@
 │ │ [56] 아빠            3/17 19:02   │ │ 143–215
 │ │      밥은 먹고 다니냐          [6] │ │
 │ ├──────────────────────────────────┤ │
-│ │ [56] 경영 26 새내기   3/16        │ │ 215–287
+│ │ [56] 경영 26 새내기   3/17 22:30  │ │ 215–287
 │ │      도현이 휴학한대?             │ │
 │ ├──────────────────────────────────┤ │
 │ │ [56] 지훈            3/15 10:40   │ │ 287–359
@@ -1614,7 +1614,7 @@
 | 방 | 마지막 메시지 | 시각 | 배지 |
 |---|---|---|---|
 | 아빠 | 밥은 먹고 다니냐 | 3/17 19:02 | 6 |
-| 경영 26 새내기 | 도현이 휴학한대? | 3/16 | — |
+| 경영 26 새내기 | 도현이 휴학한대? | 3/17 22:30 | — |
 | 지훈 | 폰 잃어버림… 우리 아빠한테는 말하지 마 | 3/15 10:40 | 1 |
 | 서아 | 경찰이 물어보면 그날 나랑 저녁 먹었다고 해줘 | 3/14 22:31 | 1 |
 
@@ -2029,14 +2029,14 @@
 
 ## 6. 확인 사항
 
-- **Q-OPEN-301:** [NAVIGATION_ARCHITECTURE.md](./NAVIGATION_ARCHITECTURE.md) 3.1은 `SCR-OS-APP-SWITCHER`를 P1, 3.2는 `SCR-TALK-ROOM-SETTINGS`를 P1으로 둔다. 작업 지시서가 이 두 화면을 P0 상세 목록에 넣어, 이 파일이 `P1*`로 P0 밀도 상세를 제공했다. 인벤토리 우선순위를 P0로 올릴지 총괄 확인이 필요하다. 추천: P1 유지, 상세만 P0 밀도.
-- **Q-OPEN-302:** `SCR-PAUSE-HINT`·`SCR-PAUSE-SETTINGS`·`SCR-PAUSE-SAVE`도 인벤토리 P1이나 지시서가 일시정지 메뉴의 하위로 P0 상세를 요구했다. `P1*`로 처리했다. 34개 P0 집계에는 넣지 않았다.
-- **Q-OPEN-303:** 아빠 톡방의 목록 배지를 6으로 명세했다. 캐논은 "아버지의 톡 6통, 전부 '1'"이라고만 적는다. 6통 각각의 "1"을 목록 배지 6으로 합산하는 해석이 맞는지 확인이 필요하다. 추천: 목록 배지 6, 대화방 각 말풍선 "1".
-- **Q-OPEN-304:** [MESSAGING_SPECIFICATION.md](../03-features/MESSAGING_SPECIFICATION.md) 3.8은 단톡 "경영 26 새내기"의 글을 3/16으로, [PROGRESSION_AND_ENDINGS.md](../01-product/PROGRESSION_AND_ENDINGS.md) EV-41은 3/17 22:30으로 적는다. 이 파일의 채팅 목록은 3/16 표기를 따랐다. 시각을 하나로 확정해야 한다.
+- **Q-OPEN-301:** [NAVIGATION_ARCHITECTURE.md](./NAVIGATION_ARCHITECTURE.md) 3.1의 `SCR-OS-APP-SWITCHER`·3.2의 `SCR-TALK-ROOM-SETTINGS`는 P1을 유지하고 상세만 P0 밀도로 제공한다(`P1*`). (해결 — Q-OPEN-022 결정)
+- **Q-OPEN-302:** `SCR-PAUSE-HINT`·`SCR-PAUSE-SETTINGS`·`SCR-PAUSE-SAVE`도 P1 유지 + 상세만 P0 밀도로 처리한다. 34개 P0 집계에는 넣지 않는다. (해결 — Q-OPEN-022 결정)
+- **Q-OPEN-303:** 아빠 톡방은 목록 배지 6 + 대화방 각 말풍선 "1"로 명세한다. (해결 — Q-OPEN-035 결정)
+- **Q-OPEN-304:** 단톡 "경영 26 새내기"의 글 "도현이 휴학한대?"는 EV-41의 **3/17 22:30**을 정본으로 하고, 이 파일의 채팅 목록도 3/17 22:30으로 표기한다. (해결 — Q-OPEN-008 결정)
 - **Q-OPEN-305:** 톡 친구 목록의 내 상태 메시지, 최근 공유 대상 5명의 전체 이름은 캐논에 없다. 두 곳 모두 "(장식, 단서 아님)"으로 표시했다. 장식 데이터의 최종 문구는 콘텐츠 작성 시 확정한다.
 - **Q-OPEN-306:** 알림 23개의 앱별 배분·전체 문구는 캐논에 없다([SYSTEM_SHELL_SPECIFICATION.md](../03-features/SYSTEM_SHELL_SPECIFICATION.md) Q-OPEN-106). 이 파일은 캐논 예시 3건과 블링크/루프 DM "새 메시지"만 확정하고 나머지는 콘텐츠 작성 대상으로 남겼다.
 - **Q-OPEN-307:** 블링크 그룹·채널 필터의 빈 상태 문구를 "대화가 없습니다"로 통일했다. [UI_UX_GUIDELINES.md](./UI_UX_GUIDELINES.md) 2.4는 "대화가 없습니다", [SECURE_MESSAGING_SPECIFICATION.md](../03-features/SECURE_MESSAGING_SPECIFICATION.md) 7절은 "대화 없음"으로 적는다. 화면 문구를 하나로 확정해야 한다. 추천: "대화가 없습니다".
 - (해결) 홈 격자는 캐논 4×5 + 독 4칸, 3페이지로 모든 문서 통일.
-- **Q-OPEN-309:** `SCR-OS-PASSCODE`는 [NAVIGATION_ARCHITECTURE.md](./NAVIGATION_ARCHITECTURE.md) Q-OPEN-201에서 P0 포함 여부가 열려 있다. 이 파일은 잠금 흐름의 필수 하위 화면으로 P0 상세를 제공했다.
-- **Q-OPEN-310:** 블링크 60초 타이머의 시작 단위는 "읽음 이벤트가 발생한 대화의 메시지 전체"로 명세했다([SECURE_MESSAGING_SPECIFICATION.md](../03-features/SECURE_MESSAGING_SPECIFICATION.md) Q-OPEN-122와 같은 해석). 메시지별 타이머가 필요하면 `CMP-TIMER-BADGE`와 문구를 바꿔야 한다.
+- **Q-OPEN-309:** `SCR-OS-PASSCODE`는 P1 유지 + 상세만 P0 밀도로 둔다(34개 P0 집계 불변). (해결 — Q-OPEN-022 결정)
+- **Q-OPEN-310:** 블링크 60초 타이머는 실시간이며 일시정지·시네마틱에서 멈춘다. 시작 단위는 읽음 이벤트가 발생한 대화의 메시지 전체다. (해결 — Q-OPEN-021 결정)
 
