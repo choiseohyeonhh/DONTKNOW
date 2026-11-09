@@ -4,3 +4,4 @@ documents/.env
 .env.*
 !.env.example
 mvp/dist/
+phone-prototype/dist/

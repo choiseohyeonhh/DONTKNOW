@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>LUMA 프로토타입</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/os.css">
+<!-- APP-CSS -->
+</head>
+<body>
+<div class="stage">
+  <div class="device"></div>
+  <aside class="side-note">
+    <h2>LUMA 폰 프로토타입</h2>
+    <p>도현의 폰. 3/17(화) 21:10, 잠긴 채로 시작한다. 게임 시계는 실제보다 4배 빠르다.</p>
+    <p>잠금 해제 암호는 응급정보에 있다. 키보드 숫자도 된다.</p>
+    <p>홈 아래 막대 = 홈으로. <kbd>Esc</kbd> = 뒤로.</p>
+    <p>
+      <button data-act="notif">알림 센터</button> ·
+      <button data-act="cc">제어 센터</button> ·
+      <button data-act="search">검색</button><br>
+      <button data-act="home">홈</button> ·
+      <button data-act="lock">잠그기</button> ·
+      <button data-act="theme">라이트/다크</button>
+    </p>
+    <p>진행 판정·흔적·원격 삭제는 이 프로토타입에 없다. 화면과 앱 조작만 확인한다.</p>
+  </aside>
+</div>
+<script src="js/core.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/data.js"></script>
+<script src="js/shell.js"></script>
+<!-- APPS -->
+<script>LM.boot();</script>
+</body>
+</html>
