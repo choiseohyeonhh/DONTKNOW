@@ -1,0 +1,560 @@
+# DESIGN_TRACEABILITY — DONTKNOW v6.2 단일 출처·추적·이전표
+
+> **역할:** 설계 문서 전체의 **단일 출처 지도**, 요구사항→기능→명세→화면→인수 조건→작업 패킷→검증의 **추적 매트릭스**, 역방향 누락 점검, 폐기되는 구 `design/NN-*.md`의 **이전표**를 담는다. 구현자와 검수자가 "이 값을 어디서 확인하고, 이 요구가 어디까지 이어졌는지"를 한 문서에서 찾게 한다.
+> **단일 출처:** 이 문서 = 추적 관계(링크·행·누락 목록)와 구 문서→새 문서 이전 매핑. 각 대상의 **값 자체**는 1절의 단일 출처 문서가 소유한다. 이 문서는 값을 새로 정하지 않는다.
+> **참조:** [REQUIREMENTS](../00-foundation/REQUIREMENTS.md) · [FEATURE_SPECIFICATION](../01-product/FEATURE_SPECIFICATION.md) · [NAVIGATION_ARCHITECTURE](../02-design/NAVIGATION_ARCHITECTURE.md) · [SCREEN_SPECIFICATIONS](../02-design/SCREEN_SPECIFICATIONS.md) · [COMPONENT_SPECIFICATIONS](../02-design/COMPONENT_SPECIFICATIONS.md) · [ACCEPTANCE_CRITERIA](./ACCEPTANCE_CRITERIA.md) · [DEVELOPMENT_PHASES](./DEVELOPMENT_PHASES.md) · [TESTING_STRATEGY](../05-quality/TESTING_STRATEGY.md) · 03-features 문서 전체.
+> **적용 버전:** v6.2 (2026-11). 구 `design/00-*.md ~ 19-*.md`는 원본 자료이며 이 문서의 4절이 이전 관계를 확정한다.
+
+## 0. 읽는 규칙
+
+1. **ID는 소유 문서에 실제로 있는 것만 쓴다.** 이 문서는 `REQ-`, `FEAT-`, `SCR-`, `CMP-`, `AC-`, `WP-`, `Q-OPEN-`과 캐논 게임 ID(`E-`, `V-`, `TR-`, `EV-`, `G-`, `F-`, `L-`, `P-`, `A-`, `D-`, `DH-` 등)를 새로 만들지 않는다.
+2. **빈 칸은 "없음"으로 쓴다.** "해당 없음"이 설계상 정상인 칸(비기능 요구의 FEAT, 게임 시스템의 SCR 등)은 "없음"으로 쓰고 3절·5절의 누락 표에 이유와 함께 올린다. "전 화면 공통"은 특정 화면 ID가 없는 횡단 요구에만 쓴다.
+3. **검증 방법 코드**는 [ACCEPTANCE_CRITERIA](./ACCEPTANCE_CRITERIA.md) 0.4와 같다.
+
+| 코드 | 뜻 |
+|---|---|
+| **L0** | Python 콘텐츠 린터 `python3 game/tools/lint_content.py --content game/content --strict` |
+| **U** | Playwright 단위 테스트(`game/tests/unit.html`). 테스트 이름: `clock`, `visibility`, `net`, `verify`, `keywords`, `trace`, `morph`, `save`, `state`, `scheduler`, `endings`, `hints`, `dialogue`, `composer` |
+| **P** | Playwright 경로 테스트: `route_a.js`, `route_a2.js`, `route_b.js`, `route_c.js`, `route_d.js`, `crisis.js`, `traces.js`, `moved.js`, `route_side.js`, `p1_shell.spec.js`, `p2_reaction.spec.js` |
+| **V** | 시각 회귀 `visual.spec.js`(390×844, 다크·라이트) |
+| **M** | 수동 검사(문서·화면·플레이테스트) |
+| **D** | iPhone Safari 실기기 |
+
+---
+
+## 1. 단일 출처 표
+
+| 대상 | 단일 출처(새) | 참조하는 문서들 |
+|---|---|---|
+| 세계·진실·연대기·숫자·아버지가 아는 것 | [01-product/NARRATIVE_CANON.md](../01-product/NARRATIVE_CANON.md) | CHARACTERS · LOCATIONS · EVIDENCE_LEDGER · PROGRESSION_AND_ENDINGS · BUSINESS_RULES · FEATURE_SPECIFICATION · REQUIREMENTS · ACCEPTANCE_CRITERIA · 03-features 전체 |
+| 인물·계정·기기·앎 매트릭스·거짓말·대사 원칙 | [01-product/CHARACTERS.md](../01-product/CHARACTERS.md) | NARRATIVE_CANON · EVIDENCE_LEDGER · PROGRESSION_AND_ENDINGS · TRACES_AND_REACTIONS · MESSAGING · SNS · SECURE_MESSAGING · ACCEPTANCE_CRITERIA |
+| 장소 `L-`·이동 시간·위치 추리 | [01-product/LOCATIONS.md](../01-product/LOCATIONS.md) | NARRATIVE_CANON · EVIDENCE_LEDGER · MAPS_AND_MOBILITY · COMMERCE_AND_FINANCE · PROGRESSION_AND_ENDINGS · ACCEPTANCE_CRITERIA |
+| 단서 `E-` 원장·보존 수단·미끼와 진실 | [01-product/EVIDENCE_LEDGER.md](../01-product/EVIDENCE_LEDGER.md) | NARRATIVE_CANON · LOCATIONS · ACTION_PROOF · PROGRESSION_AND_ENDINGS · 03-features 전체 · DATABASE_SCHEMA · ACCEPTANCE_CRITERIA |
+| 행동 증명 `V-`·낱말 사전 | [01-product/ACTION_PROOF.md](../01-product/ACTION_PROOF.md) | PROGRESSION_AND_ENDINGS · TRACES_AND_REACTIONS · BUSINESS_RULES · SYSTEM_SHELL · 03-features · DATABASE_SCHEMA · ACCEPTANCE_CRITERIA |
+| 게이트 `G-`·사건 `EV-`·NPC 상태·입력 처리·플래그 `F-`·엔딩·힌트 목표 | [01-product/PROGRESSION_AND_ENDINGS.md](../01-product/PROGRESSION_AND_ENDINGS.md) | NARRATIVE_CANON · CHARACTERS · LOCATIONS · EVIDENCE_LEDGER · ACTION_PROOF · TRACES_AND_REACTIONS · BUSINESS_RULES · FEATURE_SPECIFICATION · REQUIREMENTS · ACCEPTANCE_CRITERIA |
+| 흔적 `TR-`·NPC 반응 지연 | [01-product/TRACES_AND_REACTIONS.md](../01-product/TRACES_AND_REACTIONS.md) | CHARACTERS · ACTION_PROOF · PROGRESSION_AND_ENDINGS · BUSINESS_RULES · SYSTEM_SHELL · 03-features · REQUIREMENTS · ACCEPTANCE_CRITERIA |
+| 시간·플레이타임·시계 ×4 | [01-product/PLAYTIME_BUDGET.md](../01-product/PLAYTIME_BUDGET.md) | BUSINESS_RULES · PROGRESSION_AND_ENDINGS · SYSTEM_SHELL · PRD · REQUIREMENTS · ACCEPTANCE_CRITERIA · TESTING_STRATEGY |
+| 게임 규칙 `BR-`·접근 층 `T0~T4`·온라인/오프라인·"30분" 위기·힌트 정책 | [01-product/BUSINESS_RULES.md](../01-product/BUSINESS_RULES.md) | NARRATIVE_CANON · ACTION_PROOF · PROGRESSION_AND_ENDINGS · TRACES_AND_REACTIONS · PLAYTIME_BUDGET · SYSTEM_SHELL · 03-features · REQUIREMENTS · ACCEPTANCE_CRITERIA |
+| 요구사항 `REQ-F`·`REQ-N` | [00-foundation/REQUIREMENTS.md](../00-foundation/REQUIREMENTS.md) | FEATURE_SPECIFICATION · ACCEPTANCE_CRITERIA · DEVELOPMENT_PHASES · PROJECT_SCOPE · IMPLEMENTATION_ROADMAP |
+| 기능 `FEAT-xx` | [01-product/FEATURE_SPECIFICATION.md](../01-product/FEATURE_SPECIFICATION.md) | REQUIREMENTS · DEVELOPMENT_PHASES · ACCEPTANCE_CRITERIA · NAVIGATION_ARCHITECTURE · 03-features |
+| 화면 목록·표시 방식·부모·진입 경로·우선순위 `SCR-` | [02-design/NAVIGATION_ARCHITECTURE.md](../02-design/NAVIGATION_ARCHITECTURE.md) | SCREEN_SPECIFICATIONS 3종 · COMPONENT_SPECIFICATIONS · INTERACTION_SPECIFICATIONS · 03-features · DEVELOPMENT_PHASES · ACCEPTANCE_CRITERIA |
+| 화면 레이아웃 수치 | [02-design/SCREEN_SPECIFICATIONS.md](../02-design/SCREEN_SPECIFICATIONS.md) · [SCREEN_SPECIFICATIONS_APPS.md](../02-design/SCREEN_SPECIFICATIONS_APPS.md) · [SCREEN_SPECIFICATIONS_SNS_SETTINGS.md](../02-design/SCREEN_SPECIFICATIONS_SNS_SETTINGS.md) | NAVIGATION_ARCHITECTURE · COMPONENT_SPECIFICATIONS · DESIGN_TOKENS · ACCESSIBILITY |
+| 컴포넌트 `CMP-`·해부도·상태·변형·접근성 | [02-design/COMPONENT_SPECIFICATIONS.md](../02-design/COMPONENT_SPECIFICATIONS.md) | SCREEN_SPECIFICATIONS 3종 · DESIGN_TOKENS · INTERACTION_SPECIFICATIONS · UI_UX_GUIDELINES · ACCESSIBILITY |
+| 디자인 토큰 값 | [02-design/DESIGN_TOKENS.md](../02-design/DESIGN_TOKENS.md) | DESIGN_SYSTEM · COMPONENT_SPECIFICATIONS · SCREEN_SPECIFICATIONS 3종 · UI_UX_GUIDELINES · ACCESSIBILITY · RESPONSIVE_DESIGN |
+| 아이콘·폰 속 사진·카메라 방·시네마틱 아트 | [02-design/ICONOGRAPHY_AND_IMAGERY.md](../02-design/ICONOGRAPHY_AND_IMAGERY.md) | DESIGN_SYSTEM · COMPONENT_SPECIFICATIONS · SCREEN_SPECIFICATIONS 3종 · SYSTEM_SHELL · MEDIA · REQUIREMENTS |
+| 앱 기능·데이터·상태·레퍼런스 분석 | [03-features/SYSTEM_SHELL_SPECIFICATION.md](../03-features/SYSTEM_SHELL_SPECIFICATION.md) · [MESSAGING](../03-features/MESSAGING_SPECIFICATION.md) · [SECURE_MESSAGING](../03-features/SECURE_MESSAGING_SPECIFICATION.md) · [SNS](../03-features/SNS_SPECIFICATION.md) · [VIDEO_AND_COMMUNITY](../03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md) · [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) · [MAPS_AND_MOBILITY](../03-features/MAPS_AND_MOBILITY_SPECIFICATION.md) · [MEDIA](../03-features/MEDIA_SPECIFICATION.md) · [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) · [COMMERCE_AND_FINANCE](../03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md) · [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) | FEATURE_SPECIFICATION · NAVIGATION_ARCHITECTURE · SCREEN_SPECIFICATIONS 3종 · DATABASE_SCHEMA · REQUIREMENTS |
+| 데이터 형식·콘텐츠 스키마·린터 | [04-tech/DATABASE_SCHEMA.md](../04-tech/DATABASE_SCHEMA.md) | SYSTEM_ARCHITECTURE · FRONTEND_ARCHITECTURE · REQUIREMENTS · TESTING_STRATEGY · ACCEPTANCE_CRITERIA |
+| 상태(단일 상태 트리·이벤트 로그) | [04-tech/STATE_MANAGEMENT.md](../04-tech/STATE_MANAGEMENT.md) | FRONTEND_ARCHITECTURE · SYSTEM_ARCHITECTURE · DATABASE_SCHEMA · REQUIREMENTS · TESTING_STRATEGY |
+| 내부 API(모듈 경계·함수 계약) | [04-tech/API_SPECIFICATION.md](../04-tech/API_SPECIFICATION.md) | FRONTEND_ARCHITECTURE · STATE_MANAGEMENT · SYSTEM_ARCHITECTURE · DEVELOPMENT_PHASES |
+| 인수 조건 `AC-xxx` | [06-execution/ACCEPTANCE_CRITERIA.md](./ACCEPTANCE_CRITERIA.md) | REQUIREMENTS · FEATURE_SPECIFICATION · DEVELOPMENT_PHASES · TESTING_STRATEGY · IMPLEMENTATION_ROADMAP |
+| 작업 패킷 `WP-xx`·단계·의존 | [06-execution/DEVELOPMENT_PHASES.md](./DEVELOPMENT_PHASES.md) | IMPLEMENTATION_ROADMAP · ACCEPTANCE_CRITERIA · FEATURE_SPECIFICATION · REQUIREMENTS · FRONTEND_ARCHITECTURE · TESTING_STRATEGY |
+| 확인 사항 `Q-OPEN-xx` | [06-execution/OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md) | 이 문서 5절 · REQUIREMENTS · FEATURE_SPECIFICATION · ACCEPTANCE_CRITERIA · DEVELOPMENT_PHASES · NAVIGATION_ARCHITECTURE |
+
+---
+
+## 2. 추적 매트릭스
+
+- 한 행 = 요구사항 1개. 총 **99행**(REQ-F 75 + REQ-N 24).
+- `SCR` 칸의 "전 화면 공통"은 특정 화면 ID로 좁힐 수 없는 횡단 요구다. 게임 시스템·비기능 요구는 화면 ID가 없는 것이 정상이다.
+- `WP` 칸이 "없음"인 항목은 5절 누락 표에 올린다.
+
+### 2.1 기능 요구 — 셸 (REQ-F-001~REQ-F-016)
+
+| REQ | FEAT | 상세 명세 | SCR | AC | WP | 테스트/검증 |
+|---|---|---|---|---|---|---|
+| REQ-F-001 | FEAT-03 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.3·8.3 | SCR-OS-LOCK, SCR-OS-HOME | AC-001 | WP-03 | P `p1_shell.spec.js`, V, D |
+| REQ-F-002 | FEAT-01 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.1·8.1 | SCR-OS-LOCK, SCR-OS-EMERGENCY, SCR-OS-PASSCODE | AC-002 | WP-03 | P `p1_shell.spec.js`, M |
+| REQ-F-003 | FEAT-01 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.1 · [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) G-01 | SCR-OS-PASSCODE | AC-003, AC-201 | WP-03 | P `route_a.js` 1단계, U `verify` V-01 |
+| REQ-F-004 | FEAT-02 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.2·8.2 | SCR-OS-HOME, SCR-OS-FOLDER | AC-004 | WP-03 | V, P `p1_shell.spec.js` |
+| REQ-F-005 | FEAT-03 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.4·8.4 | SCR-OS-NOTIF-CENTER, SCR-OS-SYSTEM-ALERT | AC-005 | WP-04, WP-13 | U `net`·`trace`, P `traces.js`, V |
+| REQ-F-006 | FEAT-03 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.5·8.5 | SCR-OS-CONTROL-CENTER | AC-006 | WP-04 | P `p1_shell.spec.js`, V |
+| REQ-F-007 | FEAT-04 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.6·8.6 · [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) 7절 | SCR-OS-SEARCH | AC-007 | WP-04 | P `p1_shell.spec.js`, V |
+| REQ-F-008 | FEAT-02 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.7·4.8 | SCR-OS-APP-SWITCHER, SCR-OS-HOME | AC-008 | WP-04 | P `p1_shell.spec.js`, U `morph`, D |
+| REQ-F-009 | FEAT-05 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.8 · [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) 6절 | SCR-OS-SHARE-SHEET, SCR-OS-COMPOSER | AC-009 | WP-07 | P `p2_reaction.spec.js`, M |
+| REQ-F-010 | FEAT-06 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.9·8.8 · [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) 6절 | SCR-OS-COMPOSER | AC-010 | WP-07 | U `composer`, P `p2_reaction.spec.js`, V |
+| REQ-F-011 | FEAT-07 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.8 | SCR-OS-INFO-PANEL, SCR-PHOTO-INFO, SCR-BLINK-CHAT-INFO | AC-011 | WP-07 | U `composer`·`visibility`, M |
+| REQ-F-012 | FEAT-08 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.10 | SCR-PAUSE-MENU, SCR-PAUSE-SETTINGS, SCR-PAUSE-SAVE | AC-012 | WP-05 | P `p1_shell.spec.js`, D |
+| REQ-F-013 | FEAT-09 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.11 · [NARRATIVE_CANON](../01-product/NARRATIVE_CANON.md) 6절 | SCR-CINE-PROLOGUE | AC-013 | WP-05, WP-28 | V, M |
+| REQ-F-014 | FEAT-09 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.11 · [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) 6.5 | SCR-CINE-ENDING | AC-014, AC-201~AC-205 | WP-05, WP-28 | V, P `route_a`~`route_d` |
+| REQ-F-015 | FEAT-03 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.5 · [TRACES_AND_REACTIONS](../01-product/TRACES_AND_REACTIONS.md) TR-06·TR-07 | SCR-OS-CONTROL-CENTER, SCR-BLINK-ROOM, SCR-PHOTO-LIBRARY | AC-015, AC-307 | WP-04, WP-14 | U `trace`, P `traces.js` |
+| REQ-F-016 | FEAT-02 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 1절 | SCR-OS-HOME | AC-016, AC-124 | WP-03 | M, V, D |
+
+### 2.2 기능 요구 — 앱 30종 (REQ-F-017~REQ-F-047)
+
+| REQ | FEAT | 상세 명세 | SCR | AC | WP | 테스트/검증 |
+|---|---|---|---|---|---|---|
+| REQ-F-017 | FEAT-10 | [MESSAGING](../03-features/MESSAGING_SPECIFICATION.md) 1절 | SCR-PHONE-RECENTS, SCR-PHONE-KEYPAD, SCR-PHONE-CALL-DETAIL | AC-017 | WP-06 | U `visibility`, V, M |
+| REQ-F-018 | FEAT-11 | [MESSAGING](../03-features/MESSAGING_SPECIFICATION.md) 2절 | SCR-MSG-LIST, SCR-MSG-ROOM | AC-018, AC-302 | WP-06 | P `route_a.js` 4단계, U `visibility`·`trace` |
+| REQ-F-019 | FEAT-12 | [MESSAGING](../03-features/MESSAGING_SPECIFICATION.md) 3절 | SCR-TALK-FRIENDS, SCR-TALK-CHATS, SCR-TALK-MORE, SCR-TALK-ROOM, SCR-TALK-ROOM-DRAWER, SCR-TALK-ROOM-SEARCH, SCR-TALK-ROOM-SETTINGS | AC-019, AC-302 | WP-06, WP-10 | P `traces.js` T-1, U `trace`, V |
+| REQ-F-020 | FEAT-13 | [SNS](../03-features/SNS_SPECIFICATION.md) 1·2·9절 | SCR-LOOP-FEED, SCR-LOOP-EXPLORE, SCR-LOOP-SEARCH, SCR-LOOP-CREATE, SCR-LOOP-ACTIVITY, SCR-LOOP-PROFILE, SCR-LOOP-POST-PHOTO, SCR-LOOP-POST-TEXT, SCR-LOOP-STORY, SCR-LOOP-HIGHLIGHT, SCR-LOOP-VIEWERS, SCR-LOOP-LIKES, SCR-LOOP-PLACE, SCR-LOOP-TAG, SCR-LOOP-ACCOUNT-INFO, SCR-LOOP-EDIT-HISTORY, SCR-LOOP-DM-LIST, SCR-LOOP-DM-ROOM, SCR-LOOP-SETTINGS, SCR-LOOP-SETTINGS-PRIVACY, SCR-LOOP-BLOCKED, SCR-LOOP-ACCOUNT-SWITCH, SCR-LOOP-CONNECTIONS | AC-020, AC-303~AC-305 | WP-06, WP-10, WP-21 | P `traces.js` T-2, V, M |
+| REQ-F-021 | FEAT-14 | [SECURE_MESSAGING](../03-features/SECURE_MESSAGING_SPECIFICATION.md) 5절 | SCR-BLINK-LIST, SCR-BLINK-ROOM, SCR-BLINK-PROFILE, SCR-BLINK-CHAT-INFO, SCR-BLINK-SETTINGS, SCR-BLINK-SETTINGS-PRIVACY, SCR-BLINK-SETTINGS-SESSIONS, SCR-BLINK-SETTINGS-BLOCKED | AC-021, AC-306 | WP-06, WP-24 | P `traces.js` T-3, P `route_d.js` D-1, U `trace` |
+| REQ-F-022 | FEAT-15 | [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) 2절 | SCR-MAIL-INBOX, SCR-MAIL-DETAIL, SCR-MAIL-COMPOSE, SCR-MAIL-SCHEDULE, SCR-MAIL-SCHEDULE-EDIT, SCR-MAIL-ACCOUNTS, SCR-MAIL-SEARCH | AC-022, AC-309, AC-318 | WP-06, WP-16 | P `route_a.js` 7단계, V |
+| REQ-F-023 | FEAT-16 | [MEDIA](../03-features/MEDIA_SPECIFICATION.md) 1절 | SCR-PHOTO-LIBRARY, SCR-PHOTO-ALBUM, SCR-PHOTO-VIEWER, SCR-PHOTO-INFO, SCR-PHOTO-EDIT, SCR-PHOTO-BURST, SCR-PHOTO-MAP | AC-023, AC-307 | WP-06, WP-18 | V, U `trace` |
+| REQ-F-024 | FEAT-17 | [MEDIA](../03-features/MEDIA_SPECIFICATION.md) 2절 | SCR-CAM-VIEWFINDER, SCR-CAM-REVIEW | AC-024, AC-404 | WP-06, WP-14 | P `route_a.js` 5단계, V |
+| REQ-F-025 | FEAT-18 | [MAPS_AND_MOBILITY](../03-features/MAPS_AND_MOBILITY_SPECIFICATION.md) 1절 · [LOCATIONS](../01-product/LOCATIONS.md) 3절 | SCR-MAP-EXPLORE, SCR-MAP-SEARCH, SCR-MAP-PLACE, SCR-MAP-ROUTE, SCR-MAP-SAVED | AC-025 | WP-06, WP-19 | U `visibility`, V |
+| REQ-F-026 | FEAT-19 | [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) 3절 | SCR-FIND-DEVICES, SCR-FIND-DEVICE, SCR-FIND-ACTIONS | AC-026, AC-311, AC-316 | WP-06, WP-16 | P `route_d.js` D-2, U `trace` |
+| REQ-F-027 | FEAT-20 | [MESSAGING](../03-features/MESSAGING_SPECIFICATION.md) 4절 | SCR-CONT-LIST, SCR-CONT-DETAIL | AC-027 | WP-06, WP-17 | V, M |
+| REQ-F-028 | FEAT-21 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 1절 | SCR-CAL-MONTH, SCR-CAL-DAY, SCR-CAL-EVENT, SCR-CAL-CALENDARS | AC-028 | WP-06, WP-17 | V, M |
+| REQ-F-029 | FEAT-22 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 2절 · [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) G-06 | SCR-NOTE-LIST, SCR-NOTE-EDIT, SCR-NOTE-LOCKED | AC-029, AC-402 | WP-06, WP-17 | P `route_a.js` 2단계, P `crisis.js` CR-2, U `verify` V-02 |
+| REQ-F-030 | FEAT-23 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 3절 | SCR-REM-LISTS, SCR-REM-LIST | AC-030, AC-308 | WP-06, WP-17 | P `traces.js`, U `trace` |
+| REQ-F-031 | FEAT-24 | [MEDIA](../03-features/MEDIA_SPECIFICATION.md) 3절 | SCR-VOICE-LIST, SCR-VOICE-PLAYER, SCR-VOICE-TRANSCRIPT | AC-031, AC-313 | WP-06, WP-18 | U `trace`, P `traces.js`, M |
+| REQ-F-032 | FEAT-25 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 4절 | SCR-CLOCK-ALARMS, SCR-CLOCK-ALARM-DETAIL | AC-032 | WP-06 | V, M |
+| REQ-F-033 | FEAT-26 | [MAPS_AND_MOBILITY](../03-features/MAPS_AND_MOBILITY_SPECIFICATION.md) 3절 | SCR-WTHR-HOME, SCR-WTHR-CITIES | AC-033 | WP-06 | U `visibility`, P `moved.js` |
+| REQ-F-034 | FEAT-27 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 5절 | SCR-HEALTH-TODAY, SCR-HEALTH-ACTIVITY, SCR-HEALTH-HEART | AC-034 | WP-06 | V, M |
+| REQ-F-035 | FEAT-28 | [MAPS_AND_MOBILITY](../03-features/MAPS_AND_MOBILITY_SPECIFICATION.md) 4절 · [COMMERCE_AND_FINANCE](../03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md) 4절 | SCR-WALLET-HOME, SCR-WALLET-TRANSIT, SCR-WALLET-PAYMENTS, SCR-WALLET-PAYMENT-DETAIL | AC-035 | WP-06, WP-23 | V, M |
+| REQ-F-036 | FEAT-29 | [COMMERCE_AND_FINANCE](../03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md) 1절 | SCR-BANK-LOGIN, SCR-BANK-HOME, SCR-BANK-TRANSACTIONS, SCR-BANK-TRANSACTION-DETAIL | AC-036, AC-403 | WP-06, WP-23 | P `route_a.js` 6단계, U `verify` V-03, V |
+| REQ-F-037 | FEAT-30 | [MAPS_AND_MOBILITY](../03-features/MAPS_AND_MOBILITY_SPECIFICATION.md) 2절 | SCR-TAXI-HOME, SCR-TAXI-HISTORY, SCR-TAXI-CALL, SCR-TAXI-CONFIRM, SCR-TAXI-LOST | AC-037, AC-413 | WP-06, WP-23 | P `route_a.js` 9단계, P `moved.js` 4단계 |
+| REQ-F-038 | FEAT-31 | [MEDIA](../03-features/MEDIA_SPECIFICATION.md) 4절 | SCR-FILE-BROWSE, SCR-FILE-DETAIL | AC-038 | WP-06, WP-18 | V, M |
+| REQ-F-039 | FEAT-32 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 7절 | SCR-WAVE-BROWSER, SCR-WAVE-LIBRARY | AC-039, AC-305 | WP-06, WP-22 | P `traces.js`, U `visibility` |
+| REQ-F-040 | FEAT-33 | [VIDEO_AND_COMMUNITY](../03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md) 1절 | SCR-TUBE-HOME, SCR-TUBE-SEARCH, SCR-TUBE-CHANNEL, SCR-TUBE-WATCH, SCR-TUBE-HISTORY | AC-040 | WP-06, WP-22 | V, M |
+| REQ-F-041 | FEAT-34 | [VIDEO_AND_COMMUNITY](../03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md) 2절 | SCR-MOA-HOME, SCR-MOA-BOARD, SCR-MOA-POST, SCR-MOA-MY-POSTS, SCR-MOA-MY-COMMENTS, SCR-MOA-MSG-LIST, SCR-MOA-MSG-ROOM, SCR-MOA-ACCOUNT | AC-041, AC-410 | WP-06, WP-22 | V, M |
+| REQ-F-042 | FEAT-35 | [COMMERCE_AND_FINANCE](../03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md) 2절 | SCR-HANKKI-HOME, SCR-HANKKI-ORDERS, SCR-HANKKI-ORDER-DETAIL, SCR-HANKKI-REORDER | AC-042, AC-317 | WP-06, WP-23 | P `moved.js` 3단계, P `route_a.js` 8단계 |
+| REQ-F-043 | FEAT-36 | [COMMERCE_AND_FINANCE](../03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md) 3절 | SCR-MARKET-FEED, SCR-MARKET-POST, SCR-MARKET-CHAT | AC-043 | WP-06, WP-23 | V, M |
+| REQ-F-044 | FEAT-37 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 8절 | SCR-PORTAL-HOME, SCR-PORTAL-ATTENDANCE, SCR-PORTAL-LEAVE | AC-044 | WP-06 | V, M |
+| REQ-F-045 | FEAT-38 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 6절 | SCR-CALC-CALCULATOR, SCR-CALC-HISTORY | AC-045 | WP-06 | V, M |
+| REQ-F-046 | FEAT-39 | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 4·8절 | SCR-SET-ROOT, SCR-SET-SEARCH, SCR-SET-CIRRUS, SCR-SET-CIRRUS-DEVICES, SCR-SET-CIRRUS-SYNC, SCR-SET-CIRRUS-SECURITY, SCR-SET-CIRRUS-FAMILY, SCR-SET-WIFI, SCR-SET-HOTSPOT, SCR-SET-NOTIFICATIONS, SCR-SET-NOTIFICATION-APP, SCR-SET-FOCUS, SCR-SET-KEYBOARD, SCR-SET-KEYBOARD-CLIPBOARD, SCR-SET-KEYBOARD-TEXT, SCR-SET-SCREENTIME, SCR-SET-PRIVACY, SCR-SET-PRIVACY-LOCATION, SCR-SET-PRIVACY-REPORT, SCR-SET-ACCESSIBILITY, SCR-SET-GENERAL, SCR-SET-NEARBY, SCR-SET-STORAGE, SCR-SET-BATTERY, SCR-SET-PASSWORDS, SCR-SET-CELLULAR, SCR-SET-ABOUT | AC-046, AC-012 | WP-06, WP-19 | U `visibility`, V, D |
+| REQ-F-047 | FEAT-39 | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 9절 | SCR-SET-DISPLAY, SCR-SET-DISPLAY-TEXT | AC-047 | WP-19 | P8, M |
+
+### 2.3 기능 요구 — 게임 시스템 (REQ-F-048~REQ-F-075)
+
+| REQ | FEAT | 상세 명세 | SCR | AC | WP | 테스트/검증 |
+|---|---|---|---|---|---|---|
+| REQ-F-048 | FEAT-40 | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) 3절 | SCR-OS-LOCK, SCR-OS-HOME, 앱 30종 루트 | AC-048 | WP-04 | U `visibility` |
+| REQ-F-049 | FEAT-41 | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) 4절 · [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) 1절 | SCR-OS-CONTROL-CENTER, SCR-SET-WIFI, SCR-SET-CIRRUS-SYNC | AC-049, AC-213 | WP-11 | U `net`, P `crisis.js` |
+| REQ-F-050 | FEAT-42 | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) 4절 · [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) 1·3절 | SCR-OS-SYSTEM-ALERT, SCR-SET-CIRRUS-SECURITY, SCR-NOTE-LIST, SCR-PHOTO-LIBRARY | AC-050 | WP-11 | U `net`·`trace`, P `crisis.js` |
+| REQ-F-051 | FEAT-43 | [ACTION_PROOF](../01-product/ACTION_PROOF.md) 1·2·4절 | SCR-OS-COMPOSER, SCR-OS-INFO-PANEL | AC-051, AC-401~AC-417 | WP-08 | U `verify`, P `route_a`~`route_d` |
+| REQ-F-052 | FEAT-43 | [ACTION_PROOF](../01-product/ACTION_PROOF.md) 3절 | SCR-OS-COMPOSER | AC-052, AC-412 | WP-08 | U `keywords`, P `route_a.js` 7단계 |
+| REQ-F-053 | FEAT-44 | [TRACES_AND_REACTIONS](../01-product/TRACES_AND_REACTIONS.md) 2·6절 | SCR-TALK-ROOM, SCR-LOOP-FEED, SCR-BLINK-ROOM, SCR-SET-CIRRUS-SYNC | AC-053, AC-301~AC-319 | WP-09 | U `trace`, P `traces.js` |
+| REQ-F-054 | FEAT-45 | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) 4절 · [CHARACTERS](../01-product/CHARACTERS.md) | SCR-TALK-ROOM, SCR-LOOP-DM-ROOM, SCR-MAIL-COMPOSE, SCR-BLINK-ROOM | AC-054, AC-407~AC-416 | WP-10, WP-25 | U `dialogue`, L0, P `traces.js` |
+| REQ-F-055 | FEAT-46 | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) 3절 | SCR-OS-NOTIF-CENTER, SCR-TALK-ROOM, SCR-HANKKI-ORDERS, SCR-MAIL-INBOX | AC-055, AC-301~AC-319 | WP-12 | U `net`·`trace`, P `moved.js` |
+| REQ-F-056 | FEAT-47 | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) 4.1절 · [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) EV-06·EV-08·EV-19 | SCR-MSG-ROOM, SCR-CAM-VIEWFINDER, SCR-OS-SYSTEM-ALERT | AC-056, AC-211~AC-215 | WP-12, WP-15 | P `crisis.js` |
+| REQ-F-057 | FEAT-48 | [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) 5절 · [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) EV-04·EV-05·EV-07·EV-08 | SCR-OS-SYSTEM-ALERT, SCR-NOTE-LIST, SCR-PHOTO-ALBUM, SCR-OS-LOCK | AC-057, AC-205, AC-215 | WP-12, WP-13 | P `crisis.js` CR-1~CR-3 |
+| REQ-F-058 | FEAT-49 | [PLAYTIME_BUDGET](../01-product/PLAYTIME_BUDGET.md) 6절 · [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) 5절 | SCR-OS-HOME, SCR-PAUSE-SETTINGS | AC-058 | WP-02 | U `clock` |
+| REQ-F-059 | FEAT-50 | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) 6.1·6.4 | SCR-TAXI-CONFIRM, SCR-CINE-ENDING | AC-059, AC-201~AC-205 | WP-25 | U `endings`, P `route_a`~`route_d` |
+| REQ-F-060 | FEAT-51 | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) 7절 · [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) 7절 | SCR-PAUSE-HINT | AC-060 | WP-05, WP-25 | U `hints`, V |
+| REQ-F-061 | FEAT-52 | [SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md) 1절 | SCR-PAUSE-SAVE | AC-061 | WP-01, WP-05 | U `save` |
+| REQ-F-062 | FEAT-66 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.10 | SCR-PAUSE-SAVE | AC-062 | WP-32 | P8, U `save` |
+| REQ-F-063 | FEAT-53 | [ACTION_PROOF](../01-product/ACTION_PROOF.md) 2절 · [SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md) 5절 | 없음(콘텐츠 린터 규칙, 화면 없음) | AC-063 | WP-20 | L0 |
+| REQ-F-064 | FEAT-54 | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) 8절 | SCR-CINE-ENDING | AC-064 | WP-32 | P8, M |
+| REQ-F-065 | FEAT-55 | [LOCATIONS](../01-product/LOCATIONS.md) 1·4·5절 · [EVIDENCE_LEDGER](../01-product/EVIDENCE_LEDGER.md) 4절 | SCR-MAP-SAVED, SCR-MAP-SEARCH, SCR-HANKKI-ORDERS, SCR-SET-KEYBOARD-TEXT, SCR-SET-WIFI | AC-065 | WP-20 | L0 미끼 격리, U `visibility` |
+| REQ-F-066 | FEAT-56 | [SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md) 2절 | 없음(디버그 패널, `?debug=1`) | AC-066 | WP-05, WP-29 | U `save`, L0 |
+| REQ-F-067 | FEAT-06, FEAT-57 | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 9절 · [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.9 | SCR-SET-KEYBOARD-CLIPBOARD, SCR-SET-KEYBOARD-TEXT, SCR-OS-COMPOSER | AC-067 | WP-07 | U `composer`, P `route_a.js` |
+| REQ-F-068 | FEAT-58 | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 7절 · [ACTION_PROOF](../01-product/ACTION_PROOF.md) V-15 | SCR-SET-NOTIFICATION-APP, SCR-OS-NOTIF-CENTER, SCR-BLINK-ROOM | AC-068, AC-416 | WP-24 | P `traces.js` T-3, U `trace` |
+| REQ-F-069 | FEAT-59 | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) 4.1 · [LOCATIONS](../01-product/LOCATIONS.md) 5절 | SCR-HANKKI-ORDERS, SCR-TAXI-CALL, SCR-TAXI-CONFIRM, SCR-SET-SCREENTIME, SCR-MAP-SAVED | AC-069 | WP-25 | P `moved.js` 1~4단계 |
+| REQ-F-070 | FEAT-60 | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) 4절 · [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.1 | SCR-OS-LOCK, SCR-OS-HOME | AC-070 | WP-03 | P `p1_shell.spec.js`, M |
+| REQ-F-071 | FEAT-61 | [ACTION_PROOF](../01-product/ACTION_PROOF.md) V-08 · [SNS](../03-features/SNS_SPECIFICATION.md) 2.2 | SCR-LOOP-ACCOUNT-SWITCH, SCR-MAIL-SEARCH, SCR-SET-CIRRUS | AC-071, AC-310, AC-409 | WP-31 | P8, P `route_side.js` |
+| REQ-F-072 | FEAT-62 | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) 4.4 · [ACTION_PROOF](../01-product/ACTION_PROOF.md) V-07 | SCR-LOOP-POST-PHOTO, SCR-LOOP-POST-TEXT, SCR-LOOP-DM-ROOM | AC-072, AC-408 | WP-31 | P8, U `verify` |
+| REQ-F-073 | FEAT-45 | [TRACES_AND_REACTIONS](../01-product/TRACES_AND_REACTIONS.md) TR-10·TR-14·TR-16 | SCR-LOOP-ACCOUNT-SWITCH, SCR-LOOP-POST-PHOTO, SCR-FIND-DEVICE | AC-073, AC-310, AC-314, AC-316 | WP-31 | P8, U `trace` |
+| REQ-F-074 | FEAT-63 | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) 4절 · [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) 6절 | SCR-TALK-ROOM, SCR-LOOP-DM-ROOM, SCR-LOOP-POST-PHOTO | AC-074 | WP-31 | P8, P `route_side.js` |
+| REQ-F-075 | FEAT-64, FEAT-65, FEAT-67 | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) 6.4 · [ICONOGRAPHY_AND_IMAGERY](../02-design/ICONOGRAPHY_AND_IMAGERY.md) 6절 · [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 10절 | SCR-CINE-ENDING, SCR-VOICE-PLAYER, SCR-PAUSE-SAVE | AC-075 | WP-32 | P8, M, V |
+
+### 2.4 비기능 요구 (REQ-N-001~REQ-N-024)
+
+| REQ | FEAT | 상세 명세 | SCR | AC | WP | 테스트/검증 |
+|---|---|---|---|---|---|---|
+| REQ-N-001 | 없음 | [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md) 4절 · [PERFORMANCE_REQUIREMENTS](../05-quality/PERFORMANCE_REQUIREMENTS.md) | 전 화면 공통(빌드 산출물) | AC-101, AC-501 | 없음 | L0 빌드 로그, M |
+| REQ-N-002 | 없음 | [PERFORMANCE_REQUIREMENTS](../05-quality/PERFORMANCE_REQUIREMENTS.md) · [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md) 4절 | SCR-PHOTO-LIBRARY, SCR-CAM-VIEWFINDER | AC-102, AC-502 | WP-27 | D, 성능 마크 |
+| REQ-N-003 | 없음 | [PERFORMANCE_REQUIREMENTS](../05-quality/PERFORMANCE_REQUIREMENTS.md) · [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 11절 | 전 화면 공통 | AC-103, AC-503 | 없음 | U·성능 마크, D |
+| REQ-N-004 | 없음 | [SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md) 1절 | 전 화면 공통 | AC-104 | 없음 | P `route_*`(네트워크 차단), D |
+| REQ-N-005 | 없음 | [SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md) 1절 | 전 화면 공통 | AC-105 | 없음 | L0, M |
+| REQ-N-006 | 없음 | [SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md) 1절 | 전 화면 공통 | AC-106 | 없음 | M, P |
+| REQ-N-007 | 없음 | [PRODUCT_PRINCIPLES](../00-foundation/PRODUCT_PRINCIPLES.md) 1절 · [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md) 4절 | 전 화면 공통 | AC-107, AC-511 | 없음 | D |
+| REQ-N-008 | 없음 | [RESPONSIVE_DESIGN](../02-design/RESPONSIVE_DESIGN.md) | 전 화면 공통 | AC-108, AC-505 | 없음 | V, D |
+| REQ-N-009 | 없음 | [ICONOGRAPHY_AND_IMAGERY](../02-design/ICONOGRAPHY_AND_IMAGERY.md) 3절 · [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) | 전 화면 공통 | AC-109, AC-507 | 없음 | V, U |
+| REQ-N-010 | 없음 | [ACCESSIBILITY](../02-design/ACCESSIBILITY.md) | 전 화면 공통 | AC-110, AC-508 | 없음 | M, 자체 DOM 검사 |
+| REQ-N-011 | 없음 | [ACCESSIBILITY](../02-design/ACCESSIBILITY.md) | 전 화면 공통 | AC-111, AC-509 | 없음 | U DOM 검사, D |
+| REQ-N-012 | 없음 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 10절 | SCR-SET-DISPLAY-TEXT, SCR-PAUSE-SETTINGS | AC-112, AC-509 | 없음 | V, D |
+| REQ-N-013 | 없음 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 10절 | 전 화면 공통 | AC-113, AC-510 | WP-02 | U, D |
+| REQ-N-014 | 없음 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 10절 | SCR-VOICE-LIST, SCR-VOICE-PLAYER, SCR-VOICE-TRANSCRIPT, SCR-TUBE-WATCH | AC-114, AC-510 | 없음 | M, D |
+| REQ-N-015 | 없음 | [ICONOGRAPHY_AND_IMAGERY](../02-design/ICONOGRAPHY_AND_IMAGERY.md) 2절 | 전 화면 공통 | AC-115 | WP-26 | M, L0 금지어 |
+| REQ-N-016 | 없음 | [PRODUCT_PRINCIPLES](../00-foundation/PRODUCT_PRINCIPLES.md) 2.1 | 전 화면 공통 | AC-116 | WP-26 | L0 금칙어, M |
+| REQ-N-017 | 없음 | [PRODUCT_PRINCIPLES](../00-foundation/PRODUCT_PRINCIPLES.md) 1·7절 | 전 화면 공통 | AC-117 | 없음 | L0, M |
+| REQ-N-018 | 없음 | [SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md) 1절 | 전 화면 공통 | AC-118 | 없음 | M, P |
+| REQ-N-019 | 없음 | [SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md) 1절 | 전 화면 공통 | AC-119 | 없음 | M |
+| REQ-N-020 | 없음 | [PROJECT_SCOPE](../00-foundation/PROJECT_SCOPE.md) 5절 | 전 화면 공통 | AC-120 | 없음 | M |
+| REQ-N-021 | 없음 | [SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md) 6절 · [TESTING_STRATEGY](../05-quality/TESTING_STRATEGY.md) | 전 화면 공통 | AC-121, AC-201~AC-205, AC-301~AC-319 | WP-29 | P, L0 |
+| REQ-N-022 | 없음 | [SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md) 1·2절 · [STATE_MANAGEMENT](../04-tech/STATE_MANAGEMENT.md) | 전 화면 공통 | AC-122 | WP-01 | U `state`·`save` |
+| REQ-N-023 | 없음 | [SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md) 5절 · [DATABASE_SCHEMA](../04-tech/DATABASE_SCHEMA.md) 5절 | 전 화면 공통 | AC-123, AC-063 | WP-20 | L0 |
+| REQ-N-024 | 없음 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 1절 | SCR-OS-HOME | AC-124, AC-506 | 없음 | M, V, D |
+
+---
+
+## 3. 역추적
+
+### 3.1 REQ가 없는 FEAT
+
+**0건.** FEAT-01~FEAT-67 모두 [FEATURE_SPECIFICATION](../01-product/FEATURE_SPECIFICATION.md)의 "관련 REQ" 열에 하나 이상의 `REQ-F`를 가진다. 일부 FEAT는 하나의 REQ를 공유한다(FEAT-06·FEAT-57 → REQ-F-067, FEAT-45 → REQ-F-054·REQ-F-073, FEAT-64·FEAT-65·FEAT-67 → REQ-F-075).
+
+### 3.2 FEAT·명세 문서에 연결되지 않은 SCR
+
+**0건.** 인벤토리 178개 전부 [NAVIGATION_ARCHITECTURE](../02-design/NAVIGATION_ARCHITECTURE.md) 3절에서 `정의 문서`(03-features)를 가진다. 셸·일시정지·시네마틱 19개는 FEAT-01~09·FEAT-56·FEAT-66, 앱 화면은 FEAT-10~39, 설정 화면은 FEAT-39에 대응한다. 인벤토리에서 추가된 `SCR-BLINK-SETTINGS-SESSIONS`·`SCR-SET-GENERAL`도 각각 [SECURE_MESSAGING](../03-features/SECURE_MESSAGING_SPECIFICATION.md) 5.6·9.3, [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 4.1·8.0에 연결된다.
+
+| 확인 대상 | 결과 |
+|---|---|
+| SCR 총수 | 178 (P0 34 / P1 144) |
+| 정의 문서 없는 SCR | 0 |
+| FEAT에 대응하지 않는 SCR | 0 |
+
+### 3.3 REQ가 없는 AC
+
+**10건.** 아래 AC는 요구사항 추적표에 매핑되지 않는다. 성격상 설계 잠금·품질 측정 절차이므로 의도적이다.
+
+| AC | 내용 | 성격 | 처리 |
+|---|---|---|---|
+| AC-504 | 60fps·DOM 노드 3,500 이하 | 성능 구현 상한. REQ-N-003의 100ms와 별개 지표 | REQ-N-003에 종속으로 표기하거나 P0에서 REQ-N 신설 여부 확인 |
+| AC-512 | `visual.spec.js` 15화면 × 2테마, 오차 0.1% | 시각 회귀 기준. REQ-N-010과 직접 대응 없음 | TESTING_STRATEGY 5절의 검증 수단으로 유지 |
+| AC-601 | REQ 75+24와 수치·ID 모순 0 | P0 설계 잠금 체크 | 프로세스 AC, 유지 |
+| AC-602 | IMPLEMENTATION_ROADMAP 5절 열린 결정 7건 확정 | P0 설계 잠금 체크 | 프로세스 AC, 유지 |
+| AC-603 | FRONTEND_ARCHITECTURE 모듈 트리 동결 | P0 설계 잠금 체크 | 프로세스 AC, 유지 |
+| AC-604 | SCR 178개와 WP 배정 일치 | P0 설계 잠금 체크 | 프로세스 AC, 유지 |
+| AC-605 | TESTING_STRATEGY 동결 | P0 설계 잠금 체크 | 프로세스 AC, 유지 |
+| AC-606 | 숫자 캐논 일치 | P0 설계 잠금 체크 | 프로세스 AC, 유지 |
+| AC-607 | 콘텐츠 스키마·린터 규칙 10종 동결 | P0 설계 잠금 체크 | 프로세스 AC, 유지 |
+| AC-608 | 서현의 P0 승인 | P0 설계 잠금 체크 | 프로세스 AC, 유지 |
+
+### 3.4 어떤 화면 명세에도 쓰이지 않은 CMP
+
+**2건.** [COMPONENT_SPECIFICATIONS](../02-design/COMPONENT_SPECIFICATIONS.md)의 정의 74개 중 72개가 `SCREEN_SPECIFICATIONS.md`·`SCREEN_SPECIFICATIONS_APPS.md`·`SCREEN_SPECIFICATIONS_SNS_SETTINGS.md`에 등장한다. 아래 2개는 세 화면 명세에 등장하지 않는다.
+
+| CMP | 정의 용도 | 상태 | 처리 제안 |
+|---|---|---|---|
+| CMP-HOME-INDICATOR | 홈 제스처 기준 134×5 장식 요소 | 화면이 아니라 기기 크롬. [NAVIGATION_ARCHITECTURE](../02-design/NAVIGATION_ARCHITECTURE.md) 1.1의 "기기 크롬"에 속한다. | 화면 명세에 넣지 않고 셸 크롬 컴포넌트로 유지. 필요하면 SCREEN_SPECIFICATIONS 셸 공통 절에 참조 추가 |
+| CMP-TOAST | 3초 문구(동기화 삭제 등) | 화면이 아니라 일시적 피드백. AC-005·REQ-F-005가 요구하지만 독립 화면이 아니다. | 삭제 알림 문구를 `SCR-OS-NOTIF-CENTER` 또는 셸 공통 절에서 참조하도록 보강 |
+
+> 두 컴포넌트는 [INTERACTION_SPECIFICATIONS](../02-design/INTERACTION_SPECIFICATIONS.md)·[SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md)에서는 사용되므로 미정의 컴포넌트는 아니다. "화면 명세 3종에 문자열로 등장하지 않음"만 사실이다.
+
+---
+
+## 4. 구 문서 → 새 문서 이전표
+
+- 대상은 폐기되는 `design/00-*.md ~ 19-*.md` 20개다.
+- "의도적 제외"는 캐논으로 옮기지 않고 버린 절이다. 이유를 함께 적는다. 원문은 git 기록에 남아 있다.
+- 구 문서 원문은 git 기록(커밋 e9cde4e, 브랜치 claude/pensive-ramanujan-ide38e)에 남는다. `design/00-analysis-and-direction.md`는 문서 전체가 역사 기록으로 의도적 제외 대상이다. 다만 그 안의 **현재 유효한 원칙**은 4.1에 이전 위치를 적는다.
+
+### 4.1 00-analysis-and-direction.md — 의도적 제외 + 유효 원칙 이전
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 기존 설계(v5.4)의 근본 문제 | — | **의도적 제외.** 폐기된 설계의 문제 분석은 구현 기준이 아니다. git 기록에 남는다. |
+| 1.1 살릴 가치가 있는 것 | [PRODUCT_PRINCIPLES](../00-foundation/PRODUCT_PRINCIPLES.md) · [NARRATIVE_CANON](../01-product/NARRATIVE_CANON.md) · [CHARACTERS](../01-product/CHARACTERS.md) · [SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md) | 계승 자산만 이전. 주제문·아버지의 빚·680403·인물·앎 매트릭스·대사 원칙·`morph()`/단일 HTML은 각 새 문서에 반영됐다. |
+| 2. 새 방향 탐색 | — | **의도적 제외.** 방향 탐색 과정이다. |
+| 3. 세 가지(+1) 방향 비교 | — | **의도적 제외.** 후보 비교 기록이다. |
+| 4. 경쟁작 대비 차별점 | [PRODUCT_VISION](../00-foundation/PRODUCT_VISION.md) · [PRD](../01-product/PRD.md) | 차별점 문장만 계승. 경쟁작 비교 서술 자체는 제외. |
+| 5. v6.2 방향 수정 | [PRODUCT_PRINCIPLES](../00-foundation/PRODUCT_PRINCIPLES.md) · [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) · [ACTION_PROOF](../01-product/ACTION_PROOF.md) · [TRACES_AND_REACTIONS](../01-product/TRACES_AND_REACTIONS.md) · [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) | 유효 결정(구 판정 UI 폐기·행동 증명·흔적·설정 수사)은 이전. "철회" 서술 자체는 제외. |
+
+### 4.2 01-game-overview.md ~ 06-apps-spec.md
+
+**01-game-overview.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 한 줄 요약 | [PRODUCT_VISION](../00-foundation/PRODUCT_VISION.md) · [PRD](../01-product/PRD.md) | 이전 |
+| 2. 로그라인과 주제 | [NARRATIVE_CANON](../01-product/NARRATIVE_CANON.md) · [PRD](../01-product/PRD.md) | 이전 |
+| 3. 디자인 기둥 | [PRODUCT_PRINCIPLES](../00-foundation/PRODUCT_PRINCIPLES.md) | 이전 |
+| 4. 핵심 경험 목표 | [PRODUCT_VISION](../00-foundation/PRODUCT_VISION.md) | 이전 |
+| 5. 플레이어는 누구인가 | [USER_PERSONAS](../01-product/USER_PERSONAS.md) · [NARRATIVE_CANON](../01-product/NARRATIVE_CANON.md) | 이전 |
+| 6. 범위 결정 | [PROJECT_SCOPE](../00-foundation/PROJECT_SCOPE.md) | 이전 |
+| 7. 콘텐츠 가이드라인 | [PRODUCT_PRINCIPLES](../00-foundation/PRODUCT_PRINCIPLES.md) | 이전 |
+| 8. 성공 기준 | [PRD](../01-product/PRD.md) · [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md) | 이전 |
+
+**02-world-and-story.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 세계 | [NARRATIVE_CANON](../01-product/NARRATIVE_CANON.md) | 이전 |
+| 2. 핵심 진실(Answer Key) | [NARRATIVE_CANON](../01-product/NARRATIVE_CANON.md) | 이전 |
+| 3. 인과 연대기(3.1~3.3) | [NARRATIVE_CANON](../01-product/NARRATIVE_CANON.md) | 이전 |
+| 4. 현재 진행형 | [NARRATIVE_CANON](../01-product/NARRATIVE_CANON.md) · [TRACES_AND_REACTIONS](../01-product/TRACES_AND_REACTIONS.md) | 이전 |
+| 5. 겹겹의 진실 | [NARRATIVE_CANON](../01-product/NARRATIVE_CANON.md) | 이전 |
+| 6. 아버지가 아는 것 | [NARRATIVE_CANON](../01-product/NARRATIVE_CANON.md) · [CHARACTERS](../01-product/CHARACTERS.md) | 이전 |
+| 7. 결말 구조(요약) | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) | 이전. 상세 판정은 PROGRESSION이 단일 출처 |
+
+**03-characters.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 인물(1.1 상세) | [CHARACTERS](../01-product/CHARACTERS.md) | 이전 |
+| 2. 관계도 | [CHARACTERS](../01-product/CHARACTERS.md) | 이전 |
+| 3. 계정·기기 | [CHARACTERS](../01-product/CHARACTERS.md) | 이전 |
+| 4. 앎 매트릭스 | [CHARACTERS](../01-product/CHARACTERS.md) | 이전 |
+| 5. 거짓말 표 | [CHARACTERS](../01-product/CHARACTERS.md) | 이전 |
+| 6. 대사 원칙 | [CHARACTERS](../01-product/CHARACTERS.md) | 이전 |
+
+**04-core-gameplay.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 폐기하는 것 | — | **의도적 제외.** "무엇을 안 만드는가"의 폐기 설명이며 구현 기준이 아니다. |
+| 2. 핵심 루프 | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) | 이전 |
+| 2.1 무엇이 진행인가 | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) · [ACTION_PROOF](../01-product/ACTION_PROOF.md) | 이전 |
+| 3. 정보의 층 | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) | 이전 |
+| 4. 온라인/오프라인 딜레마 | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) | 이전 |
+| 4.1 "30분" 위기 | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) · [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) | 이전 |
+| 5. 시간(5.1 흐름) | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) · [PLAYTIME_BUDGET](../01-product/PLAYTIME_BUDGET.md) | 이전 |
+| 6. NPC와 연락하기 — 작성창 | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) · [INTERACTION_SPECIFICATIONS](../02-design/INTERACTION_SPECIFICATIONS.md) | 이전 |
+| 7. 막힘 방지 | [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) · [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) | 이전 |
+| 8. 실패와 엔딩 | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) | 이전 |
+| 9. 한 판의 예시 흐름 | [USER_JOURNEYS](../01-product/USER_JOURNEYS.md) · [USER_FLOWS](../01-product/USER_FLOWS.md) | 이전. 검증용 예시 흐름은 여정 문서로 |
+
+**05-os-and-ux.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 화면 구조 | [NAVIGATION_ARCHITECTURE](../02-design/NAVIGATION_ARCHITECTURE.md) · [UI_UX_GUIDELINES](../02-design/UI_UX_GUIDELINES.md) | 이전 |
+| 2. 상태바 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) · [SCREEN_SPECIFICATIONS](../02-design/SCREEN_SPECIFICATIONS.md) | 이전 |
+| 3. 잠금화면(T0) | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) · [SCREEN_SPECIFICATIONS](../02-design/SCREEN_SPECIFICATIONS.md) | 이전 |
+| 4. 홈 화면 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) · [SCREEN_SPECIFICATIONS](../02-design/SCREEN_SPECIFICATIONS.md) | 이전 |
+| 5. 알림 시스템 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) | 이전 |
+| 6. 전역 검색 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) | 이전 |
+| 7. 제어 센터 | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) | 이전 |
+| 8. 공통 조작 | [INTERACTION_SPECIFICATIONS](../02-design/INTERACTION_SPECIFICATIONS.md) · [COMPONENT_SPECIFICATIONS](../02-design/COMPONENT_SPECIFICATIONS.md) | 이전 |
+| 9. 작성창(LUMA 키보드) | [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) · [INTERACTION_SPECIFICATIONS](../02-design/INTERACTION_SPECIFICATIONS.md) | 이전 |
+| 10. 접근성·편의 | [ACCESSIBILITY](../02-design/ACCESSIBILITY.md) | 이전 |
+| 11. 화면 갱신 원칙 | [FRONTEND_ARCHITECTURE](../04-tech/FRONTEND_ARCHITECTURE.md) · [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 11절 | 이전 |
+
+**06-apps-spec.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 0. 앱 목록 | [NAVIGATION_ARCHITECTURE](../02-design/NAVIGATION_ARCHITECTURE.md) 3절 · [FEATURE_SPECIFICATION](../01-product/FEATURE_SPECIFICATION.md) 2절 | 이전 |
+| 1. 전화 | [MESSAGING](../03-features/MESSAGING_SPECIFICATION.md) 1절 | 이전 |
+| 2. 메시지 | [MESSAGING](../03-features/MESSAGING_SPECIFICATION.md) 2절 | 이전 |
+| 3. 톡 | [MESSAGING](../03-features/MESSAGING_SPECIFICATION.md) 3절 | 이전 |
+| 4. 루프 | [SNS](../03-features/SNS_SPECIFICATION.md) | 이전 |
+| 5. 블링크 | [SECURE_MESSAGING](../03-features/SECURE_MESSAGING_SPECIFICATION.md) | 이전 |
+| 6. 메일 | [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) 2절 | 이전 |
+| 7. 사진 | [MEDIA](../03-features/MEDIA_SPECIFICATION.md) 1절 | 이전 |
+| 8. 카메라 | [MEDIA](../03-features/MEDIA_SPECIFICATION.md) 2절 | 이전 |
+| 9. 지도 | [MAPS_AND_MOBILITY](../03-features/MAPS_AND_MOBILITY_SPECIFICATION.md) 1절 | 이전 |
+| 10. 찾기 | [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) 3절 | 이전 |
+| 11. 연락처 | [MESSAGING](../03-features/MESSAGING_SPECIFICATION.md) 4절 | 이전 |
+| 12. 캘린더 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 1절 | 이전 |
+| 13. 메모 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 2절 | 이전 |
+| 14. 미리 알림 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 3절 | 이전 |
+| 15. 음성 메모 | [MEDIA](../03-features/MEDIA_SPECIFICATION.md) 3절 | 이전 |
+| 16. 시계 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 4절 | 이전 |
+| 17. 날씨 | [MAPS_AND_MOBILITY](../03-features/MAPS_AND_MOBILITY_SPECIFICATION.md) 3절 | 이전 |
+| 18. 건강 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 5절 | 이전 |
+| 19. 지갑 | [MAPS_AND_MOBILITY](../03-features/MAPS_AND_MOBILITY_SPECIFICATION.md) 4절 · [COMMERCE_AND_FINANCE](../03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md) 4절 | 이전(교통=MAPS, 결제=COMMERCE) |
+| 20. 누리은행 | [COMMERCE_AND_FINANCE](../03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md) 1절 | 이전 |
+| 21. 바로택시 | [MAPS_AND_MOBILITY](../03-features/MAPS_AND_MOBILITY_SPECIFICATION.md) 2절 | 이전 |
+| 22. 파일 | [MEDIA](../03-features/MEDIA_SPECIFICATION.md) 4절 | 이전 |
+| 23. 웨이브 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 7절 | 이전 |
+| 24. 튜브 · 25. 모아 | [VIDEO_AND_COMMUNITY](../03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md) 1·2절 | 이전 |
+| 26. 한끼 | [COMMERCE_AND_FINANCE](../03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md) 2절 | 이전 |
+| 27. 이웃마켓 | [COMMERCE_AND_FINANCE](../03-features/COMMERCE_AND_FINANCE_SPECIFICATION.md) 3절 | 이전 |
+| 28. 한서 포털 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 8절 | 이전 |
+| 29. 계산기 | [PERSONAL_DATA_APPS](../03-features/PERSONAL_DATA_APPS_SPECIFICATION.md) 6절 | 이전 |
+| 30. 설정 | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) | 이전 |
+
+### 4.3 07-sns-system.md ~ 12-progression-and-branching.md
+
+**07-sns-system.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 루프의 기능 | [SNS](../03-features/SNS_SPECIFICATION.md) 8.1 | 이전 |
+| 2. 등장 계정(2.1~2.3) | [SNS](../03-features/SNS_SPECIFICATION.md) 8.2~8.5 · [CHARACTERS](../01-product/CHARACTERS.md) | 이전 |
+| 3. 튜브 | [VIDEO_AND_COMMUNITY](../03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md) 1절 | 이전 |
+| 4. 차단된 실장을 보는 네 가지 방법 | [SNS](../03-features/SNS_SPECIFICATION.md) 8.6 · [ACTION_PROOF](../01-product/ACTION_PROOF.md) · [EVIDENCE_LEDGER](../01-product/EVIDENCE_LEDGER.md) | 이전 |
+| 5. 모아 | [VIDEO_AND_COMMUNITY](../03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md) 2절 | 이전 |
+| 6. 추적 사슬(6.1~6.5) | [SNS](../03-features/SNS_SPECIFICATION.md) 8.7 · [NARRATIVE_CANON](../01-product/NARRATIVE_CANON.md) | 이전 |
+| 7. 상대도 지운다 | [TRACES_AND_REACTIONS](../01-product/TRACES_AND_REACTIONS.md) · [SNS](../03-features/SNS_SPECIFICATION.md) 8.8 | 이전 |
+| 8. 장소 페이지 | [SNS](../03-features/SNS_SPECIFICATION.md) 8.9 · [LOCATIONS](../01-product/LOCATIONS.md) | 이전 |
+| 9. SNS 분량 | [SNS](../03-features/SNS_SPECIFICATION.md) 8.10 · [PLAYTIME_BUDGET](../01-product/PLAYTIME_BUDGET.md) | 이전 |
+
+**08-location-system.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 장소 | [LOCATIONS](../01-product/LOCATIONS.md) | 이전 |
+| 2. 이동 시간표 | [LOCATIONS](../01-product/LOCATIONS.md) | 이전 |
+| 3. 지도 앱 기능 | [MAPS_AND_MOBILITY](../03-features/MAPS_AND_MOBILITY_SPECIFICATION.md) 1절 | 이전 |
+| 4. 위치 출처별 정밀도 | [LOCATIONS](../01-product/LOCATIONS.md) | 이전 |
+| 5. 위치 추리 | [LOCATIONS](../01-product/LOCATIONS.md) | 이전 |
+| 6. 실시간 위치 사건 | [LOCATIONS](../01-product/LOCATIONS.md) · [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) | 이전 |
+
+**09-mail-and-cloud.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 정보가 머무는 네 곳 | [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) 1절 | 이전 |
+| 2. 메일(2.1~2.3) | [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) 2절 | 이전 |
+| 3. 시러스 ID | [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) 4절 | 이전 |
+| 4. 찾기 앱 | [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) 3절 | 이전 |
+| 5. 원격 지우기(EV-08) | [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) 5절 · [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) EV-08 | 이전 |
+| 6. 계정 접근 규칙 | [MAIL_AND_CLOUD](../03-features/MAIL_AND_CLOUD_SPECIFICATION.md) 6절 · [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) | 이전 |
+
+**10-evidence-system.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 원칙 | [EVIDENCE_LEDGER](../01-product/EVIDENCE_LEDGER.md) | 이전 |
+| 2. 보존 수단 | [EVIDENCE_LEDGER](../01-product/EVIDENCE_LEDGER.md) · [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) | 이전 |
+| 3. 단서 목록(3.1~3.10) | [EVIDENCE_LEDGER](../01-product/EVIDENCE_LEDGER.md) | 이전. 10개 하위 절 전체 |
+| 4. 위치의 미끼와 진실 | [LOCATIONS](../01-product/LOCATIONS.md) · [EVIDENCE_LEDGER](../01-product/EVIDENCE_LEDGER.md) 4절 | 이전 |
+
+**11-deduction-system.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 행동 증명의 다섯 형태 | [ACTION_PROOF](../01-product/ACTION_PROOF.md) | 이전 |
+| 2. 행동 증명 표 | [ACTION_PROOF](../01-product/ACTION_PROOF.md) | 이전 |
+| 3. 직접 입력의 낱말 사전 | [ACTION_PROOF](../01-product/ACTION_PROOF.md) | 이전 |
+| 4. 결론은 행동으로 | [ACTION_PROOF](../01-product/ACTION_PROOF.md) | 이전 |
+| 5. 가설과 반증 | [ACTION_PROOF](../01-product/ACTION_PROOF.md) · [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) | 이전 |
+
+**12-progression-and-branching.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 해금 그래프 | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) | 이전 |
+| 2. 게이트 | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) | 이전 |
+| 3. 사건(EV)(3.1~3.2) | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) | 이전 |
+| 4. NPC 상태와 반응표(4.1~4.8) | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) · [CHARACTERS](../01-product/CHARACTERS.md) | 이전 |
+| 5. 작성창 입력 처리 | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) · [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) | 이전 |
+| 6. 최종 행동과 엔딩(6.1~6.5) | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) | 이전 |
+| 7. 힌트 목표 | [PROGRESSION_AND_ENDINGS](../01-product/PROGRESSION_AND_ENDINGS.md) | 이전 |
+
+### 4.4 13-art-direction.md ~ 19-traces-and-reactions.md
+
+**13-art-direction.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 기존 아트의 문제 | — | **의도적 제외.** 폐기된 아트의 비판 기록이다. |
+| 2. 시각 정체성: 유리 한 장 | [DESIGN_SYSTEM](../02-design/DESIGN_SYSTEM.md) · [UI_UX_GUIDELINES](../02-design/UI_UX_GUIDELINES.md) | 이전 |
+| 3. 색 토큰(3.1~3.2) | [DESIGN_TOKENS](../02-design/DESIGN_TOKENS.md) | 이전 |
+| 4. 아이콘 시스템(4.1~4.3) | [ICONOGRAPHY_AND_IMAGERY](../02-design/ICONOGRAPHY_AND_IMAGERY.md) | 이전 |
+| 5. 폰 속 사진 | [ICONOGRAPHY_AND_IMAGERY](../02-design/ICONOGRAPHY_AND_IMAGERY.md) | 이전 |
+| 6. 카메라 뷰 — 도현의 방 | [ICONOGRAPHY_AND_IMAGERY](../02-design/ICONOGRAPHY_AND_IMAGERY.md) | 이전 |
+| 7. 시네마틱 | [ICONOGRAPHY_AND_IMAGERY](../02-design/ICONOGRAPHY_AND_IMAGERY.md) · [SYSTEM_SHELL](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.11 | 이전 |
+| 8. 소리(선택) | [ICONOGRAPHY_AND_IMAGERY](../02-design/ICONOGRAPHY_AND_IMAGERY.md) · [ACCESSIBILITY](../02-design/ACCESSIBILITY.md) | 이전 |
+
+**14-tech-architecture.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 기술 선택 | [SYSTEM_ARCHITECTURE](../04-tech/SYSTEM_ARCHITECTURE.md) | 이전 |
+| 2. 모듈 구성 | [FRONTEND_ARCHITECTURE](../04-tech/FRONTEND_ARCHITECTURE.md) | 이전 |
+| 3. 데이터 모델(3.1~3.6) | [DATABASE_SCHEMA](../04-tech/DATABASE_SCHEMA.md) | 이전 |
+| 4. 핵심 알고리즘(4.1~4.3) | [STATE_MANAGEMENT](../04-tech/STATE_MANAGEMENT.md) · [FRONTEND_ARCHITECTURE](../04-tech/FRONTEND_ARCHITECTURE.md) | 이전 |
+| 5. 콘텐츠 린터 | [DATABASE_SCHEMA](../04-tech/DATABASE_SCHEMA.md) 5절 · [TESTING_STRATEGY](../05-quality/TESTING_STRATEGY.md) | 이전 |
+| 6. 테스트 | [TESTING_STRATEGY](../05-quality/TESTING_STRATEGY.md) | 이전 |
+| 7. 기존 코드 재사용 판단 | — | **의도적 제외.** `prototype/`·`mvp/` 재사용 판단은 구현 이력이며 캐논이 아니다. 새 구현은 `game/`이다. |
+
+**15-mvp-and-roadmap.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. MVP의 목표 | [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md) · [PROJECT_SCOPE](../00-foundation/PROJECT_SCOPE.md) | 이전 |
+| 2. MVP 범위 | [PROJECT_SCOPE](../00-foundation/PROJECT_SCOPE.md) · [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md) | 이전 |
+| 3. 단계(3.1 구현 방식) | [DEVELOPMENT_PHASES](./DEVELOPMENT_PHASES.md) | 이전 |
+| 4. 리스크 | [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md) · [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) | 이전 |
+| 5. 열린 결정 | [OPEN_QUESTIONS](./OPEN_QUESTIONS.md) | 이전 |
+
+**16-consistency-and-legacy.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 단일 출처 규칙 | [design/README](../README.md) · 이 문서 1절 | 이전 |
+| 2. v6.2 검증 항목과 결과(2.1~2.8) | [ACCEPTANCE_CRITERIA](./ACCEPTANCE_CRITERIA.md) · [DATABASE_SCHEMA](../04-tech/DATABASE_SCHEMA.md) · 이 문서 2·3절 | 검증 **규칙**은 이전. 특정 시점의 검증 결과 문구는 역사 기록으로 제외 |
+| 3. 기존 설계(v5.4) 처리(3.1~3.3) | — | **의도적 제외.** 폐기·계승·파일 처리 이력이다. 계승 항목은 이미 대상 새 문서에 반영됐다. |
+
+**17-playtime-budget.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 계산 방법(1.1~1.2) | [PLAYTIME_BUDGET](../01-product/PLAYTIME_BUDGET.md) | 이전 |
+| 2. 비트 시간표(①~⑤) | [PLAYTIME_BUDGET](../01-product/PLAYTIME_BUDGET.md) | 이전 |
+| 3. 합계 | [PLAYTIME_BUDGET](../01-product/PLAYTIME_BUDGET.md) | 이전 |
+| 4. v6.1 → v6.2 증감 | — | **의도적 제외.** 버전 간 증감 비교이며 현재 값은 3절이 소유한다. |
+| 5. 시간을 늘리는 방식의 금지 규칙 | [PLAYTIME_BUDGET](../01-product/PLAYTIME_BUDGET.md) | 이전 |
+| 6. 게임 시계 | [PLAYTIME_BUDGET](../01-product/PLAYTIME_BUDGET.md) · [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) | 이전 |
+| 7. 검증 계획 | [PLAYTIME_BUDGET](../01-product/PLAYTIME_BUDGET.md) · [TESTING_STRATEGY](../05-quality/TESTING_STRATEGY.md) | 이전 |
+
+**18-settings-forensics.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 0. 메뉴 지도 | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.0 | 이전 |
+| 1. 시러스 ID → 기기(E-76) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.1 | 이전 |
+| 2. 시러스 ID → 동기화(E-204) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.2 | 이전 |
+| 3. 시러스 ID → 암호 및 보안 | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.3 | 이전 |
+| 4. 시러스 ID → 가족(E-200) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.4 | 이전 |
+| 5. Wi-Fi(E-74) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.5 | 이전 |
+| 6. 개인용 핫스팟(E-199) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.6 | 이전 |
+| 7. 알림(E-202) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.7 | 이전 |
+| 8. 집중 모드(E-203) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.8 | 이전 |
+| 9. 키보드(E-180·E-198) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.9 | 이전 |
+| 10. 스크린 타임(E-193·E-194) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.10 | 이전 |
+| 11. 개인정보 보호(E-75·E-192) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.11 | 이전 |
+| 12. 손쉬운 사용 | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.12 | 이전 |
+| 13. 일반 → 근처 공유(E-197) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.13 | 이전 |
+| 14. 일반 → 저장 공간(E-196) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.14 | 이전 |
+| 15. 배터리(E-195) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.15 | 이전 |
+| 16. 암호(E-201) | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.16 | 이전 |
+| 17. 셀룰러 | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.17 | 이전 |
+| 18. 설정 수사의 설계 규칙 | [SETTINGS](../03-features/SETTINGS_SPECIFICATION.md) 8.18 · [BUSINESS_RULES](../01-product/BUSINESS_RULES.md) | 이전 |
+
+**19-traces-and-reactions.md**
+
+| 구 절 | 새 위치 | 처리 |
+|---|---|---|
+| 1. 원칙 | [TRACES_AND_REACTIONS](../01-product/TRACES_AND_REACTIONS.md) | 이전 |
+| 2. 흔적 표(TR) | [TRACES_AND_REACTIONS](../01-product/TRACES_AND_REACTIONS.md) | 이전 |
+| 3. 도현의 시야 | [TRACES_AND_REACTIONS](../01-product/TRACES_AND_REACTIONS.md) | 이전 |
+| 4. 반응의 리듬(지연 시간) | [TRACES_AND_REACTIONS](../01-product/TRACES_AND_REACTIONS.md) | 이전 |
+| 5. 흔적을 일부러 남기기 | [TRACES_AND_REACTIONS](../01-product/TRACES_AND_REACTIONS.md) | 이전 |
+| 6. 설계 규칙 | [TRACES_AND_REACTIONS](../01-product/TRACES_AND_REACTIONS.md) | 이전 |
+
+---
+
+## 5. 검증 요약
+
+### 5.1 행 수
+
+| 항목 | 수 |
+|---|---|
+| 단일 출처 표 | 23행 |
+| 추적 매트릭스 | 99행 (REQ-F 75 + REQ-N 24) |
+| 역추적 — REQ 없는 FEAT | 0 |
+| 역추적 — FEAT·명세에 연결되지 않은 SCR | 0 (SCR 178개 전부 연결) |
+| 역추적 — REQ 없는 AC | 10 |
+| 역추적 — 화면 명세 미사용 CMP | 2 |
+| 구 문서 이전표 | 20개 문서(00~19), 매핑 행 171개 |
+
+### 5.2 누락·결측
+
+| 구분 | 대상 | 빈 칸 | 사유 | 처리 |
+|---|---|---|---|---|
+| 매트릭스 | REQ-N-001~024 (24건) | FEAT | 비기능 요구는 기능 `FEAT-xx`에 매핑되지 않는다. FEATURE_SPECIFICATION은 기능만 소유한다. | **의도적.** 비기능은 05-quality 문서와 AC가 직접 소유 |
+| 매트릭스 | REQ-N-001, 003, 004, 005, 006, 007, 008, 009, 010, 011, 012, 014, 017, 018, 019, 020, 024 (17건) | WP | 횡단 품질 요구로 특정 작업 패킷에 배정되지 않았다. 각 단계 완료 정의(DEVELOPMENT_PHASES 1절 6항)가 전 단계에서 검증한다. | **의도적이나 추적 약함.** IMPLEMENTATION_ROADMAP 품질 게이트에 REQ-N 목록을 명시할지 P0에서 확정 |
+| 매트릭스 | REQ-F-063, REQ-F-066 | SCR | 콘텐츠 린터·디버그 패널은 화면이 아니다. | 의도적. "없음" |
+| 역추적 | AC-504, AC-512, AC-601~AC-608 | REQ | 성능 상한·시각 회귀·P0 설계 잠금 절차다. | 의도적. 3.3 참조 |
+| 역추적 | CMP-HOME-INDICATOR, CMP-TOAST | 화면 명세 | 화면이 아닌 기기 크롬·일시 피드백이다. | 의도적. 3.4 참조 |
+
+- **결측 셀 합계:** 41개(REQ-N FEAT 24 + REQ-N WP 17, 모두 의도적: 비기능 요구는 기능·패킷이 아니라 전 단계 공통 기준).
+- **결측이 있는 요구 수:** 24개(REQ-N 24, 의도적).
+- **실질 누락(의도적 아님):** 0개(REQ-F-073은 총괄이 WP-31에 배정).
+
+### 5.3 대조 확인
+
+- REQ-F 75/75, REQ-N 24/24가 매트릭스에 한 번씩 등장한다.
+- FEAT-01~67이 모두 하나 이상의 REQ-F에 연결된다.
+- AC 총 165개: 요구사항 99 + 엔딩 5 + 위기 5 + 흔적 19 + 행동 증명 17 + 품질 12 + P0 8. REQ 없는 AC 10개를 제외한 155개가 요구사항·시나리오 AC에 연결된다.
+- SCR 178개(P0 34 / P1 144) 전부 정의 문서와 FEAT에 연결된다.
+- CMP 74개 중 72개가 화면 명세에 등장한다.
+
+---
+
+## 확인 사항
+
+- (해결) REQ-F-073을 WP-31에 배정했다.
+- **Q-OPEN-T02:** REQ-N 24건은 [FEATURE_SPECIFICATION](../01-product/FEATURE_SPECIFICATION.md)에 FEAT가 없다. 비기능 요구를 `FEAT-xx`로 승격할지, 05-quality 문서를 상세 명세로만 둘지 정책을 확정해야 한다. 현재는 "의도적"으로 분류했다.
+- **Q-OPEN-T03:** REQ-N 중 17건이 특정 WP에 배정되지 않는다. [DEVELOPMENT_PHASES](./DEVELOPMENT_PHASES.md) 1절 6항의 "완료의 정의"가 전 단계에서 이들을 검증하지만, 단계별 품질 게이트에 REQ-N 목록을 명시하면 추적이 강해진다.
+- (해결) FEAT-27·REQ-F-034 링크를 PERSONAL_DATA_APPS로 정정했다.
+- **Q-OPEN-T05:** AC-504(60fps·DOM 3,500)와 AC-512(시각 회귀 15화면)가 어떤 REQ에도 매핑되지 않는다. REQ-N-003·REQ-N-010에 종속으로 명시하거나 새 REQ-N을 만들지 P0에서 확정한다.
+- **Q-OPEN-T06:** `CMP-HOME-INDICATOR`·`CMP-TOAST`가 세 화면 명세에 문자열로 등장하지 않는다. 화면이 아닌 요소라 의도적일 수 있으나, 화면 명세의 셸 공통 절에 참조를 넣을지 확정해야 한다.
+- **Q-OPEN-T07:** [NAVIGATION_ARCHITECTURE](../02-design/NAVIGATION_ARCHITECTURE.md)는 인벤토리를 178개로 선언하지만, 문서 안 `SCR-` 문자열에는 4.1·4.2의 정정 전 ID(`SCR-LOOP-POST` 등)와 표기 조각이 섞여 있다. 이 문서는 3절 표의 최종 ID 178개를 기준으로 셌다. 기계적 ID 검사기는 4절 정정표를 먼저 적용해야 한다.
+- **대조 완료:** 단일 출처 23행, 추적 99행, 이전 20개 문서·171행을 작성했고, 실질 누락은 0건이다(REQ-F-073 WP-31 배정 반영).
