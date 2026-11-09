@@ -197,18 +197,18 @@ input, textarea { font: inherit; color: inherit; }
 .nb-btn.strong { font-weight: 600; }
 .sc { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 40px; overscroll-behavior: contain; scrollbar-width: none; }
 .sc::-webkit-scrollbar { display: none; }
-.has-tabbar .sc { padding-bottom: calc(var(--lm-tabbar-safe-h) + 20px); }
+.has-tabbar .sc { padding-bottom: calc(var(--lm-tabbar-h) + var(--lm-tabbar-safe-h) + 20px); }
 .lt { font-size: var(--lm-text-large-title-size); font-weight: var(--lm-text-large-title-weight); letter-spacing: var(--lm-text-large-title-tracking); line-height: var(--lm-text-large-title-line); margin: 2px var(--lm-side) 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 
 /* 탭바 */
 .tabbody { position: absolute; inset: 0; }
 .tabpane { position: absolute; inset: 0; }
 .tabbar {
-  position: absolute; left: 0; right: 0; bottom: 0; z-index: 20; height: var(--lm-tabbar-safe-h); padding-bottom: var(--lm-safe-bottom);
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 20; height: calc(var(--lm-tabbar-h) + var(--lm-tabbar-safe-h)); padding-bottom: var(--lm-tabbar-safe-h);
   display: flex; background: var(--lm-material-thick); backdrop-filter: blur(var(--lm-material-blur-thick)) saturate(var(--lm-material-saturate)); -webkit-backdrop-filter: blur(var(--lm-material-blur-thick)) saturate(var(--lm-material-saturate));
   border-top: var(--lm-separator-w) solid var(--lm-separator);
 }
-.tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--lm-label-3); font-size: 10px; font-weight: 560; position: relative; height: var(--lm-tabbar-h); }
+.tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--lm-label-3); font-size: 10px; font-weight: 560; line-height: 1.2; position: relative; height: var(--lm-tabbar-h); }
 .tab .tab-ic { width: 26px; height: 26px; }
 .tab.on { color: var(--lm-tint); }
 .tab-badge { position: absolute; top: 2px; left: calc(50% + 6px); font-style: normal; min-width: 18px; height: 18px; border-radius: 9px; background: var(--lm-destructive-fill); color: #fff; font-size: 12px; font-weight: 600; display: grid; place-items: center; padding: 0 5px; }

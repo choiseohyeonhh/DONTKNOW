@@ -316,7 +316,7 @@
   /* 시트 */
   ui.sheet = (host, content, o) => {
     o = o || {};
-    host = host || document.querySelector('.device');
+    host = host || (LM.current && LM.current() && LM.current().root) || document.querySelector('.device');
     const scrim = h('div', { class: 'scrim' });
     const grab = h('div', { class: 'sheet-grab' }, h('i'));
     const sheet = h('div', { class: 'sheet ' + (o.size || 'large'), role: 'dialog', 'aria-modal': 'true' }, grab, content);
