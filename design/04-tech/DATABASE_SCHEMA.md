@@ -593,6 +593,21 @@ erDiagram
 - `threatCleared = F-REC-SENT || F-NAME-SENT || F-PLATE-SENT || F-REC == 'synced'`([12](../01-product/PROGRESSION_AND_ENDINGS.md) 6.4).
 - 엔딩 판정은 `endings.js`만 한다. 콘텐츠의 `condition`을 UI가 해석하지 않는다.
 
+### 3.11 `ambient.json` — 배경 인물·배경 콘텐츠·배경 알림 (2026-11-10)
+
+배경(background) 콘텐츠는 단서가 아니다. 진행·흔적·엔딩 조건이 참조할 수 없다(린터 L01이 `ambient.*` 참조를 실패로 처리).
+
+| 필드 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `people[]` | `{ id: "BG-001", name, circle, talk: bool, loop: handle\|null, tone: "plain"\|"casual"\|"emoji" }` | ✓ | 배경 인물. `circle`은 [MESSAGING](../03-features/MESSAGING_SPECIFICATION.md) 3.9.1·[SNS](../03-features/SNS_SPECIFICATION.md) 8.11.2의 무리 이름 |
+| `rooms[]` | `{ id, name, members: BG-id[], history: msg[], muted: bool }` | ✓ | 배경 대화방과 과거 대화 |
+| `posts[]` | 루프 게시물 스키마(3.2) + `noise: true`, `circle` | ✓ | 배경 게시물. `evidence: null` |
+| `pool[]` | `{ id, room\|app, circle, text, after?: ts, window?: [hh, hh] }` | ✓ | 게임 중 배경 메시지·알림 문장 풀 |
+| `schedule` | `{ rates: { "21-24": [8,12], "00-02": [3,6], "02-06": [0,2], "06-09": [5,9] }, minGapSec: 30, eventQuietSec: 120, burst: [1,5] }` | ✓ | 스케줄러 매개변수(게임 초) |
+
+- 세이브에는 `ambient.seed`와 `ambient.cursor`(소비한 풀 위치)만 저장한다. 스케줄은 시드로 다시 펼친다.
+- 배경 메시지는 온라인일 때만 도착 처리한다. 오프라인 동안 시각이 지난 항목은 다음 온라인 순간 시각 순으로 도착한다.
+
 ## 4. 세이브 스키마(localStorage)
 
 ### 4.1 키
@@ -693,6 +708,10 @@ erDiagram
 | L16 | **자산 참조** | items·endings | `assetId`·`cinematic`·`phoneScreen` 키가 `img/`·`fonts/`·시네마틱 목록에 있는가 | 없는 이미지 |
 | L17 | **NPC 생성 항목** | npc | `makeItem.id`가 아이템 ID 규칙을 지키고 중복되지 않는가 | 빈 ID |
 | L18 | **금지 어휘** | 모든 콘텐츠 | 폐기 용어(카드 판정·C-/I-/Q- ID·기기 잠금과 메모 암호를 혼동한 서술)가 없는가 | "메모 암호를 기기 잠금으로 씀" |
+| L19 | **배경 금지어** | ambient·items(`noise: true`) | 배경 게시물·배경 대화·문장 풀에 핵심 장소·사물·숫자·이름(SNS 8.11.3-3), 앎 매트릭스 ✕ 정보, 수법·광고 어휘가 없는가. 예외 목록: 장소 페이지 리버뷰타워 입주민 게시물 7 | 배경 동기가 "성원대교 뷰 카페"를 태그 |
+| L20 | **노이즈 비율** | items(loop·talk) | 루프 홈 피드 연속 20개 구간과 계정별 게시물에서 `noise` 비율이 70% 이상인가 | 피드 20개 중 핵심 7개 |
+| L21 | **도달 경로** | items·evidence | `noise: false` 루프 게시물마다 `paths`가 2개 이상이고 그중 탐색 경로가 1개 이상인가. 도현 본인 기록은 예외 목록 | E-55 경로가 검색 하나뿐 |
+| L22 | **미래 시각** | items·ambient | 게임 시작(2026-03-17 21:10) 이후 `ts`를 가진 항목이 `events`·`ambient.pool`이 아닌 정적 항목에 없는가 | 3/17 22:30 단톡 글이 정적 항목 |
 
 ### 5.1 린터 실행
 

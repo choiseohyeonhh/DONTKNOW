@@ -104,7 +104,7 @@ flowchart TD
 | **WP-17** | WP-16 | `os/apps/note.js`, `reminder.js`, `contacts.js`, `calendar.js` | `SCR-NOTE-*`, `REM-*`, `CONT-*`, `CAL-*` | FEAT-20~23 / REQ-F-027~030 | 메모 6개·암호 680403, 미리 알림, 연락처 64명·아빠 카드, 캘린더·생일 | `route_a.js` 2단계; `crisis.js` CR-2; `visual.spec.js`(`SCR-NOTE-LOCKED`) | 메모 암호 680403의 힌트·오답 규칙 누락 |
 | **WP-18** | WP-16 | `os/apps/photo.js`, `voice.js`, `file.js` | `SCR-PHOTO-*`, `VOICE-*`, `FILE-*` | FEAT-16·24·31 / REQ-F-023·031·038 | 사진 정보(i)·원본 복귀·버스트 18·숨김·최근 삭제, 녹음 42:31·전사, 파일 4종 정보 | `visual.spec.js`(`SCR-PHOTO-VIEWER`); 단위 `visibility`; 실기기 확대 판독 | 버스트 11번째 번호판 판독 불가 |
 | **WP-19** | WP-17·18 | `os/apps/map.js`, `os/apps/settings.js`, `os/apps/settings/*.js` | `SCR-MAP-*`, `SCR-SET-ROOT` 외 설정 29개 | FEAT-18·39 / REQ-F-025·046·047 | 지도 저장·최근 검색·경로, 설정 19개 메뉴·검색·깊이 3 | 단위 `visibility`; `visual.spec.js`(`SCR-SET-WIFI`); 실기기 설정 검색 | 설정 깊이가 3단계를 넘음 |
-| **WP-20** | WP-19 | `tools/lint_content.py`, `content/items/*.json` | `SCR-MAP-SEARCH`, `SCR-MAIL-INBOX`, `SCR-HANKKI-ORDERS` | FEAT-53·55 / REQ-F-063·065, REQ-N-023 | 콘텐츠 린터 10종 규칙, 미끼 격리, 이중 경로·소실 안전 | `lint_content.py --content game/content --strict` | 린터가 경고를 통과시킴(--strict에서 경고=실패) |
+| **WP-20** | WP-19 | `tools/lint_content.py`, `content/items/*.json` | `SCR-MAP-SEARCH`, `SCR-MAIL-INBOX`, `SCR-HANKKI-ORDERS` | FEAT-53·55 / REQ-F-063·065, REQ-N-023 | 콘텐츠 린터 22종 규칙(L01~L22), 미끼 격리, 이중 경로·소실 안전 | `lint_content.py --content game/content --strict` | 린터가 경고를 통과시킴(--strict에서 경고=실패) |
 
 **P4 게이트:** 린터가 ① 미끼 L-11 근거 전부 T2(E-130 예외) ② 필수 V의 근거가 서로 다른 앱 2개 이상 ③ 원격 삭제 후에도 다른 앱 2개 이상 남음을 통과한다. ①·⑤ 흐름(잠긴 폰·어디에)을 클릭으로 재현한다.
 

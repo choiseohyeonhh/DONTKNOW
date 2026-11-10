@@ -796,7 +796,7 @@
 
 **7. 타이포·색** 배경화면 위 scrim(가독성). 앱 라벨 `caption-1` 12/16 400 `--lm-label`, 1줄 말줄임. 타일 8색 + 글리프 `--lm-app-on-tint`. 독 `--lm-material-thick` + 블러 40, 라이트 `elev-2`. 배지 `--lm-tint-fill`/앱 tint + `on-tint`. 라이트/다크 모두 라벨 대비 확보를 위해 배경 위 scrim을 쓴다.
 
-**8. 인터랙션** 아이콘 탭 = 앱 루트 push. 좌우 드래그 = 페이지. 위로 끌기 = `SCR-OS-SEARCH`. 아래로 끌기 = `SCR-OS-NOTIF-CENTER`. 오른쪽 위에서 끌기 = `SCR-OS-CONTROL-CENTER`. 홈 인디케이터 위로 = 홈, 멈추면 `SCR-OS-APP-SWITCHER`. 폴더 탭 = `SCR-OS-FOLDER`. 홈 편집 모드·아이콘 삭제 없음. 흔적 없음.
+**8. 인터랙션** 아이콘 탭 = 앱 루트 push. 좌우 드래그 = 페이지. 가운데에서 아래로 끌기 = `SCR-OS-SEARCH`. 상단 왼쪽(폭 60%) 끌어내리기 = `SCR-OS-NOTIF-CENTER`. 상단 오른쪽(폭 40%) 끌어내리기 = `SCR-OS-CONTROL-CENTER`. 두 끌어내리기는 앱 안에서도 된다. 홈 인디케이터 위로 = 홈, 멈추면 `SCR-OS-APP-SWITCHER`. 폴더 탭 = `SCR-OS-FOLDER`. 홈 편집 모드·아이콘 삭제 없음. 흔적 없음.
 
 **9. 화면 전환** → 앱 루트 push 350ms. → `SCR-OS-FOLDER` overlay. → `SCR-OS-SEARCH` push. → `SCR-OS-NOTIF-CENTER` overlay Z80. → `SCR-OS-CONTROL-CENTER` overlay Z80. → `SCR-OS-APP-SWITCHER` overlay Z80.
 
@@ -814,7 +814,7 @@
 
 **1. 목적** 놓친 알림을 시간 역순·앱별 묶음으로 다시 본다. 원본이 지워져도 알림 기록은 남는다. 미리보기 설정이 표시 시점에 적용된다.
 
-**2. 진입 경로** 홈 아래로 끌기 / 잠금 해제 후 알림 / 배너 재확인. overlay Z80.
+**2. 진입 경로** 상단 왼쪽 끌어내리기(홈·앱, 손가락을 따라 내려옴) / 잠금 해제 후 알림 / 배너 재확인. overlay Z80.
 
 **3. 전체 레이아웃**
 
@@ -922,7 +922,7 @@
 
 **1. 목적** Wi-Fi·비행기·집중 모드·스크린샷·화면 기록을 한 화면에서 조작한다. 블링크 캡처 흔적(TR-06)의 발생 지점이다.
 
-**2. 진입 경로** 홈 오른쪽 위에서 끌기. overlay Z80. 잠금화면에서는 열리지 않는다.
+**2. 진입 경로** 상단 오른쪽 끌어내리기(홈·앱, 손가락을 따라 나타남). overlay Z80. 잠금화면에서는 열리지 않는다.
 
 **3. 전체 레이아웃**
 

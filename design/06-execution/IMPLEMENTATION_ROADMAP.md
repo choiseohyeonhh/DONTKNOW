@@ -107,7 +107,7 @@ P0 완료 판정은 다음 8개가 모두 참일 때만 한다. 상세 인수 �
 | 4 | [`NAVIGATION_ARCHITECTURE`](../02-design/NAVIGATION_ARCHITECTURE.md) 화면 인벤토리 178개(P0 34 / P1 144)와 [`DEVELOPMENT_PHASES`](./DEVELOPMENT_PHASES.md)의 SCR 배정이 일치한다 | 서현 승인 |
 | 5 | [`TESTING_STRATEGY`](../05-quality/TESTING_STRATEGY.md)의 테스트 이름·합격 기준이 동결된다 | 서현 승인 |
 | 6 | 숫자 캐논(보수 97분·일반 165분·MVP 96분·×4·30분=7분 30초·마감 177분 30초·070921·680403 메모 암호·110221)이 원본과 일치한다 | 서현 승인 |
-| 7 | 콘텐츠 스키마·린터 규칙 10종([`DATABASE_SCHEMA`](../04-tech/DATABASE_SCHEMA.md) 5절)과 빌드 절차가 동결된다 | 서현 승인 |
+| 7 | 콘텐츠 스키마·린터 규칙 22종(L01~L22, [`DATABASE_SCHEMA`](../04-tech/DATABASE_SCHEMA.md) 5절)과 빌드 절차가 동결된다 | 서현 승인 |
 | 8 | 서현이 P0 설계 잠금을 승인한다 | 서현 승인 |
 
 **승인 전 금지:** `game/` 코드 작성, 콘텐츠 JSON 작성, 테스트 파일 작성, 패키지 설치, 빌드 실행.
