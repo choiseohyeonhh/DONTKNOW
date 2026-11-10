@@ -26,14 +26,15 @@
         LM.online() && LM.state.syncing ? h('i', { class: 'sb-sync' }) : null,
         h('span', { class: 'sb-batt', 'aria-label': '배터리 31%, 충전 중' }, h('i'), h('b', null, '31')),
         LM.icon('bolt', 'sb-bolt')].filter(Boolean));
-      bar.classList.toggle('on-wall', !curApp || (curApp && curApp.root.classList.contains('dark-chrome')));
+      bar.classList.toggle('on-wall', !curApp || !!overlay || curApp.root.classList.contains('dark-chrome'));
     };
     draw();
-    LM.on('tick', draw); LM.on('state', draw); LM.on('app', draw);
-    // 상태바 두 번 탭 = 검색(홈)
+    LM.on('tick', draw); LM.on('state', draw); LM.on('app', draw); LM.on('overlay', draw);
+    // 상태바 두 번 탭 = 검색(홈), 앱 안에서 한 번 탭 = 맨 위로
     let last = 0;
     bar.style.pointerEvents = 'auto';
-    bar.addEventListener('click', () => { const n = Date.now(); if (n - last < 350 && !LM.state.locked && !curApp) openSearch(); else if (curApp) scrollTop(); last = n; });
+    bar.addEventListener('click', () => { if (bar._dragged) { bar._dragged = false; return; } const n = Date.now(); if (n - last < 350 && !LM.state.locked && !curApp) openSearch(); else if (curApp) scrollTop(); last = n; });
+    edgePull(bar);
     return bar;
   }
   function scrollTop() { const s = curApp && curApp.root.querySelector('.scr:not(.covered):last-of-type .sc'); s && s.scrollTo({ top: 0, behavior: 'smooth' }); }
@@ -190,7 +191,7 @@
   }
   function folderButton(f) {
     const b = h('button', { class: 'app', 'aria-label': f.folder + ' 폴더', onclick: () => openFolder(f) },
-      h('span', { class: 'folder-icon' }, f.apps.map((id) => LM.appIcon(id, 13))), h('span', { class: 'app-name' }, f.folder));
+      h('span', { class: 'folder-icon', style: { clipPath: `path('${LM.SQUIRCLE}')` } }, f.apps.map((id) => LM.appIcon(id, 13))), h('span', { class: 'app-name' }, f.folder));
     const n = f.apps.reduce((s, id) => s + (LM.BADGES[id] || 0), 0);
     if (n) b.appendChild(ui.badge(n));
     return b;
@@ -228,10 +229,8 @@
       if (!tracking) return; tracking = false;
       const dx = e.clientX - sx, dy = e.clientY - sy, r = dev.getBoundingClientRect();
       if (Math.abs(dy) < 70 || Math.abs(dx) > Math.abs(dy)) return;
-      if (dy > 0 && sy - r.top < 80 && sx - r.left > r.width * 0.6) openControl();
-      else if (dy > 0 && sy - r.top < 120) openNotifCenter();
-      else if (dy > 0) openSearch();
-      else if (dy < 0 && !e.target.closest('.dock')) openSearch();
+      if (sy - r.top < 60) return; // 맨 위는 상태바의 끌어내리기 영역
+      if (dy > 0) openSearch();
     });
     return el;
   }
@@ -296,40 +295,133 @@
   }
 
   /* ---------- 오버레이: 알림 센터·제어 센터·검색 ---------- */
-  function showOverlay(el, from) {
-    closeOverlay();
+  /* 위에서 끌어내리기: 상태바 왼쪽(화면 폭 60%까지) = 알림 센터, 오른쪽 = 제어 센터.
+   * 손가락을 따라 내려오고, 놓을 때 30% 이상 내렸거나 빠르게 내렸으면 열린다. 잠금 상태에서는 열리지 않는다(캐논). */
+  const PULL_SPLIT = 0.6;
+  function setPull(el, p) {
+    p = Math.max(0, Math.min(1, p));
+    el._p = p;
+    if (el.classList.contains('cc')) {
+      el.style.opacity = p;
+      const g = el.firstChild;
+      if (g) g.style.transform = `translateY(${(1 - p) * -36}px) scale(${0.92 + 0.08 * p})`;
+    } else {
+      el.style.transform = `translateY(${(p - 1) * 100}%)`;
+    }
+  }
+  function settle(el, open, done) {
+    const dur = LM.motion() ? 320 : 0;
+    const ease = 'cubic-bezier(0.32, 0.72, 0, 1)';
+    const g = el.classList.contains('cc') ? el.firstChild : null;
+    el.style.transition = `transform ${dur}ms ${ease}, opacity ${dur}ms ${ease}`;
+    if (g) g.style.transition = `transform ${dur}ms ${ease}`;
+    setPull(el, open ? 1 : 0);
+    setTimeout(() => { el.style.transition = ''; if (g) g.style.transition = ''; done && done(); }, dur + 20);
+  }
+  function mountOverlay(el) {
+    if (overlay && overlay !== el) { overlay.remove(); }
     overlay = el;
     dev.insertBefore(el, dev.querySelector('.statusbar'));
-    LM.animate(el, from === 'top' ? [{ transform: 'translateY(-100%)' }, { transform: 'translateY(0)' }] : [{ opacity: 0 }, { opacity: 1 }], { duration: 350, easing: LM.EASE.sheet });
-    let sy = null;
-    el.addEventListener('pointerdown', (e) => { sy = e.clientY; });
-    el.addEventListener('pointerup', (e) => { if (sy != null && sy - e.clientY > 80 && !e.target.closest('input')) closeOverlay(); sy = null; });
+    LM.emit('overlay', el);
+    // 열린 오버레이를 위로 끌어 닫기(손가락을 따라간다)
+    let sy = null, moved = false, t0 = 0;
+    const H = () => dev.getBoundingClientRect().height;
+    el.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('input, .cc-slider')) return;
+      const fromGrab = !!e.target.closest('.ov-grab');
+      const sc = el.classList.contains('nc') ? el.scrollTop : 0;
+      if (sc > 2 && !fromGrab) return;
+      sy = e.clientY; moved = false; t0 = performance.now();
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (sy == null) return;
+      const dy = e.clientY - sy;
+      if (dy < -8) { if (!moved) { moved = true; try { el.setPointerCapture(e.pointerId); } catch (_) {} } setPull(el, 1 + dy / (H() * 0.5)); }
+    });
+    const end = (e) => {
+      if (sy == null) return;
+      const dy = e.clientY - sy, v = -dy / Math.max(1, performance.now() - t0);
+      sy = null;
+      if (!moved) return;
+      el._dragClose = true;
+      if (-dy > H() * 0.15 || v > 0.6) closeOverlay(); else settle(el, true);
+    };
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+    el.addEventListener('click', (e) => { if (el._dragClose) { el._dragClose = false; e.stopPropagation(); e.preventDefault(); } }, true);
   }
-  function closeOverlay() {
+  function edgePull(bar) {
+    let st = null;
+    bar.style.touchAction = 'none';
+    bar.addEventListener('pointerdown', (e) => {
+      if (LM.state.locked || dev.querySelector('.passcode')) return;
+      const r = dev.getBoundingClientRect();
+      const kind = (e.clientX - r.left) > r.width * PULL_SPLIT ? 'cc' : 'nc';
+      st = { kind, sy: e.clientY, h: r.height, el: null, ly: e.clientY, lt: performance.now(), v: 0 };
+      bar.setPointerCapture(e.pointerId);
+    });
+    bar.addEventListener('pointermove', (e) => {
+      if (!st) return;
+      const dy = e.clientY - st.sy, now = performance.now();
+      if (now > st.lt) { st.v = (e.clientY - st.ly) / (now - st.lt); st.ly = e.clientY; st.lt = now; }
+      if (!st.el) {
+        if (dy < 6) return;
+        if (overlay) closeOverlay(true);
+        st.el = st.kind === 'cc' ? buildControl() : buildNotif();
+        setPull(st.el, 0);
+        mountOverlay(st.el);
+      }
+      setPull(st.el, dy / (st.h * (st.kind === 'cc' ? 0.35 : 0.6)));
+    });
+    const end = (e) => {
+      if (!st) return;
+      const s0 = st; st = null;
+      if (!s0.el) return;
+      bar._dragged = true;
+      const open = s0.el._p > 0.3 || (s0.v > 0.8 && s0.el._p > 0.12);
+      if (open) settle(s0.el, true);
+      else settle(s0.el, false, () => { if (overlay === s0.el) { overlay = null; LM.emit('overlay', null); } s0.el.remove(); });
+    };
+    bar.addEventListener('pointerup', end);
+    bar.addEventListener('pointercancel', end);
+  }
+  function showOverlay(el, from) {
+    if (overlay) closeOverlay(true);
+    mountOverlay(el);
+    if (from === 'top') { setPull(el, 0); requestAnimationFrame(() => settle(el, true)); }
+    else LM.animate(el, [{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: LM.EASE.sheet });
+  }
+  function closeOverlay(instant) {
     if (!overlay) return;
     const o = overlay; overlay = null;
-    LM.animate(o, [{ opacity: 1 }, { opacity: 0 }], { duration: 160 }).then(() => o.remove());
+    LM.emit('overlay', null);
+    if (instant === true) { o.remove(); return; }
+    if (o.classList.contains('nc') || o.classList.contains('cc')) settle(o, false, () => o.remove());
+    else LM.animate(o, [{ opacity: 1 }, { opacity: 0 }], { duration: 160 }).then(() => o.remove());
   }
   LM.closeOverlay = closeOverlay;
 
-  function openNotifCenter() {
+  function buildNotif() {
     const d = LM.now();
     const list = LM.NOTIFS.slice();
     const el = h('div', { class: 'overlay nc', role: 'dialog', 'aria-label': '알림 센터' },
       h('div', { class: 'nc-date' }, LM.fmtDate(d)), h('div', { class: 'nc-clock' }, LM.fmtTime(d)),
       h('div', { class: 'n-head' }, h('b', null, '알림'), h('button', { onclick: closeOverlay }, '닫기')),
-      h('div', { class: 'nstack' }, list.map((n) => { const c = notifCard(n); c.addEventListener('click', () => openApp(n.app)); return c; })));
-    showOverlay(el, 'top');
+      h('div', { class: 'nstack' }, list.map((n) => { const c = notifCard(n); c.addEventListener('click', () => openApp(n.app)); return c; })),
+      h('div', { class: 'ov-grab', 'aria-hidden': true }));
+    return el;
   }
+  function openNotifCenter() { showOverlay(buildNotif(), 'top'); }
 
-  function openControl() {
+  function buildControl() {
     const s = LM.state;
     const btn = (icon, on, color, label, fn) => {
       const b = h('button', { class: 'cc-btn ' + color + (on ? ' on' : ''), 'aria-pressed': !!on, 'aria-label': label, onclick: () => { fn(); } }, LM.icon(icon));
       return b;
     };
-    const redraw = () => { const el = build(); overlay.replaceWith(el); overlay = el; };
-    const build = () => h('div', { class: 'overlay cc', role: 'dialog', 'aria-label': '제어 센터', onclick: (e) => { if (e.target.classList.contains('cc')) closeOverlay(); } },
+    // 토글 뒤에는 열린 그대로 내용만 다시 그린다
+    const redraw = () => { const fresh = buildControl(); const grid = fresh.firstChild; cur.firstChild.replaceWith(grid); grid.style.transform = 'none'; };
+    const cur = h('div', { class: 'overlay cc', role: 'dialog', 'aria-label': '제어 센터', onclick: (e) => { if (e.target.classList.contains('cc')) closeOverlay(); } },
       h('div', { class: 'cc-grid' },
         h('div', { class: 'cc-tile cc-conn' },
           btn('plane', s.airplane, 'or', '비행기 모드', () => { LM.set({ airplane: !s.airplane }); redraw(); }),
@@ -343,8 +435,9 @@
         h('button', { class: 'cc-tile cc-sq' + (s.recording ? ' on' : ''), 'aria-label': '화면 기록', onclick: () => { LM.set({ recording: !s.recording }); ui.toast(LM.state.recording ? '화면 기록 시작' : '화면 기록이 사진에 저장됨'); redraw(); } }, h('span', { class: 'cc-rec' }), h('span', { class: 'cc-label' }, '화면 기록')),
         h('button', { class: 'cc-tile cc-sq', 'aria-label': '손전등(장식)' }, h('span', { class: 'cc-btn' }, LM.icon('torch')), h('span', { class: 'cc-label' }, '손전등')),
         h('button', { class: 'cc-tile cc-sq', 'aria-label': '잠그기', onclick: lockPhone }, h('span', { class: 'cc-btn' }, LM.icon('lock')), h('span', { class: 'cc-label' }, '잠그기'))));
-    showOverlay(build(), 'top');
+    return cur;
   }
+  function openControl() { showOverlay(buildControl(), 'top'); }
 
   function screenshot() {
     const f = h('div', { class: 'flash' });

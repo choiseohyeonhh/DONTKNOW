@@ -194,11 +194,25 @@
   LM.glyph = (id) => LM.svg(S(APP[id] || UI.info), 'glyph');
   LM.hasGlyph = (id) => !!APP[id];
 
+
+  /* 앱 타일 마스크: 슈퍼타원 n=5. 직선 구간이 길고 모서리만 부드럽게 굽는다(아이폰 앱 아이콘에 가까운 비율). */
+  const SQUIRCLE = (() => {
+    const n = 5, N = 120, c = 30, r = 30, pts = [];
+    for (let i = 0; i < N; i++) {
+      const t = (i / N) * Math.PI * 2, ct = Math.cos(t), st = Math.sin(t);
+      const x = c + r * Math.sign(ct) * Math.pow(Math.abs(ct), 2 / n);
+      const y = c + r * Math.sign(st) * Math.pow(Math.abs(st), 2 / n);
+      pts.push(x.toFixed(2) + ' ' + y.toFixed(2));
+    }
+    return 'M' + pts.join('L') + 'Z';
+  })();
+  LM.SQUIRCLE = SQUIRCLE;
+
   /* 앱 타일: 단색 슈퍼타원. 타일색은 tokens.css의 [data-app] 변수 */
   LM.appIcon = (id, size) => {
     const tile = LM.h('span', { class: 'appicon', data: { app: id }, style: size ? { width: size + 'px', height: size + 'px' } : null, 'aria-hidden': true });
     const white = id === 'cal' || id === 'rem'; // 흰 타일 + 남색 글리프
-    tile.innerHTML = '<svg class="appicon-shape" viewBox="0 0 60 60" aria-hidden="true"><path d="M30 0C9 0 0 9 0 30s9 30 30 30 30-9 30-30S51 0 30 0z" fill="' + (white ? '#FFFFFF' : 'var(--lm-app-tile)') + '"/></svg>';
+    tile.innerHTML = '<svg class="appicon-shape" viewBox="0 0 60 60" aria-hidden="true"><path d="' + SQUIRCLE + '" fill="' + (white ? '#FFFFFF' : 'var(--lm-app-tile)') + '"/></svg>';
     if (white) tile.style.color = 'var(--lm-app-tile)';
     tile.appendChild(LM.glyph(id));
     return tile;

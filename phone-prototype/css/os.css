@@ -22,7 +22,9 @@ input, textarea { font: inherit; color: inherit; }
   background: var(--lm-bg); color: var(--lm-label); isolation: isolate;
   box-shadow: 0 0 0 11px #1a1a1d, 0 0 0 12px #3a3a3f, 0 40px 80px rgba(0,0,0,.6);
   container-type: size;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
+.device input, .device textarea, .device [contenteditable] { -webkit-user-select: text; user-select: text; }
 .side-note { width: 240px; color: #8d8d96; font-size: 13px; line-height: 1.55; }
 .side-note h2 { color: #e8e8ee; font-size: 15px; margin: 0 0 8px; font-weight: 650; }
 .side-note p { margin: 0 0 10px; }
@@ -350,6 +352,9 @@ button.row:active { background: var(--lm-fill-2); }
 
 /* ---------- 알림 센터·제어 센터·검색 ---------- */
 .overlay { position: absolute; inset: 0; z-index: 80; }
+.cc { touch-action: none; }
+/* 알림 센터 아래쪽 닫기 띠: 목록 스크롤과 겹치지 않게 터치를 직접 받는다 */
+.ov-grab { position: sticky; bottom: -40px; display: block; height: 96px; margin: 0 -10px -40px; touch-action: none; }
 .nc { color: #fff; background: rgba(10,10,14,.5); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); padding: 56px 10px 40px; overflow-y: auto; scrollbar-width: none; }
 .nc .ncard { color: #fff; background: rgba(50,50,56,.62); }
 .nc-clock { text-align: center; font-family: var(--lm-font-num); font-size: 64px; font-weight: 300; line-height: 1; margin-bottom: 4px; }
