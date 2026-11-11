@@ -13,6 +13,7 @@
       time: '09:00', // 시각 자리표시(캐논 없음)
       origin: '한결캐피탈',
       addr: '1600-XXXX',
+      eid: 'E-05',
     });
     let y = 2024, m = 8;
     for (let i = 0; i < 17; i++) {
@@ -32,11 +33,11 @@
     },
     {
       id: 'police', type: 'system', name: '성원경찰서', address: '성원경찰서 수사과', icon: 'shield', unread: 1,
-      messages: [{ dir: 'in', body: '[성원경찰서] 이도현님, 수사과 금융범죄수사팀 김태윤 경위입니다. 3/20 10:00 출석요구 안내드립니다.', day: '3/13', time: '10:02', origin: '성원경찰서' }],
+      messages: [{ dir: 'in', body: '[성원경찰서] 이도현님, 수사과 금융범죄수사팀 김태윤 경위입니다. 3/20 10:00 출석요구 안내드립니다.', day: '3/13', time: '10:02', origin: '성원경찰서', eid: 'E-04' }],
     },
     {
       id: 'bank', type: 'system', name: '누리은행', address: '누리은행', icon: 'card', unread: 1,
-      messages: [{ dir: 'in', body: '[누리은행] 전기통신금융사기 관련 지급정지 안내', day: '3/12', time: '09:14', origin: '누리은행' }],
+      messages: [{ dir: 'in', body: '[누리은행] 전기통신금융사기 관련 지급정지 안내', day: '3/12', time: '09:14', origin: '누리은행', eid: 'E-03' }],
     },
     {
       id: 'hankyul', type: 'system', name: '한결캐피탈', address: '1600-XXXX', icon: 'receipt', unread: 1,
@@ -68,6 +69,7 @@
       id: rt.id, dir: rt.from === 'out' ? 'out' : 'in', body: rt.text,
       day: LM.fmt.date(rt.at, 'md'), time: LM.fmt.date(rt.at, 'hm'), rt: true,
       origin: rt.origin || null, slate: !!rt.slate, syncedAt: rt.syncedAt || null,
+      attach: rt.attach || null, eid: rt.eid || (rt.attach && rt.attach.eid) || null,
     }));
   }
   function messages(t) { return t.messages.concat(t.extra, runtime(t)); }
@@ -79,7 +81,7 @@
     LM.sched.afterOnline('msg:ev06', 36, () => {
       LM.msg.add('msg', 'cirrus', {
         id: 'cirrus:ev06', from: 'in', text: EV06, at: LM.G.gameMs,
-        origin: '도현의 슬레이트', slate: true, syncedAt: 'online',
+        origin: '도현의 슬레이트', slate: true, syncedAt: 'online', eid: 'E-90',
         notif: { title: '도현의 슬레이트', body: EV06 },
       });
     });
@@ -103,7 +105,7 @@
     const m = messages(t);
     return m.length ? m[m.length - 1] : null;
   }
-  function listTime(m) { return m.day.length > 7 ? m.day.slice(0, 7) : m.day + ' ' + m.time; }
+  function listTime(m) { return LM.fmt.list((m.day || '') + ' ' + (m.time || '')); }
   function preview(t) {
     const m = last(t);
     if (!m) return '메시지 없음';
@@ -157,6 +159,7 @@
         kids.push(bubble(t, m, () => retry(t, m, draw, scroller)));
       });
       if (!ms.length) kids.push(ui.empty({ icon: 'chat', title: '메시지가 없습니다', text: t.id === 'cirrus' ? '첫 온라인 후 슬레이트에서 온 메시지가 동기화된다.' : null }));
+      if (LM.dialogue && LM.dialogue.typing('msg', t.id)) kids.push(h('div', { class: 'msg-line' }, h('div', { class: 'msg-bubble' }, h('span', { class: 'typing-dot' }, h('i'), h('i'), h('i')))));
       log.replaceChildren(...kids);
     }
 
@@ -190,6 +193,13 @@
       setTimeout(() => { if (scroller) scroller.scrollTop = scroller.scrollHeight; }, 20);
     });
     LM.read.markThread('msg', t.id);
+    messages(t).forEach((m) => LM.C.see(m.eid));
+    const lastEidMsg = messages(t).slice().reverse().find((m) => m.eid);
+    LM.setEid(lastEidMsg ? lastEidMsg.eid : null);
+    const offTyping = LM.on('dlg:typing', (e) => {
+      if (!log.isConnected) { offTyping(); return; }
+      if (e && e.app === 'msg' && e.thread === t.id) draw();
+    });
     return page;
   }
 
@@ -200,11 +210,13 @@
       h('span', null, m.time),
       out && !m.fail ? h('span', null, '전송됨') : null,
       m.fail ? h('button', { class: 'msg-retry', onclick: onRetry }, (m.reason || '전송 실패') + ' · 다시 보내기') : null);
-    const b = h('div', { class: 'msg-bubble' }, m.body);
+    const b = h('div', { class: 'msg-bubble' }, m.body,
+      m.attach ? h('div', { class: 'att-card' }, LM.icon('doc'), h('div', null, h('b', null, m.attach.title || '첨부'), h('small', null, m.attach.kind || ''))) : null);
+    if (m.eid) LM.C.see(m.eid);
     LM.longPress(b, () => ui.actionSheet({
       actions: [
         { label: '복사', onClick: () => ui.toast('복사됨') },
-        { label: '공유', onClick: () => ui.share(m.body) },
+        { label: '공유', onClick: () => ui.share({ eid: m.eid, eids: m.eid ? [m.eid] : [], title: m.body || (m.attach && m.attach.title), kind: m.attach ? m.attach.kind : 'message', app: 'msg' }) },
         { label: '정보', onClick: () => messageInfo(t, m) },
       ],
     }));
@@ -214,25 +226,13 @@
   }
 
   function composer(t, onSend) {
-    const inp = h('input', { class: 'msg-inp', type: 'text', placeholder: t.type === 'system' ? '답장할 수 없는 번호' : '메시지 입력', 'aria-label': '메시지 입력' });
-    const go = () => onSend(inp.value);
-    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
-    const btn = h('button', { class: 'msg-send', 'aria-label': '보내기', onclick: go }, LM.icon('send'));
-    const sync = () => {
-      const off = t.type === 'system' || !LM.online();
-      btn.disabled = off;
-      inp.disabled = t.type === 'system';
-      if (btn.isConnected) { btn.setAttribute('aria-disabled', off); }
-    };
-    sync();
-    const offState = LM.on('state', () => { if (btn.isConnected) sync(); else offState(); });
-    return h('div', { class: 'msg-composer' },
-      h('button', { class: 'msg-plus', 'aria-label': '첨부', onclick: () => ui.actionSheet({ actions: [
-        { label: '사진', onClick: () => ui.toast('프로토타입: 사진 첨부는 보내지 않는다') },
-        { label: '파일', onClick: () => ui.toast('프로토타입: 파일 첨부는 보내지 않는다') },
-      ] }) }, LM.icon('plus')),
-      inp,
-      btn);
+    if (t.type === 'system') {
+      return h('div', { class: 'msg-composer' }, h('input', { class: 'msg-inp', type: 'text', placeholder: '답장할 수 없는 번호', 'aria-label': '메시지 입력', disabled: true }), h('button', { class: 'msg-send', disabled: true, 'aria-label': '보내기' }, LM.icon('send')));
+    }
+    return LM.composer.bar({
+      target: { app: 'msg', thread: t.id, npc: 'DH', name: t.name },
+      onSent: () => ui.toast('보냈다'),
+    });
   }
 
   function send(t, text, draw, scroller) {

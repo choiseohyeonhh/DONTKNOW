@@ -16,7 +16,7 @@
 
   /* 이용 내역: 3/14 21:05 리버뷰타워 → 21:22 성원구청역 2번 출구, 12,400원 (E-12b) */
   const TRIPS = [
-    { id: 't1', date: '3/14', from: '리버뷰타워', to: '성원구청역 2번 출구', start: '21:05', end: '21:22', fare: '12,400원', pay: '현장 결제' },
+    { id: 't1', date: '3/14', from: '리버뷰타워', to: '성원구청역 2번 출구', start: '21:05', end: '21:22', fare: '12,400원', pay: '현장 결제', eid: 'E-12b' },
   ];
 
   /* 분실물 문의: 3/15 09:02 슬레이트에서 "뒷좌석에 폰을 두고 내렸습니다." (T2) */
@@ -43,8 +43,9 @@
           ui.row({ title: '도착지 입력', subtitle: '어디로 갈까요?', icon: 'search', onClick: () => nav.push(() => call(nav)) }),
         ] }),
         ui.group({ header: '최근 이용', plain: true, rows: TRIPS.map((t) => ui.row({
-          title: t.from + ' → ' + t.to, subtitle: t.start + ' → ' + t.end + ' · ' + t.pay, meta: t.date, value: t.fare,
-          onClick: () => nav.push(() => tripDetail(nav, t)),
+          title: t.from + ' → ' + t.to, subtitle: t.start + ' → ' + t.end + ' · ' + t.pay, meta: LM.fmt.list(t.date), value: t.fare,
+          onClick: () => { if (t.eid) LM.C.see(t.eid); nav.push(() => tripDetail(nav, t)); },
+          onLong: () => ui.share({ eid: t.eid, title: t.from + ' → ' + t.to, kind: 'receipt', app: 'taxi' }),
         })) }),
         !LM.online() ? ui.notice('오프라인 상태입니다. 이용 내역만 볼 수 있고 호출은 할 수 없다.', 'warn') : null,
       ],
@@ -111,8 +112,9 @@
       title: '이용 내역', back: '바로택시', nav,
       body: TRIPS.length ? ui.group({
         header: '3월', plain: true, rows: TRIPS.map((t) => ui.row({
-          title: t.from + ' → ' + t.to, subtitle: t.start + ' → ' + t.end + ' · ' + t.pay, meta: t.date, value: t.fare,
-          onClick: () => nav.push(() => tripDetail(nav, t)),
+          title: t.from + ' → ' + t.to, subtitle: t.start + ' → ' + t.end + ' · ' + t.pay, meta: LM.fmt.list(t.date), value: t.fare,
+          onClick: () => { if (t.eid) LM.C.see(t.eid); nav.push(() => tripDetail(nav, t)); },
+          onLong: () => ui.share({ eid: t.eid, title: t.from + ' → ' + t.to, kind: 'receipt', app: 'taxi' }),
         })),
       }) : ui.empty({ icon: 'receipt', title: '이용 내역이 없습니다' }),
     });

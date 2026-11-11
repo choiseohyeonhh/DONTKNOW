@@ -128,6 +128,17 @@
     },
     amount,
     toDate,
+    /* 목록 행의 단일 날짜 규칙: 같은 날 → HH:MM, 같은 해 → M/D[ HH:MM], 다른 해 → YYYY.M.D. */
+    list: (v) => {
+      const d = toDate(v);
+      if (!d) return String(v == null ? '' : v);
+      const now = LM.now ? LM.now() : new Date();
+      const sameDay = d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+      const withTime = /\d{1,2}:\d{2}/.test(String(v));
+      if (sameDay) return pad(d.getHours()) + ':' + pad(d.getMinutes());
+      if (d.getFullYear() === now.getFullYear()) return (d.getMonth() + 1) + '/' + d.getDate() + (withTime ? ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) : '');
+      return d.getFullYear() + '.' + (d.getMonth() + 1) + '.' + d.getDate();
+    },
   };
 
   /* ---------- 앱 등록 ---------- */

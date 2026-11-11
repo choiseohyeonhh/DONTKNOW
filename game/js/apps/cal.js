@@ -113,6 +113,8 @@
   }
 
   function eventSheet(e) {
+    if (e.ev) LM.C.see(e.ev);
+    LM.setEid(e.ev || null);
     const rows = [
       kv('날짜', dayLabel(e)),
       ['시간', e.time || '종일'],
@@ -125,7 +127,8 @@
     const body = h('div', null,
       h('div', { class: 'cal-sheet-title' }, e.title),
       ui.group({ rows }),
-      e.gj ? ui.notice('3/10 이후 반복 일정은 삭제되었다.') : null);
+      e.gj ? ui.notice('3/10 이후 반복 일정은 삭제되었다.') : null,
+      e.ev ? ui.button({ label: '공유', kind: 'tinted', icon: 'share', onClick: () => ui.share({ eid: e.ev, title: e.title, kind: 'event', app: 'cal' }) }) : null);
     ui.sheet(root, ui.sheetPage({ title: '일정', body }), { size: 'medium' });
   }
 

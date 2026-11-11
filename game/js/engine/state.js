@@ -49,6 +49,9 @@
       device: { dnd: true, preview: { blink: 'off', loopdm: 'off' }, locked: true },
       sched: [], notifs: initialNotifs(), logSeq: 0,
       prologueSeen: false,
+      dlg: { revealed: false, seq: 0, used: {}, turns: {}, typing: {}, kt: [] },
+      blink: { opened: false, expiry: {} },
+      shots: [],
     };
   }
 
@@ -62,6 +65,14 @@
     out.net = Object.assign({}, base.net, st.net || {});
     out.device = Object.assign({}, base.device, st.device || {});
     out.device.preview = Object.assign({}, base.device.preview, (st.device && st.device.preview) || {});
+    out.dlg = Object.assign({}, base.dlg, st.dlg || {});
+    ['used', 'turns', 'typing'].forEach((k) => { if (!out.dlg[k] || typeof out.dlg[k] !== 'object') out.dlg[k] = {}; });
+    if (!Array.isArray(out.dlg.kt)) out.dlg.kt = [];
+    if (!Array.isArray(out.dlg.pending)) out.dlg.pending = [];
+    if (typeof out.dlg.cw !== 'boolean') out.dlg.cw = false;
+    out.blink = Object.assign({}, base.blink, st.blink || {});
+    if (!out.blink.expiry || typeof out.blink.expiry !== 'object') out.blink.expiry = {};
+    if (!Array.isArray(out.shots)) out.shots = [];
     ['seen', 'read', 'events', 'traces', 'msgs', 'deleted'].forEach((k) => {
       if (!out[k] || typeof out[k] !== 'object' || Array.isArray(out[k])) out[k] = {};
     });

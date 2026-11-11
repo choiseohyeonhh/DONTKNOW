@@ -59,6 +59,8 @@
   }
 
   function player(nav, rec) {
+    if (/^E-\d+/.test(rec.id)) LM.C.see(rec.id);
+    LM.setEid(/^E-\d+/.test(rec.id) ? rec.id : null);
     const dur = rec.dur;
     let pos = 0, playing = false, speed = 1;
 
@@ -84,7 +86,7 @@
       playBtn,
       h('button', { class: 'voice-jump', 'aria-label': '15초 앞으로', onclick: () => jump(15) }, '+15'),
       speedBtn,
-      h('button', { class: 'voice-ctrl', 'aria-label': '공유', onclick: () => ui.share(rec.title) }, LM.icon('share')));
+      h('button', { class: 'voice-ctrl', 'aria-label': '공유', onclick: () => ui.share({ eid: /^E-\d+/.test(rec.id) ? rec.id : null, title: rec.title, kind: 'recording', app: 'voice' }) }, LM.icon('share')));
 
     playBtn.addEventListener('click', () => {
       if (pos >= dur) pos = 0;
@@ -115,7 +117,7 @@
       controls,
       h('div', { class: 'voice-sections' }, transcript),
       ui.group({ plain: true, rows: [
-        ui.row({ title: '30초 구간 공유', icon: 'share', onClick: () => ui.share(rec.title + ' · 30초 구간') }),
+        ui.row({ title: '30초 구간 공유', icon: 'share', onClick: () => ui.share({ eid: /^E-\d+/.test(rec.id) ? rec.id : null, title: rec.title + ' · 30초 구간', kind: 'recording', app: 'voice' }) }),
       ] }),
     );
 
@@ -135,7 +137,7 @@
         title: rec.title,
         actions: [
           { label: '이름 변경', onClick: () => ui.toast('프로토타입: 이름은 바뀌지 않는다') },
-          { label: '공유', onClick: () => ui.share(rec.title) },
+          { label: '공유', onClick: () => ui.share({ eid: /^E-\d+/.test(rec.id) ? rec.id : null, title: rec.title, kind: 'recording', app: 'voice' }) },
           { label: '삭제', destructive: true, onClick: () => ui.toast('프로토타입: 삭제는 일어나지 않는다') },
         ],
       }) }, LM.icon('more')),

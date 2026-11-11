@@ -6,9 +6,9 @@
   const LM = window.LM, h = LM.h, ui = LM.ui;
 
   const POSTS = [
-    { id: 'cam', title: '카메라 급처', price: 450000, status: 'sold', statusText: '판매 완료 3/11', photo: '카메라', time: '3/10', mine: true, desc: '급처합니다. 빨리 거래 원해요', chat: 'cam' },
-    { id: 'gtr', title: '통기타', price: 200000, status: 'sold', statusText: '판매 완료 3/12', photo: '통기타', time: '3/11', mine: true, desc: '급처합니다. 빨리 거래 원해요', chat: 'gtr' },
-    { id: 'mon', title: '모니터', price: 120000, status: 'reserved', statusText: '예약 중', photo: '모니터', time: '3/14', mine: true, desc: '급처합니다. 빨리 거래 원해요', chat: 'mon', note: '3/14 약속 불발 · 구매자 미응답' },
+    { id: 'cam', title: '카메라 급처', price: 450000, status: 'sold', statusText: '판매 완료 3/11', photo: '카메라', time: '3/10', mine: true, desc: '급처합니다. 빨리 거래 원해요', chat: 'cam', eid: 'E-160' },
+    { id: 'gtr', title: '통기타', price: 200000, status: 'sold', statusText: '판매 완료 3/12', photo: '통기타', time: '3/11', mine: true, desc: '급처합니다. 빨리 거래 원해요', chat: 'gtr', eid: 'E-160' },
+    { id: 'mon', title: '모니터', price: 120000, status: 'reserved', statusText: '예약 중', photo: '모니터', time: '3/14', mine: true, desc: '급처합니다. 빨리 거래 원해요', chat: 'mon', note: '3/14 약속 불발 · 구매자 미응답', eid: 'E-160' },
     /* 아래 두 글은 동네 피드를 채우는 자리표시(캐논 없음). */
     { id: 'chair', title: '책상 의자', price: 30000, status: 'selling', statusText: '판매 중', photo: '의자', time: '3/15', mine: false, desc: '깨끗하게 썼습니다.', seller: '성원동 이웃', layer: 'T2' },
     { id: 'books', title: '전공책 일괄', price: 20000, status: 'selling', statusText: '판매 중', photo: '전공책', time: '3/16', mine: false, desc: '필기 조금 있습니다.', seller: '성원동 이웃', layer: 'T2' },
@@ -41,6 +41,7 @@
     },
   ];
   const chatById = (id) => CHATS.find((c) => c.id === id);
+  const CHAT_EID = { mon: 'E-161' };
   CHATS.forEach((c) => { c.itemId = 'market:' + c.id; });
   LM.read.register('market', () => CHATS.filter((c) => c.unanswered && !LM.isDeleted('market', c.itemId)).map((c) => ({ id: c.itemId, threadId: c.id })));
 
@@ -93,7 +94,7 @@
           const p = postById(c.post);
           const last = c.days[c.days.length - 1].msgs[c.days[c.days.length - 1].msgs.length - 1];
           return ui.row({
-            avatar: c.name, title: c.name, subtitle: last.text, meta: c.at,
+            avatar: c.name, title: c.name, subtitle: last.text, meta: LM.fmt.list(c.at),
             extra: h('span', { class: 'mk-chat-post' }, p.title),
             badge: LM.read.isUnread('market', c.itemId) ? 1 : null,
             onClick: () => nav.push(() => chat(nav, c)),
@@ -126,10 +127,12 @@
   }
 
   function post(nav, p) {
+    if (p.eid) LM.C.see(p.eid);
+    LM.setEid(p.eid || null);
     const c = p.chat ? chatById(p.chat) : null;
     return ui.page({
       title: '상품', back: '이웃마켓', nav, large: false,
-      right: h('button', { class: 'nb-btn', 'aria-label': '공유', onclick: () => ui.share(p.title + ' ' + LM.fmt.amount(p.price)) }, LM.icon('share')),
+      right: h('button', { class: 'nb-btn', 'aria-label': '공유', onclick: () => ui.share({ eid: p.eid, title: p.title + ' ' + LM.fmt.amount(p.price), kind: 'post', app: 'market' }) }, LM.icon('share')),
       body: [
         h('div', { class: 'mk-hero' }, ui.photo(p.photo, { alt: p.title, ratio: '4 / 3', caption: false })),
         h('div', { class: 'mk-detail' },
@@ -153,6 +156,8 @@
   function chat(nav, c) {
     const p = postById(c.post);
     LM.read.mark('market', c.itemId);
+    if (CHAT_EID[c.id]) LM.C.see(CHAT_EID[c.id]);
+    LM.setEid(CHAT_EID[c.id] || null);
     const log = h('div', { class: 'mk-log', role: 'log', 'aria-label': c.name + ' 대화' });
     c.days.forEach((d) => {
       log.appendChild(h('div', { class: 'mk-day' }, d.day));

@@ -20,7 +20,8 @@
   ];
 
   function F(id, folder, from, fromAddr, subject, preview, listTime, timeFull, body, o) {
-    return Object.assign({ id, account: 'cirrus', folder, from, fromAddr, to: ACCOUNTS.cirrus.address, subject, preview, listTime, timeFull, body, attachments: [], unread: false, online: false }, o || {});
+    const eid = /^E-\d+/.test(id) ? id : null;
+    return Object.assign({ id, eid: eid, account: 'cirrus', folder, from, fromAddr, to: ACCOUNTS.cirrus.address, subject, preview, listTime, timeFull, body, attachments: [], unread: false, online: false }, o || {});
   }
 
   const MAILS = [
@@ -119,7 +120,7 @@
       id: rt.id, account: account, folder: folder, from: rt.from === 'out' ? '이도현' : (rt.title || rt.from || '메일'),
       fromAddr: rt.fromAddr || '', to: rt.to || ACCOUNTS[account].address,
       subject: rt.subject || rt.text || '(제목 없음)', preview: rt.preview || rt.text || '',
-      listTime: LM.fmt.date(rt.at, 'md'), timeFull: LM.fmt.date(rt.at), body: [rt.text || ''], attachments: rt.attach ? [rt.attach] : [], unread: rt.from !== 'out', online: false, rt: true,
+      listTime: LM.fmt.date(rt.at, 'md'), timeFull: LM.fmt.date(rt.at), body: [rt.text || ''], attachments: rt.attach ? [rt.attach] : [], unread: rt.from !== 'out', online: false, rt: true, eid: rt.eid || (rt.attach && rt.attach.eid) || null,
     }));
   }
   const mailAt = (m) => {
@@ -207,11 +208,12 @@
     const row = ui.row({
       title: m.from,
       subtitle: m.subject + (m.preview ? ' — ' + m.preview : ''),
-      meta: m.listTime,
+      meta: LM.fmt.list(m.timeFull || m.listTime),
       lead: h('span', { class: 'mail-dot' + (unread ? ' on' : '') }),
       class: 'mail-row' + (unread ? ' unread' : ''),
       onClick: () => {
         LM.read.mark('mail', m.id);
+        if (m.eid) LM.C.see(m.eid);
         if (m.folder === 'scheduled') nav.push(() => schedule(nav, m));
         else nav.push(() => detail(nav, m));
       },
@@ -227,7 +229,8 @@
         { label: LM.read.isUnread('mail', m.id) ? '읽음으로 표시' : '읽지 않음으로 표시', onClick: () => { if (LM.read.isUnread('mail', m.id)) LM.read.mark('mail', m.id); else LM.read.unmark('mail', m.id); } },
         { label: '보관', onClick: () => { m.folder = 'archive'; if (row.isConnected) row.remove(); LM.emit('state', {}); ui.toast('보관함으로 옮겼다'); } },
         { label: '삭제', destructive: true, onClick: () => { m.folder = 'trash'; if (row.isConnected) row.remove(); LM.emit('state', {}); ui.toast('휴지통으로 이동했다'); } },
-        { label: '정보', onClick: () => ui.info(m.subject, [['보낸 사람', m.from], ['받는 사람', m.to], ['시각', m.timeFull], ['첨부', String((m.attachments || []).length) + '개']]) },
+        { label: '공유', onClick: () => ui.share({ eid: m.eid, title: m.subject, kind: 'mail', app: 'mail' }) },
+        { label: '정보', onClick: () => ui.info(m.subject, [['보낸 사람', m.from], ['받는 사람', m.to], ['시각', m.timeFull], ['첨부', String((m.attachments || []).length) + '개'], ['단서', m.eid || '—']]) },
       ],
     });
   }
@@ -259,6 +262,8 @@
 
   /* ---------- 메일 본문 ---------- */
   function detail(nav, m) {
+    if (m.eid) LM.C.see(m.eid);
+    LM.setEid(m.eid || null);
     const details = h('div', { class: 'mail-head-detail', hidden: true },
       ui.group({ rows: [kv('보낸 사람', m.from + ' <' + m.fromAddr + '>'), kv('받는 사람', m.to), kv('시각', LM.fmt.date(m.timeFull)), kv('첨부', String((m.attachments || []).length) + '개')] }));
     const toggle = h('button', { class: 'mail-head-toggle', onclick: () => { details.hidden = !details.hidden; toggle.classList.toggle('open', !details.hidden); } },
@@ -289,8 +294,11 @@
   }
 
   function attachChip(a) {
-    return h('button', { class: 'mail-chip', onclick: () => ui.info(a.name, [['종류', a.kind], ['출처', a.source]]) },
+    const eid = a.eid || (a.name && a.name.indexOf('출석요구서') >= 0 ? 'E-11' : null);
+    const b = h('button', { class: 'mail-chip', onclick: () => { if (eid) LM.C.see(eid); ui.info(a.name, [['종류', a.kind], ['출처', a.source]]); } },
       LM.icon('doc'), h('span', null, a.name));
+    LM.longPress(b, () => ui.share({ eid: eid, title: a.name, kind: 'file', app: 'mail' }));
+    return b;
   }
 
   function del(nav, m) {
@@ -375,6 +383,9 @@
           LM.emit('state', {});
           ui.toast('오프라인 상태라 임시보관에 저장했다');
         } else {
+          const npc = to === 'taeyun.kim@sw.police.kr' ? 'KT' : to === 'cheongun@gosiwon.kr' ? 'CW' : null;
+          LM.sendMessage({ app: 'mail', thread: 'sent', npc: npc, name: to, to: to }, { text: text.join('\n'), subject: subject });
+          LM.emit('state', {});
           ui.toast('메일을 보냈다');
         }
       },

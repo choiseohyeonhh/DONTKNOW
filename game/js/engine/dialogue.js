@@ -17,6 +17,8 @@
     if (!Number.isFinite(d.seq)) d.seq = 0;
     ['used', 'turns', 'typing'].forEach((k) => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
     if (!Array.isArray(d.kt)) d.kt = [];
+    if (!Array.isArray(d.pending)) d.pending = [];
+    if (typeof d.cw !== 'boolean') d.cw = false;
     return d;
   }
   LM.dialogue = LM.dialogue || {};
@@ -83,7 +85,7 @@
       return false;
     }
     if (mt.type === 'combo') {
-      if (mt.identity && !m.identity) return false;
+      if (mt.identity && !(m.identity || m.revealed)) return false;
       if (mt.hidden && (m.identity || m.revealed)) return false;
       if (mt.words && !hasWord(m.text, mt.words)) return false;
       if (mt.any && !(m.words.some((w) => mt.any.some((x) => norm(x) === norm(w.word))) || hasWord(m.text, mt.any))) return false;
@@ -189,14 +191,21 @@
     LM.emit('dlg:typing', { app: ctx.app, thread: ctx.thread, npc: npc, on: false });
   }
 
-  function scheduleTyping(npc, ctx, delay, seq) {
-    if (delay <= 0) return;
-    const at = Math.max(1, delay - 1);
-    LM.sched.after('dlg-typing:' + seq, at, () => {
-      const d = ensure();
-      d.typing[key(ctx.app, ctx.thread)] = true;
-      LM.emit('dlg:typing', { app: ctx.app, thread: ctx.thread, npc: npc, on: true });
+  function armTyping(p) {
+    const d = ensure();
+    LM.sched.def('dlg-typing:' + p.seq, () => {
+      if (!d.pending.some((x) => x.seq === p.seq)) return;
+      d.typing[key(p.app, p.thread)] = true;
+      LM.emit('dlg:typing', { app: p.app, thread: p.thread, npc: p.npc, on: true });
     });
+    LM.sched.at('dlg-typing:' + p.seq, p.typingAt);
+  }
+  function fireReply(seq) {
+    const d = ensure();
+    const i = d.pending.findIndex((p) => p.seq === seq);
+    if (i < 0) return;
+    const p = d.pending.splice(i, 1)[0];
+    deliver(p.npc, { app: p.app, thread: p.thread, name: p.name, title: p.title }, p.lines, { id: p.rowId });
   }
 
   function nextAt(hour, minute) {
@@ -216,17 +225,7 @@
     if (hasWord(text, ['해담', '해담고시텔', '207', '성원구청로 31'])) LM.flag('LOC_SENT', true);
   }
 
-  function scheduleKt() {
-    const g = G();
-    if (!g) return;
-    if ((g.sched || []).some((e) => e.id === 'dlg:kt')) return;
-    if (g.events && g.events['dlg:kt']) return;
-    const at = nextAt(8, 10);
-    LM.sched.after('dlg-typing:kt', (at - g.gameMs) / 60000 - 1, () => {
-      const d = ensure(); d.typing['mail:inbox'] = true;
-      LM.emit('dlg:typing', { app: 'mail', thread: 'inbox', npc: 'KT', on: true });
-    });
-    LM.sched.at('dlg:kt', at, () => {
+  function ktBatch() {
       const d = ensure();
       delete d.typing['mail:inbox'];
       const lines = ['아버님, 아드님은 계좌 명의인 조사 대상입니다. 직접 출석하시는 게 가장 좋습니다.'];
@@ -242,7 +241,29 @@
         subject: '회신', text: lines.join('\n'), at: G().gameMs, eid: 'E-94', npc: 'KT',
       });
       LM.emit('dlg:typing', { app: 'mail', thread: 'inbox', npc: 'KT', on: false });
-    });
+  }
+
+  function scheduleKt() {
+    const g = G();
+    if (!g) return;
+    if (g.events && g.events['dlg:kt']) return;
+    const at = nextAt(8, 10);
+    const d = ensure();
+    if (d.kt.length && !(g.sched || []).some((e) => e.id === 'dlg-typing:kt')) {
+      LM.sched.after('dlg-typing:kt', Math.max(0, (at - g.gameMs) / 60000 - 1), () => {
+        const dd = ensure(); dd.typing['mail:inbox'] = true;
+        LM.emit('dlg:typing', { app: 'mail', thread: 'inbox', npc: 'KT', on: true });
+      });
+    }
+    LM.sched.def('dlg:kt', ktBatch);
+    LM.sched.at('dlg:kt', at);
+  }
+
+  function cwReply() {
+      LM.msg.add('mail', 'inbox', {
+        from: 'in', title: '청운고시원', fromAddr: 'cheongun@gosiwon.kr',
+        subject: '회신', text: '입실 취소하신 분입니다. 개인정보라 더는 말씀드릴 수 없습니다.', at: G().gameMs, npc: 'CW',
+      });
   }
 
   function scheduleCw() {
@@ -251,12 +272,9 @@
     if ((g.sched || []).some((e) => e.id === 'dlg:cw')) return;
     if (g.events && g.events['dlg:cw']) return;
     const at = nextAt(8, 30);
-    LM.sched.at('dlg:cw', at, () => {
-      LM.msg.add('mail', 'inbox', {
-        from: 'in', title: '청운고시원', fromAddr: 'cheongun@gosiwon.kr',
-        subject: '회신', text: '입실 취소하신 분입니다. 개인정보라 더는 말씀드릴 수 없습니다.', at: G().gameMs, npc: 'CW',
-      });
-    });
+    ensure().cw = true;
+    LM.sched.def('dlg:cw', cwReply);
+    LM.sched.at('dlg:cw', at);
   }
 
   /* 보낸 것으로 기록한다. 앱은 먼저 LM.msg.add를 하고 이 함수를 부른다. */
@@ -276,6 +294,15 @@
     };
     if (m.identity) d.revealed = true;
 
+    /* BR-21·6.2: 정체를 숨긴 채 실장·사칭에게 "어/응/집 근처"라고 답하면 생존·근거리를 확신한다. */
+    if ((npc === 'KS' || npc === 'IMP') && !d.revealed) {
+      const n = norm(text);
+      if (['어', '응', '집근처', '집근처야', '집근처에있어', '집근처에'].indexOf(n) >= 0) {
+        LM.flag('LEAK', true);
+        LM.emit('npc', { npc: npc, leak: true });
+      }
+    }
+
     /* 김태윤 경위 — 새벽엔 답하지 않고 08:10에 받은 메일 전부에 한 번에 회신한다. */
     if (npc === 'KT') {
       ktFlags(text, atts);
@@ -290,8 +317,8 @@
       return { npc: npc, deferred: true };
     }
 
-    /* 할란이 소진된 민지 — 읽기만. */
-    if (npc === 'MJ' && Number(d.turns.MJ) >= 3) return { npc: npc, silent: true };
+    /* 할란이 소진된 민지, 03:00 이후의 민지 — 읽기만. */
+    if (npc === 'MJ' && (Number(d.turns.MJ) >= 3 || isMjSilent())) return { npc: npc, silent: true };
 
     let row = pickRow(m);
     /* stage 3 확장 훅. 반환값이 reply를 가지면 그 답을 쓴다. */
@@ -308,16 +335,18 @@
     let lines = linesFor(row, m);
     if (override && (override.reply || override.lines)) lines = override.reply || override.lines;
 
-    if (npc === 'MJ' && isMjSilent()) {
-      LM.logEvent('dialogue:silent', { npc: npc });
-      return { npc: npc, row: row && row.id, silent: true };
-    }
-
     const delay = pickDelay(npc, row);
     const seq = ++d.seq;
-    scheduleTyping(npc, ctx, delay, seq);
-    const replyCtx = { app: ctx.app, thread: ctx.thread, name: ctx.name, title: ctx.title };
-    LM.sched.after('dlg-reply:' + seq, delay, () => deliver(npc, replyCtx, lines, row));
+    const replyAt = g.gameMs + delay * 60000;
+    const pending = {
+      seq: seq, npc: npc, app: ctx.app, thread: ctx.thread, name: ctx.name, title: ctx.title,
+      lines: lines, rowId: row && row.id, at: replyAt, typingAt: replyAt - Math.max(1, Math.min(delay, 1)) * 60000,
+    };
+    if (delay > 1) pending.typingAt = replyAt - 60000; else pending.typingAt = null;
+    d.pending.push(pending);
+    if (pending.typingAt != null) armTyping(pending);
+    LM.sched.def('dlg-reply:' + seq, () => fireReply(seq));
+    LM.sched.at('dlg-reply:' + seq, replyAt);
 
     LM.logEvent('dialogue:send', { npc: npc, row: row && row.id, delay: delay });
     LM.emit('dialogue:sent', { npc: npc, row: row && row.id, delay: delay });
@@ -338,4 +367,20 @@
   };
   LM.dialogue.revealed = function () { return !!ensure().revealed; };
   LM.dialogue.state = npcState;
+
+  function rearm() {
+    const d = ensure();
+    (d.pending || []).forEach((p) => {
+      if (G().events && G().events['dlg-reply:' + p.seq]) return;
+      LM.sched.def('dlg-reply:' + p.seq, () => fireReply(p.seq));
+      LM.sched.at('dlg-reply:' + p.seq, p.at);
+      if (p.typingAt != null && !(G().events && G().events['dlg-typing:' + p.seq])) armTyping(p);
+    });
+    if (d.kt.length) scheduleKt();
+    if (d.cw) scheduleCw();
+  }
+  LM.dialogue._rearm = rearm;
+  LM.on('gload', rearm);
+  LM.on('newGame', rearm);
+  try { rearm(); } catch (e) { console.error(e); }
 })();

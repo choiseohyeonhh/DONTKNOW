@@ -11,8 +11,8 @@
     { id: 'hanbit', name: '한빛물류', addr: '성원동 · 물류센터', note: '', x: 12, y: 44, pin: 'store' },
     { id: 'river', name: '리버뷰타워', addr: '성원동 · 성원대교 전망', note: '성원대교 전망', x: 64, y: 20, pin: 'pin' },
     { id: 'gucheong', name: '성원구청역', addr: '성원동 · 지하철 1호선', note: '성원구청 인근', x: 54, y: 45, pin: 'pin' },
-    { id: 'cheongun', name: '청운고시원', addr: '성원구청로 18', note: '2월 25일 계약 · 3월 입실 예정', x: 40, y: 38, pin: 'pin' },
-    { id: 'haedam', name: '해담고시텔', addr: '성원구청로 31 · 2층', note: '일세·주세, 2층', x: 47, y: 33, pin: 'pin', onlineOnly: true, hidePin: true },
+    { id: 'cheongun', name: '청운고시원', addr: '성원구청로 18', note: '2월 25일 계약 · 3월 입실 예정', x: 40, y: 38, pin: 'pin', eid: 'E-71' },
+    { id: 'haedam', name: '해담고시텔', addr: '성원구청로 31 · 2층', note: '일세·주세, 2층', x: 47, y: 33, pin: 'pin', onlineOnly: true, hidePin: true, eid: 'E-219' },
     { id: 'police', name: '성원경찰서', addr: '성원동 · 수사과', note: '수사과', x: 79, y: 44, pin: 'pin' },
     { id: 'hanseo', name: '한서대학교', addr: '서울 · 한서대', note: '도현의 학교', x: 17, y: 11, pin: 'pin' },
     { id: 'spa', name: '성원스파', addr: '성원구청역 1번 출구', note: '24시 찜질방', x: 62, y: 52, pin: 'pin' },
@@ -23,14 +23,14 @@
 
   /* 최근 검색: 이 기기 3건은 캐논(E-71). 슬레이트 기록은 온라인 후에만(E-219). */
   const RECENT = [
-    { q: '청운고시원', at: '2/24', place: 'cheongun' },
+    { q: '청운고시원', at: '2/24', place: 'cheongun', eid: 'E-71' },
     { q: '성원경찰서 수사과', at: '3/13', place: 'police' },
     { q: '리버뷰타워', at: '1/8', place: 'river' },
   ];
-  const RECENT_SLATE = [{ q: '해담고시텔', at: '3/15 09:05', place: 'haedam' }];
+  const RECENT_SLATE = [{ q: '해담고시텔', at: '3/15 09:05', place: 'haedam', eid: 'E-219' }];
 
   /* 저장 장소: "K" = 리버뷰타워, 메모 "1203 / 주차 B2", 1/9 (E-70) */
-  let saved = [{ label: 'K', place: 'river', memo: '1203 / 주차 B2', date: '1/9' }];
+  let saved = [{ label: 'K', place: 'river', memo: '1203 / 주차 B2', date: '1/9', eid: 'E-70' }];
 
   /* 이동 시간표(LOCATIONS.md 2절). 없는 구간은 값을 만들지 않는다. */
   const ROUTES = {
@@ -105,15 +105,15 @@
     const fav = (id, label, icon) => h('button', { class: 'm-fav', onclick: () => nav.push(() => place(nav, byId(id))) }, LM.icon(icon, 'm-fav-ic'), label);
 
     const recentRows = RECENT.map((r) => ui.row({
-      title: r.q, meta: r.at, icon: 'clock', onClick: () => nav.push(() => place(nav, byId(r.place))),
+      title: r.q, meta: LM.fmt.list(r.at), icon: 'clock', onClick: () => { if (r.eid) LM.C.see(r.eid); nav.push(() => place(nav, byId(r.place))); },
     }));
     const slateRows = LM.online() ? RECENT_SLATE.map((r) => ui.row({
-      title: r.q, meta: r.at, icon: 'devices', subtitle: '슬레이트에서', onClick: () => nav.push(() => place(nav, byId(r.place))),
+      title: r.q, meta: LM.fmt.list(r.at), icon: 'devices', subtitle: '슬레이트에서', onClick: () => { if (r.eid) LM.C.see(r.eid); nav.push(() => place(nav, byId(r.place))); },
     })) : [];
 
     const savedRows = saved.map((s) => {
       const p = byId(s.place);
-      return ui.row({ title: s.label, subtitle: p.name + ' · ' + s.memo, meta: s.date, icon: 'bookmark', onClick: () => nav.push(() => place(nav, p)) });
+      return ui.row({ title: s.label, subtitle: p.name + ' · ' + s.memo, meta: LM.fmt.list(s.date), icon: 'bookmark', onClick: () => { if (s.eid) LM.C.see(s.eid); nav.push(() => place(nav, p)); } });
     });
 
     panel.append(
@@ -163,8 +163,8 @@
     const draw = (q) => {
       const query = (q || '').trim();
       if (!query) {
-        const rows = RECENT.map((r) => ui.row({ title: r.q, meta: r.at, icon: 'clock', onClick: () => nav.push(() => place(nav, byId(r.place))) }));
-        const slate = LM.online() ? RECENT_SLATE.map((r) => ui.row({ title: r.q, meta: r.at, icon: 'devices', subtitle: '슬레이트에서', onClick: () => nav.push(() => place(nav, byId(r.place))) })) : [];
+        const rows = RECENT.map((r) => ui.row({ title: r.q, meta: LM.fmt.list(r.at), icon: 'clock', onClick: () => { if (r.eid) LM.C.see(r.eid); nav.push(() => place(nav, byId(r.place))); } }));
+        const slate = LM.online() ? RECENT_SLATE.map((r) => ui.row({ title: r.q, meta: LM.fmt.list(r.at), icon: 'devices', subtitle: '슬레이트에서', onClick: () => { if (r.eid) LM.C.see(r.eid); nav.push(() => place(nav, byId(r.place))); } })) : [];
         host.replaceChildren(...[ui.group({ header: '최근 검색', plain: true, rows: rows.length ? rows : [ui.empty({ icon: 'clock', title: '최근 검색이 없습니다' })] }), slate.length ? ui.group({ header: '다른 기기', plain: true, rows: slate }) : null].filter(Boolean));
         return;
       }
@@ -178,6 +178,8 @@
   }
 
   function place(nav, p) {
+    if (p.eid) LM.C.see(p.eid);
+    LM.setEid(p.eid || null);
     const isSaved = saved.some((s) => s.place === p.id);
     const saveKv = h('span', { class: 'kv-v' }, isSaved ? '저장한 장소' : '저장 안 함');
     const saveBtn = ui.button({
@@ -194,7 +196,7 @@
     });
     return ui.page({
       title: p.name, back: '지도', nav, large: false,
-      right: h('button', { class: 'nb-btn', 'aria-label': '공유', onclick: () => ui.share(p.name) }, LM.icon('share')),
+      right: h('button', { class: 'nb-btn', 'aria-label': '공유', onclick: () => ui.share({ eid: p.eid, title: p.name + ' · ' + p.addr, kind: 'place', app: 'map' }) }, LM.icon('share')),
       body: [
         h('div', { class: 'm-mini-wrap' }, mapArt({ mini: true, pins: [Object.assign({}, p, { x: 50, y: 74 })] })),
         h('div', { class: 'm-place-head' }, h('div', { class: 'm-place-name' }, p.name), h('div', { class: 'm-place-addr' }, p.addr)),
@@ -205,7 +207,7 @@
         h('div', { class: 'm-place-btns' },
           ui.button({ label: '경로', kind: 'filled', icon: 'nav', onClick: () => nav.push(() => route(nav, p.id)) }),
           saveBtn,
-          ui.button({ label: '공유', kind: 'gray', icon: 'share', onClick: () => ui.share(p.name) })),
+          ui.button({ label: '공유', kind: 'gray', icon: 'share', onClick: () => ui.share({ eid: p.eid, title: p.name + ' · ' + p.addr, kind: 'place', app: 'map' }) })),
       ],
     });
   }
@@ -245,7 +247,11 @@
             from === to ? h('div', { class: 'm-dur-w' }, '같은 장소입니다.') : null));
     };
     draw();
-    return ui.page({ title: '경로', back: '장소', nav, large: false, body });
+    const dest = byId(to);
+    return ui.page({
+      title: '경로', back: '장소', nav, large: false, body,
+      right: h('button', { class: 'nb-btn', 'aria-label': '공유', onclick: () => ui.share({ eid: dest && dest.eid, title: byId(from).name + ' → ' + dest.name, kind: 'route', app: 'map' }) }, LM.icon('share')),
+    });
   }
 
   function savedPage(nav) {
@@ -254,7 +260,7 @@
       body: saved.length ? ui.group({
         header: '저장한 장소', rows: saved.map((s) => {
           const p = byId(s.place);
-          return ui.row({ title: s.label, subtitle: p.name + (s.memo ? ' · ' + s.memo : ''), meta: s.date, icon: 'bookmark', onClick: () => nav.push(() => place(nav, p)) });
+          return ui.row({ title: s.label, subtitle: p.name + (s.memo ? ' · ' + s.memo : ''), meta: LM.fmt.list(s.date), icon: 'bookmark', onClick: () => { if (s.eid) LM.C.see(s.eid); nav.push(() => place(nav, p)); } });
         }),
       }) : ui.empty({ icon: 'bookmark', title: '저장한 장소가 없습니다' }),
     });

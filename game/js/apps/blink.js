@@ -4,13 +4,16 @@
   const LM = window.LM, h = LM.h, ui = LM.ui;
 
   const MSGS = [
-    { dir: 'in', body: '오늘 8시 사무실. 안 오면 니 아빠 회사로 간다', day: '3/14', time: '18:40' },
-    { dir: 'in', body: '녹음했다고? 폰 내놔', day: '3/14', time: '21:30' },
-    { dir: 'in', body: '수요일 정오까지 돈 안 가져오면 니 아빠 회사 간다. 한빛물류 맞지?', day: '3/16', time: '21:00', onlineOnly: true },
+    { dir: 'in', body: '오늘 8시 사무실. 안 오면 니 아빠 회사로 간다', day: '3/14', time: '18:40', eid: 'E-60' },
+    { dir: 'in', body: '녹음했다고? 폰 내놔', day: '3/14', time: '21:30', eid: 'E-60' },
+    { dir: 'in', body: '수요일 정오까지 돈 안 가져오면 니 아빠 회사 간다. 한빛물류 맞지?', day: '3/16', time: '21:00', onlineOnly: true, eid: 'E-60' },
   ];
   let extra = [];
-  let opened = false;
-  const expired = new Set();
+  function opened() { const g = LM.G; if (!g.blink || typeof g.blink !== 'object') g.blink = { opened: false, expiry: {} }; return !!g.blink.opened; }
+  function openSet(v) { const g = LM.G; if (!g.blink) g.blink = { opened: false, expiry: {} }; g.blink.opened = !!v; }
+  function expiryMap() { const g = LM.G; if (!g.blink || typeof g.blink !== 'object') g.blink = { opened: false, expiry: {} }; if (!g.blink.expiry) g.blink.expiry = {}; return g.blink.expiry; }
+  function expiredHas(id) { const e = expiryMap()[id]; return e != null && LM.G.gameMs >= e; }
+  function arm(id) { const e = expiryMap(); if (e[id] == null) e[id] = LM.G.gameMs + 60000; return e[id]; }
 
   MSGS.forEach((m, i) => { m.id = 'blink:' + i; m.threadId = 'main'; });
   LM.register({ id: 'blink', render(app) { app.start((nav) => list(nav)); } });
@@ -19,11 +22,12 @@
     return LM.msg.list('blink', 'main').map((rt) => ({
       id: rt.id, dir: rt.from === 'out' ? 'out' : 'in', body: rt.text,
       day: LM.fmt.date(rt.at, 'md'), time: LM.fmt.date(rt.at, 'hm'), rt: true,
+      eid: rt.eid || (rt.attach && rt.attach.eid) || null, attach: rt.attach || null,
     }));
   }
   function visible() {
-    return MSGS.filter((m) => (!m.onlineOnly || LM.online()) && !expired.has(m.id))
-      .concat(extra.filter((m) => !expired.has(m.id)), runtime().filter((m) => !expired.has(m.id)));
+    return MSGS.filter((m) => (!m.onlineOnly || LM.online()) && !expiredHas(m.id))
+      .concat(extra.filter((m) => !expiredHas(m.id)), runtime().filter((m) => !expiredHas(m.id)));
   }
   function unread() { return LM.read.unreadCount('blink'); }
   function last() { const m = visible(); return m.length ? m[m.length - 1] : null; }
@@ -39,7 +43,7 @@
       holder.replaceChildren(ui.group({ plain: true, rows: [ui.row({
         title: h('span', { class: 'blink-titlewrap' }, LM.icon('lock', 'blink-lockic'), h('span', null, '실장K')),
         subtitle: unread() ? '비밀 대화 · 새 메시지' : '비밀 대화',
-        meta: m ? m.day + ' ' + m.time : '—',
+        meta: m ? LM.fmt.list(m.day + ' ' + m.time) : '—',
         lead: ui.avatar('실장K', 56),
         badge: unread() || null,
         onClick: () => openRoom(nav),
@@ -58,11 +62,11 @@
 
   function openRoom(nav) {
     const go = () => nav.push(() => room(nav));
-    if (opened) return go();
+    if (opened()) return go();
     ui.actionSheet({
       title: '비밀 대화 열기',
       text: '읽음은 즉시 전송됩니다.',
-      actions: [{ label: '열기', onClick: () => { opened = true; go(); } }],
+      actions: [{ label: '열기', onClick: () => { openSet(true); go(); } }],
     });
   }
 
@@ -80,43 +84,34 @@
         if (m.day !== day) { day = m.day; kids.push(h('div', { class: 'blink-day' }, h('time', null, day))); }
         kids.push(line(m));
       });
+      if (LM.dialogue && LM.dialogue.typing('blink', 'main')) {
+        kids.push(h('div', { class: 'blink-line' }, h('div', { class: 'blink-bubble' }, h('span', { class: 'typing-dot' }, h('i'), h('i'), h('i')))));
+      }
       log.replaceChildren(...kids);
     }
 
     function line(m) {
       const out = m.dir === 'out';
-      const b = h('div', { class: 'blink-bubble' }, m.body);
+      const b = h('div', { class: 'blink-bubble' }, m.body,
+        m.attach ? h('div', { class: 'att-card' }, LM.icon('doc'), h('div', null, h('b', null, m.attach.title || '첨부'), h('small', null, m.attach.kind || ''))) : null);
+      if (m.eid) LM.C.see(m.eid);
       LM.longPress(b, () => ui.actionSheet({ actions: [
         { label: '복사', onClick: () => ui.toast('복사됨') },
-        { label: '공유', onClick: () => ui.share(m.body) },
+        { label: '공유', onClick: () => ui.share({ eid: m.eid, eids: m.eid ? [m.eid] : [], title: m.body || (m.attach && m.attach.title), kind: m.attach ? m.attach.kind : 'message', app: 'blink' }) },
         { label: '정보', onClick: () => messageInfo(m) },
       ] }));
-      const remain = m.expiresAt ? Math.max(0, Math.ceil((m.expiresAt - Date.now()) / 1000)) : 60;
+      const exp = expiryMap()[m.id];
+      const remain = exp != null ? Math.max(0, Math.ceil((exp - LM.G.gameMs) / 1000)) : 60;
       const meta = h('div', { class: 'blink-meta' },
         out ? h('span', null, '보냄') : h('span', { class: 'blink-timer' }, LM.icon('timer'), remain + '초 뒤 삭제'),
         h('span', null, m.time));
       return h('div', { class: 'blink-line' + (out ? ' out' : '') }, b, meta);
     }
 
-    const footer = h('div', { class: 'blink-composer' });
-    const inp = h('input', { class: 'blink-inp', type: 'text', placeholder: '메시지 입력', 'aria-label': '메시지 입력' });
-    const send = () => {
-      const text = inp.value;
-      if (!text.trim()) return;
-      if (!LM.online()) { ui.toast('오프라인 상태입니다 · 온라인이 필요합니다'); return; }
-      inp.value = '';
-      LM.msg.add('blink', 'main', { from: 'out', text: text, at: LM.G.gameMs, silent: true });
-      setTimeout(() => { if (scroller) scroller.scrollTop = scroller.scrollHeight; }, 20);
-      ui.toast('보냈다');
-    };
-    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); send(); } });
-    footer.append(
-      h('button', { class: 'blink-plus', 'aria-label': '첨부', onclick: () => ui.actionSheet({ actions: [
-        { label: '사진', onClick: () => ui.toast('프로토타입: 사진 첨부는 보내지 않는다') },
-        { label: '파일', onClick: () => ui.toast('프로토타입: 파일 첨부는 보내지 않는다') },
-      ] }) }, LM.icon('plus')),
-      inp,
-      h('button', { class: 'blink-send', 'aria-label': '보내기', onclick: send }, LM.icon('send')));
+    const footer = LM.composer.bar({
+      target: { app: 'blink', thread: 'main', npc: 'KS', name: '실장K' },
+      onSent: () => ui.toast('보냈다'),
+    });
 
     const body = h('div', null,
       h('div', { class: 'blink-banner', role: 'note' }, LM.icon('lock', 'blink-banner-ic'), h('span', null, '이 기기에만 저장 · 읽고 60초 뒤 삭제')),
@@ -137,19 +132,24 @@
     const offMsg = LM.on('msg', (e) => {
       if (!log.isConnected) { offMsg(); return; }
       if (e.appId !== 'blink' || e.threadId !== 'main') return;
-      if (e.message && e.message.from !== 'out') e.message.expiresAt = Date.now() + 60000;
+      if (e.message && e.message.from !== 'out') arm(e.message.id);
       LM.read.markThread('blink', 'main');
       draw();
     });
-    // 읽음 이벤트: 이 방의 수신 메시지는 60초 뒤 양쪽에서 사라진다.
+    // 읽음 이벤트: 이 방의 수신 메시지는 게임 시계 60초 뒤 양쪽에서 사라진다(저장·불러오기에도 남는다).
     visible().forEach((m) => {
-      if (m.dir === 'in' && !m.expiresAt) { m.expiresAt = Date.now() + 60000; m.threadId = 'main'; }
+      if (m.dir === 'in') { arm(m.id); m.threadId = 'main'; if (m.eid) LM.C.see(m.eid); }
     });
     LM.read.markThread('blink', 'main');
+    LM.setEid('E-60');
+    const offTyping = LM.on('dlg:typing', (e) => {
+      if (!log.isConnected) { offTyping(); return; }
+      if (e && e.app === 'blink') draw();
+    });
     const timer = setInterval(() => {
       if (!log.isConnected) { clearInterval(timer); return; }
       let gone = false;
-      visible().forEach((m) => { if (m.dir === 'in' && m.expiresAt && Date.now() >= m.expiresAt) { expired.add(m.id); gone = true; } });
+      visible().forEach((m) => { if (m.dir === 'in' && expiredHas(m.id)) gone = true; });
       if (gone) { LM.emit('read', { appId: 'blink', itemId: '-', expired: true }); draw(); }
       else draw();
     }, 1000);
@@ -160,7 +160,7 @@
     ui.sheet(null, ui.sheetPage({
       title: '프로필',
       body: h('div', { class: 'blink-profile', data: { app: 'blink' } },
-        h('div', { class: 'blink-photo' }, ui.photo('차 실내, 손목의 녹색 시계', { ratio: '4 / 5', alt: '차 실내, 손목의 녹색 시계' })),
+        h('div', { class: 'blink-photo', onclick: () => { LM.C.see('E-61'); LM.share.open({ eid: 'E-61', title: '실장K 프로필 사진', kind: 'photo', app: 'blink' }); } }, ui.photo('차 실내, 손목의 녹색 시계', { ratio: '4 / 5', alt: '차 실내, 손목의 녹색 시계' })),
         h('div', { class: 'blink-prof-name' }, '실장K'),
         h('div', { class: 'blink-prof-sub' }, 'dk와 비밀 대화'),
         ui.group({ rows: [h('div', { class: 'kv' }, h('span', { class: 'kv-k' }, '계정'), h('span', { class: 'kv-v' }, '실장K'))] })),
@@ -188,6 +188,7 @@
       ['시각', m.day + ' ' + m.time],
       ['보낸 기기', m.dir === 'out' ? '도현의 폰' : '실장K의 기기'],
       ['삭제', '읽은 뒤 60초'],
+      ['단서', m.eid || '—'],
     ]);
   }
 

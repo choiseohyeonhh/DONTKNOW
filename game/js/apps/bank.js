@@ -14,11 +14,11 @@
    * 나머지는 1/9~3/6의 흐름을 채우는 자리표시다(수법·대본 없음). */
   function buildTx() {
     const rows = [
-      { id: 'kim', date: '3/10', time: '11:05', type: 'in', name: '김*자', amount: 15000000, memo: '출금 없음 · 이후 지급정지' },
-      { id: 'park-out', date: '3/6', time: '14:40', type: 'out', name: '지정 계좌', amount: 28000000, memo: '박미선 입금액 이체' },
-      { id: 'park-in', date: '3/6', time: '14:12', type: 'in', name: '박미선', amount: 28000000, memo: '—' },
-      { id: 'han1', date: '2/26', time: '—', type: 'out', name: '한결캐피탈', amount: 3400000, memo: '가상계좌 / 채무자 이상철' },
-      { id: 'han2', date: '1/27', time: '—', type: 'out', name: '한결캐피탈', amount: 3000000, memo: '가상계좌 / 채무자 이상철' },
+      { id: 'kim', date: '3/10', time: '11:05', type: 'in', name: '김*자', amount: 15000000, memo: '출금 없음 · 이후 지급정지', eid: 'E-84' },
+      { id: 'park-out', date: '3/6', time: '14:40', type: 'out', name: '지정 계좌', amount: 28000000, memo: '박미선 입금액 이체', eid: 'E-82' },
+      { id: 'park-in', date: '3/6', time: '14:12', type: 'in', name: '박미선', amount: 28000000, memo: '—', eid: 'E-82' },
+      { id: 'han1', date: '2/26', time: '—', type: 'out', name: '한결캐피탈', amount: 3400000, memo: '가상계좌 / 채무자 이상철', eid: 'E-83' },
+      { id: 'han2', date: '1/27', time: '—', type: 'out', name: '한결캐피탈', amount: 3000000, memo: '가상계좌 / 채무자 이상철', eid: 'E-83' },
     ];
     const start = new Date(2026, 0, 9).getTime();
     const span = new Date(2026, 2, 6).getTime() - start;
@@ -35,6 +35,7 @@
         date: (d.getMonth() + 1) + '/' + d.getDate(),
         time: String(9 + (i % 10)).padStart(2, '0') + ':' + String((i * 13) % 60).padStart(2, '0'),
         type: type, name: name, amount: amount, memo: '—',
+        eid: name === 'GJ정산' ? 'E-81' : 'E-80',
       });
       i++;
     }
@@ -143,7 +144,7 @@
         }));
       });
       const kids = [];
-      if (rows.length) kids.push(...groups.map((g) => ui.group({ header: g.date, plain: true, rows: g.rows })));
+      if (rows.length) kids.push(...groups.map((g) => ui.group({ header: LM.fmt.list(g.date + ' 00:00'), plain: true, rows: g.rows })));
       else kids.push(ui.empty({ icon: 'receipt', title: '거래가 없습니다' }));
       kids.push(
         ui.group({ header: '요약', rows: SUMMARY.map(([k, v]) => h('div', { class: 'kv' }, h('span', { class: 'kv-k' }, k), h('span', { class: 'kv-v' }, v))) }),
@@ -159,10 +160,12 @@
   }
 
   function txDetail(nav, t) {
+    if (t.eid) LM.C.see(t.eid);
+    LM.setEid(t.eid || null);
     const sign = t.type === 'in' ? '+' : '−';
     return ui.page({
       title: '거래 상세', back: '거래내역', nav, large: false,
-      right: h('button', { class: 'nb-btn', 'aria-label': '공유', onclick: () => ui.share(t.name + ' ' + amt(t.amount)) }, LM.icon('share')),
+      right: h('button', { class: 'nb-btn', 'aria-label': '공유', onclick: () => ui.share({ eid: t.eid, title: t.name + ' ' + amt(t.amount), kind: 'transaction', app: 'bank' }) }, LM.icon('share')),
       body: [
         h('div', { class: 'b-amount ' + t.type },
           h('div', { class: 'b-amount-k' }, t.type === 'in' ? '입금' : '출금'),
@@ -175,7 +178,7 @@
           h('div', { class: 'kv' }, h('span', { class: 'kv-k' }, '메모'), h('span', { class: 'kv-v' }, t.memo)),
           h('div', { class: 'kv' }, h('span', { class: 'kv-k' }, '계좌'), h('span', { class: 'kv-v' }, ACCOUNT)),
         ] }),
-        ui.button({ label: '공유', kind: 'tinted', icon: 'share', onClick: () => ui.share(t.name + ' ' + amt(t.amount)) }),
+        ui.button({ label: '공유', kind: 'tinted', icon: 'share', onClick: () => ui.share({ eid: t.eid, title: t.name + ' ' + amt(t.amount), kind: 'transaction', app: 'bank' }) }),
       ],
     });
   }

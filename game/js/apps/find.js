@@ -73,6 +73,8 @@
 
   function devicePage(nav, d) {
     const online = LM.online();
+    if (d.id === 'slate' && online) LM.C.see('E-73');
+    if (d.id === 'slate') LM.setEid('E-73');
     let lost = false;
     const body = h('div');
     const draw = () => {
@@ -112,6 +114,7 @@
     return ui.page({
       title: d.name, back: '기기', nav, large: false,
       right: h('button', { class: 'nb-btn', 'aria-label': '새로고침', onclick: () => { draw(); ui.toast(LM.online() ? '위치를 새로 고쳤다' : '오프라인 상태입니다.'); } }, LM.icon('refresh')),
+      right: h('button', { class: 'nb-btn', 'aria-label': '공유', onclick: () => ui.share({ eid: d.id === 'slate' ? 'E-73' : null, title: d.name + ' 위치', kind: 'location', app: 'find' }) }, LM.icon('share')),
       body,
     });
   }

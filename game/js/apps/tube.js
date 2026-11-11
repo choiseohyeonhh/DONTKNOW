@@ -89,6 +89,7 @@
   });
 
   const byId = (id) => VIDEOS.find((v) => v.id === id);
+  const EIDS = { V2: 'E-120', V3: 'E-121', V4: 'E-122', V5: 'E-124' };
   const navBtn = (icon, label, onClick) => h('button', { class: 'nb-btn', 'aria-label': label, onclick: onClick }, LM.icon(icon));
   const fmt = (n) => (typeof n === 'number' ? n.toLocaleString('ko-KR') : n);
 
@@ -166,6 +167,10 @@
   }
 
   function watch(nav, v) {
+    const eid = EIDS[v.id] || null;
+    if (eid) LM.C.see(eid);
+    if (v.id === 'V4') LM.C.see('E-123');
+    LM.setEid(eid);
     const player = h('div', { class: 'tb-player' });
     const sub = h('div', { class: 'tb-sub' }, v.captions[0] ? v.captions[0].text : '');
     const playBtn = h('button', { class: 'tb-play', 'aria-label': '재생' }, LM.icon('play'));
@@ -200,6 +205,7 @@
 
     return ui.page({
       title: v.title, back: '뒤로', nav, large: false,
+      right: h('button', { class: 'nb-btn', 'aria-label': '공유', onclick: () => ui.share({ eid: eid, title: v.title, kind: 'video', app: 'tube' }) }, LM.icon('share')),
       body: [
         LM.online() ? null : ui.notice('오프라인 저장본 · 제목·채널만 보입니다. 재생·자막 검색·댓글은 온라인이 필요합니다.', 'warn'),
         player, sub,

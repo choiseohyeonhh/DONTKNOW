@@ -28,9 +28,9 @@
     { id: 's3', at: '3/17 12:15', items: '컵밥 1' },
     { id: 's2', at: '3/16 19:40', items: '김밥 1, 라면 1' },
     { id: 's1', at: '3/15 13:02', items: '컵밥 1', changed: true },
-  ].map((o) => Object.assign(o, { addr: HAEDAM, request: REQUEST, pay: '만나서 현금 결제', device: '슬레이트' }));
+  ].map((o) => Object.assign(o, { addr: HAEDAM, request: REQUEST, pay: '만나서 현금 결제', device: '슬레이트', eid: 'E-150' }));
 
-  const LIVE_ORDER = { id: 'live', at: '3/18 07:10', items: '삼각김밥 2', addr: HAEDAM, request: REQUEST, pay: '만나서 현금 결제', device: '슬레이트', live: true };
+  const LIVE_ORDER = { id: 'live', at: '3/18 07:10', items: '삼각김밥 2', addr: HAEDAM, request: REQUEST, pay: '만나서 현금 결제', device: '슬레이트', live: true, eid: 'E-151' };
 
   LM.register({ id: 'hankki', render(app) { app.start((nav) => home(nav)); } });
 
@@ -80,7 +80,8 @@
       extra: h('div', { class: 'hk-ord-meta' },
         h('div', { class: 'hk-ord-addr' }, o.addr),
         h('div', { class: 'hk-ord-req' }, (o.request ? o.request + ' · ' : '') + o.pay)),
-      onClick: () => nav.push(() => orderDetail(nav, o)),
+      onClick: () => { if (o.eid) LM.C.see(o.eid); nav.push(() => orderDetail(nav, o)); },
+      onLong: () => ui.share({ eid: o.eid, title: o.at + ' · ' + o.items, kind: 'order', app: 'hankki' }),
     });
   }
 
@@ -121,6 +122,9 @@
           h('div', { class: 'kv' }, h('span', { class: 'kv-k' }, '결제'), h('span', { class: 'kv-v' }, o.pay)),
           h('div', { class: 'kv' }, h('span', { class: 'kv-k' }, '주문 기기'), h('span', { class: 'kv-v' }, o.device)),
         ] }),
+        h('div', { class: 'm-place-btns' },
+          ui.button({ label: '공유', kind: 'gray', icon: 'share', onClick: () => ui.share({ eid: o.eid, title: o.at + ' · ' + o.items, kind: 'order', app: 'hankki' }) }),
+          null),
         ui.button({
           label: '재주문', kind: 'filled', icon: 'refresh',
           onClick: () => {

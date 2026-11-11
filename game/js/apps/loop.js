@@ -28,17 +28,17 @@
   /* 계정 팔로워·팔로잉·소개 중 캐논에 없는 값은 자리표시(캐논 없음)다. */
 
   const POSTS = [
-    { id: 'dh-100', kind: 'photo', author: 'dohyun.lee', at: '2025.10.03', pinned: true, caption: '우리 100일 🤍', media: ['100일 · 서아와'], tags: ['seoa.film'], likes: 212, comments: [{ author: 'seoa.film', at: '2025.10.03', body: '🤍' }] },
+    { id: 'dh-100', kind: 'photo', author: 'dohyun.lee', at: '2025.10.03', pinned: true, caption: '우리 100일 🤍', media: ['100일 · 서아와'], tags: ['seoa.film'], likes: 212, comments: [{ author: 'seoa.film', at: '2025.10.03', body: '🤍' }], eid: 'E-59' },
     { id: 'dh-last', kind: 'photo', author: 'dohyun.lee', at: '3/8', caption: '캠퍼스.', media: ['캠퍼스 오후'], likes: 96, comments: [{ author: 'jh_lee_99', at: '3/15 13:20', body: '도현아 연락 좀 해 ㅠㅠ 걱정돼', t2: true }] },
-    { id: 'jh-0105', kind: 'photo', author: 'jihoon_j', at: '1/5', location: '리버뷰타워', caption: '용돈 벌이 성공 ㅋ', media: ['현금 사진'], likes: 48, comments: [] },
-    { id: 'harin-0308', kind: 'text', author: 'harin.daily', at: '3/8 22:40', body: '할머니가 3월 6일에 2,800만 원을 당하셨어요. 경찰은 아직 아무 말도 없고요. 상대 계좌는 "누리 352-****-7731 이*현"이라고만 나옵니다. 같은 피해 보신 분 계시면 꼭 알려 주세요. 제발요.', likes: 1204, commentCount: 112,
+    { id: 'jh-0105', kind: 'photo', author: 'jihoon_j', at: '1/5', location: '리버뷰타워', caption: '용돈 벌이 성공 ㅋ', media: ['현금 사진'], likes: 48, comments: [], eid: 'E-55' },
+    { id: 'harin-0308', kind: 'text', author: 'harin.daily', at: '3/8 22:40', eid: 'E-47', body: '할머니가 3월 6일에 2,800만 원을 당하셨어요. 경찰은 아직 아무 말도 없고요. 상대 계좌는 "누리 352-****-7731 이*현"이라고만 나옵니다. 같은 피해 보신 분 계시면 꼭 알려 주세요. 제발요.', likes: 1204, commentCount: 112,
       likesList: [{ handle: 'dohyun.lee', at: '3/9 03:12' }, { handle: 'campus.bowl', at: '3/9 01:10' }, { handle: 'library.seat', at: '3/9 00:52' }],
       comments: [{ author: 'campus.bowl', at: '3/9 00:41', body: '힘내세요…' }, { author: 'library.seat', at: '3/9 01:02', body: '같은 계좌 저도 봤어요' }] }, // 댓글 2건 자리표시(캐논 없음)
-    { id: 'kang-0305', kind: 'photo', author: 'moneycoach.kang', at: '3/5', caption: '새 사무실 🔑', media: ['창밖 성원대교', '화이트보드'], likes: 3021, comments: [], edited: true, editHistory: [{ at: '3/15 03:00', from: '리버뷰타워', to: '위치 태그 없음', t2: true }] },
-    { id: 'kang-0220', kind: 'text', author: 'moneycoach.kang', at: '2/20', body: '고액 알바 조심하세요 여러분 그치?', likes: 842, commentCount: 57, comments: [] },
-    { id: 'kang-0202', kind: 'photo', author: 'moneycoach.kang', at: '2/2', caption: '새 차 🖤', media: ['검은 SUV', '녹색 문자판 시계'], likes: 5100, comments: [] },
-    { id: 'minji-0120', kind: 'photo', author: 'minji.sw', at: '1/20', location: '리버뷰타워', caption: '교육 끝 🍰', media: ['케이크', 'SUV 스마트키', '손목의 초록 시계', '창밖 성원대교'], likes: 76, comments: [], layer: 'T2' },
-    { id: 'minji-0313', kind: 'text', author: 'minji.sw', at: '3/13', body: '계좌 정지… 다들 고액알바 조심해', likes: 22, commentCount: 8, comments: [], layer: 'T2' },
+    { id: 'kang-0305', kind: 'photo', author: 'moneycoach.kang', at: '3/5', caption: '새 사무실 🔑', media: ['창밖 성원대교', '화이트보드'], likes: 3021, comments: [], edited: true, editHistory: [{ at: '3/15 03:00', from: '리버뷰타워', to: '위치 태그 없음', t2: true }], eid: 'E-48' },
+    { id: 'kang-0220', kind: 'text', author: 'moneycoach.kang', at: '2/20', body: '고액 알바 조심하세요 여러분 그치?', likes: 842, commentCount: 57, comments: [], eid: 'E-57' },
+    { id: 'kang-0202', kind: 'photo', author: 'moneycoach.kang', at: '2/2', caption: '새 차 🖤', media: ['검은 SUV', '녹색 문자판 시계'], likes: 5100, comments: [], eid: 'E-49' },
+    { id: 'minji-0120', kind: 'photo', author: 'minji.sw', at: '1/20', location: '리버뷰타워', caption: '교육 끝 🍰', media: ['케이크', 'SUV 스마트키', '손목의 초록 시계', '창밖 성원대교'], likes: 76, comments: [], layer: 'T2', eid: 'E-104' },
+    { id: 'minji-0313', kind: 'text', author: 'minji.sw', at: '3/13', body: '계좌 정지… 다들 고액알바 조심해', likes: 22, commentCount: 8, comments: [], layer: 'T2', eid: 'E-105' },
     { id: 'noise-1', kind: 'photo', author: 'campus.bowl', at: '3/13', caption: '오늘 학식', media: ['학식'], likes: 61, comments: [] },
     { id: 'noise-2', kind: 'text', author: 'library.seat', at: '3/12', body: '3층 창가 자리 비었어요', likes: 9, commentCount: 2, comments: [] },
     { id: 'noise-3', kind: 'photo', author: 'night.bus', at: '3/11', caption: '막차', media: ['야간 버스'], likes: 33, comments: [] },
@@ -73,13 +73,13 @@
   /* DK_POSTS 10~23: Q-OPEN-136 문구·시각 미확정 → 숫자·짧은 문장 자리표시(캐논 없음). */
 
   const STORIES = {
-    own: { author: 'dohyun.lee', at: '3/14 19:40', black: true, text: '.', own: true, viewers: [{ handle: 'moneycoach.kang', at: '3/14 19:44' }, { handle: 'jihoon_j', at: '3/14 19:47' }, { handle: 'seoa.film', at: '3/14 19:52' }], viewerMore: 31 },
-    'seoa-3': { author: 'seoa.film', at: '3/14 21:40', media: '홍대입구역 밤', location: '홍대입구역', text: '', archived: true },
+    own: { author: 'dohyun.lee', at: '3/14 19:40', black: true, text: '.', own: true, eid: 'E-41', viewers: [{ handle: 'moneycoach.kang', at: '3/14 19:44' }, { handle: 'jihoon_j', at: '3/14 19:47' }, { handle: 'seoa.film', at: '3/14 19:52' }], viewerMore: 31 },
+    'seoa-3': { author: 'seoa.film', at: '3/14 21:40', media: '홍대입구역 밤', location: '홍대입구역', text: '', archived: true, eid: 'E-42' },
     'seoa-4': { author: 'seoa.film', at: '3/12 00:10', media: '새벽 거리', text: '', archived: true },
-    'seoa-2': { author: 'seoa.film', at: '2/14', media: '혼자', text: '혼자 🙃', archived: true },
+    'seoa-2': { author: 'seoa.film', at: '2/14', media: '혼자', text: '혼자 🙃', archived: true, eid: 'E-58' },
     'jihoon-arch': { author: 'jihoon_j', at: '3/15', black: true, text: '…', archived: true },
     'minji-1': { author: 'minji.sw', at: '1월', media: '출근길', text: '알바' },
-    'kang-ad': { author: 'moneycoach.kang', at: '', media: '추천 부업 카드', text: '추천 부업' },
+    'kang-ad': { author: 'moneycoach.kang', at: '', media: '추천 부업 카드', text: '추천 부업', eid: 'E-102' },
   };
   const HIGHLIGHTS = {
     'seoa.film': [{ title: '2월', key: 'seoa-2' }, { title: '3/12', key: 'seoa-4' }, { title: '3월', key: 'seoa-3' }],
@@ -155,6 +155,7 @@
       }
     };
     draw();
+    if (p.eid) LM.longPress(wrap, () => ui.share({ eid: p.eid, title: p.caption || p.body || p.media[0], kind: 'post', app: 'loop' }));
     let last = 0;
     wrap.addEventListener('click', (e) => {
       if (e.target.closest('button')) return;
@@ -191,7 +192,7 @@
       h('div', { class: 'lp-acts' },
         likeBtn,
         h('button', { class: 'lp-act', 'aria-label': '댓글', onclick: () => nav.push(() => postDetail(nav, p)) }, LM.icon('comment', 'lp-ic')),
-        h('button', { class: 'lp-act', 'aria-label': '공유', onclick: () => ui.share('사진 게시물') }, LM.icon('share', 'lp-ic')),
+        h('button', { class: 'lp-act', 'aria-label': '공유', onclick: () => ui.share({ eid: p.eid, title: p.caption || p.body || '사진 게시물', kind: 'post', app: 'loop' }) }, LM.icon('share', 'lp-ic')),
         h('span', { class: 'lp-flex' }),
         saveBtn),
       likeLabel,
@@ -208,7 +209,7 @@
     const reBtn = h('button', { class: 'lp-act', 'aria-label': '리포스트', 'aria-pressed': !!p.reposted, onclick: () => { p.reposted = !p.reposted; reBtn.classList.toggle('on', p.reposted); reBtn.setAttribute('aria-pressed', p.reposted); ui.toast(p.reposted ? '리포스트했습니다' : '리포스트를 취소했습니다'); } }, LM.icon('repost', 'lp-ic'), h('span', null, fmt((p.repostCount || 0) + (p.reposted ? 1 : 0))));
     const art = h('article', { class: 'lp-card lp-textcard', 'aria-label': p.author + ' 글 게시물' },
       headRow(p, nav),
-      h('div', { class: 'lp-body' }, p.body),
+      h('div', { class: 'lp-body', onpointerdown: (e) => { if (p.eid) LM.longPress(e.currentTarget, () => ui.share({ eid: p.eid, title: p.body || '글 게시물', kind: 'post', app: 'loop' })); } }, p.body),
       p.media && p.media.length ? h('div', { class: 'lp-tmedia' }, p.media.map((m) => ui.photo(m, { ratio: '1 / 1', alt: m, caption: false }))) : null,
       h('div', { class: 'lp-acts' },
         h('button', { class: 'lp-act', 'aria-label': '댓글', onclick: () => nav.push(() => postDetail(nav, p)) }, LM.icon('comment', 'lp-ic'), h('span', null, fmt(p.commentCount || (p.comments && p.comments.length) || 0))),
@@ -282,6 +283,8 @@
 
   /* ---------- 게시물 상세 ---------- */
   function postDetail(nav, p) {
+    if (p.eid) LM.C.see(p.eid);
+    LM.setEid(p.eid || null);
     const isPhoto = p.kind === 'photo';
     const commentsEl = h('div', { class: 'lp-comments' });
     const countEl = h('div', { class: 'lp-cmore' });
@@ -305,7 +308,7 @@
       body.push(h('div', { class: 'lp-acts' },
         likeBtn,
         h('button', { class: 'lp-act', 'aria-label': '댓글', onclick: () => { const i = nav.root.querySelector('.lp-composer input'); if (i) i.focus(); } }, LM.icon('comment', 'lp-ic')),
-        h('button', { class: 'lp-act', 'aria-label': '공유', onclick: () => ui.share('사진 게시물') }, LM.icon('share', 'lp-ic')),
+        h('button', { class: 'lp-act', 'aria-label': '공유', onclick: () => ui.share({ eid: p.eid, title: p.caption || p.body || '사진 게시물', kind: 'post', app: 'loop' }) }, LM.icon('share', 'lp-ic')),
         h('span', { class: 'lp-flex' }),
         h('button', { class: 'lp-act', 'aria-label': '저장', onclick: () => { p.saved = !p.saved; ui.toast(p.saved ? '저장했습니다' : '저장을 취소했습니다'); } }, LM.icon('bookmark', 'lp-ic'))));
       body.push(likeLabel);
@@ -348,7 +351,7 @@
 
   function likesSheet(nav, p) {
     const list = p.likesList || [{ handle: 'campus.bowl', at: p.at }, { handle: 'library.seat', at: p.at }, { handle: 'night.bus', at: p.at }];
-    const rows = list.map((l) => ui.row({ title: AC[l.handle] ? AC[l.handle].handle : l.handle, meta: l.at, avatar: avName(l.handle), avatarSize: 44, onClick: (e) => { const w = e.target.closest('.sheet-wrap'); if (w) w.close(); openProfile(nav, l.handle); } }));
+    const rows = list.map((l) => ui.row({ title: AC[l.handle] ? AC[l.handle].handle : l.handle, meta: LM.fmt.list(l.at), avatar: avName(l.handle), avatarSize: 44, onClick: (e) => { const w = e.target.closest('.sheet-wrap'); if (w) w.close(); openProfile(nav, l.handle); } }));
     ui.sheet(nav.root, ui.sheetPage({ title: '좋아요 ' + fmt(p.likes || 0) + '개', body: ui.group({ plain: true, rows }) }), { size: 'medium' });
   }
 
@@ -361,7 +364,7 @@
   function postMenu(nav, p) {
     const actions = [];
     if (p.kind === 'text') actions.push({ label: '인용하기', onClick: () => ui.toast('인용 화면(프로토타입)') });
-    if (p.kind === 'photo') actions.push({ label: '공유', onClick: () => ui.share('사진 게시물') });
+    if (p.kind === 'photo' || p.kind === 'text') actions.push({ label: '공유', onClick: () => ui.share({ eid: p.eid, title: p.caption || p.body || '게시물', kind: 'post', app: 'loop' }) });
     actions.push({ label: p.saved ? '저장 취소' : '저장', onClick: () => { p.saved = !p.saved; ui.toast(p.saved ? '저장했습니다' : '저장을 취소했습니다'); } });
     if (p.edited) actions.push({ label: '편집 기록 보기', onClick: () => editHistory(nav, p) });
     actions.push({ label: '이 게시물 정보', onClick: () => ui.info('게시물 정보', [['작성자', p.author], ['시각', p.at], ['종류', p.kind === 'photo' ? '사진 게시물' : '글 게시물']]) });
@@ -373,11 +376,14 @@
     const st = STORIES[key];
     if (!st) return;
     if (!LM.online()) { ui.toast('스토리는 온라인이 필요합니다'); return; }
+    if (st.eid) LM.C.see(st.eid);
+    LM.setEid(st.eid || null);
     const wrap = h('div', { class: 'lp-storyview', role: 'dialog', 'aria-modal': 'true' });
     const close = () => wrap.remove();
     const head = h('div', { class: 'lp-storyhead' },
       ui.avatar(avName(st.author), 32),
       h('div', { class: 'lp-storywho' }, h('b', null, AC[st.author] ? AC[st.author].handle : st.author), h('small', null, st.at + (st.own ? ' · 보관된 스토리' : st.archived ? ' · 지난 스토리' : ''))),
+      st.eid ? h('button', { class: 'lp-storyclose', 'aria-label': '공유', onclick: () => ui.share({ eid: st.eid, title: (AC[st.author] ? AC[st.author].handle : st.author) + ' 스토리', kind: 'story', app: 'loop' }) }, LM.icon('share')) : null,
       h('button', { class: 'lp-storyclose', 'aria-label': '닫기', onclick: close }, LM.icon('close')));
     const media = st.black
       ? h('div', { class: 'lp-story-black' }, h('span', null, st.text))
@@ -391,7 +397,7 @@
   }
 
   function openViewers(nav, st) {
-    const rows = st.viewers.map((v) => ui.row({ title: AC[v.handle] ? AC[v.handle].handle : v.handle, meta: v.at, avatar: avName(v.handle), avatarSize: 56, onClick: (e) => {
+    const rows = st.viewers.map((v) => ui.row({ title: AC[v.handle] ? AC[v.handle].handle : v.handle, meta: LM.fmt.list(v.at), avatar: avName(v.handle), avatarSize: 56, onClick: (e) => {
       const w = e.target.closest('.sheet-wrap'); if (w) w.close();
       nav.root.querySelectorAll('.lp-storyview').forEach((el) => el.remove());
       openProfile(nav, v.handle);
@@ -500,6 +506,10 @@
   }
 
   const stat = (n, l) => h('div', { class: 'lp-stat' }, h('b', null, n), h('span', null, l));
+  function fmtMeta(m) {
+    const parts = String(m).split(' · ');
+    return LM.fmt.list(parts[0]) + (parts.length > 1 ? ' · ' + parts.slice(1).join(' · ') : '');
+  }
 
   function highlightRow(nav, handle) {
     return h('div', { class: 'lp-highlights' }, HIGHLIGHTS[handle].map((hl) => h('button', { class: 'lp-hl', onclick: () => openStory(nav, hl.key) }, ui.avatar(avName(handle), 64, { ring: true }), h('span', null, hl.title))));
@@ -593,7 +603,7 @@
         const tags = ['성원', '고액알바', '리버뷰타워', '자취'].filter((t) => t.includes(query));
         if (tags.length) out.push(ui.group({ header: '태그', plain: true, rows: tags.map((t) => ui.row({ title: '#' + t, subtitle: '게시물', onClick: () => ui.toast('태그 페이지(프로토타입)') })) }));
         const posts = POSTS.filter((p) => !isBlocked(p.author) && postVisible(p) && ((p.body || '') + ' ' + (p.caption || '') + ' ' + (p.media || []).join(' ')).toLowerCase().includes(query));
-        if (posts.length) out.push(ui.group({ header: '게시물', plain: true, rows: posts.map((p) => ui.row({ title: p.caption || p.body, subtitle: p.author, meta: p.at, onClick: () => nav.push(() => postDetail(nav, p)) })) }));
+        if (posts.length) out.push(ui.group({ header: '게시물', plain: true, rows: posts.map((p) => ui.row({ title: p.caption || p.body, subtitle: p.author, meta: LM.fmt.list(p.at), onClick: () => nav.push(() => postDetail(nav, p)) })) }));
         if (accts.length + places.length + tags.length + posts.length === 0) out.push(ui.empty({ icon: 'search', title: '결과 없음', text: '이전 사용자 이름으로는 검색되지 않습니다.' }));
       }
       results.replaceChildren(...out.filter(Boolean));
@@ -628,9 +638,12 @@
       if (mode === '활동') {
         body.replaceChildren(ui.empty({ icon: 'heart', title: '활동이 없습니다', text: '새 좋아요·댓글·팔로우 알림이 여기에 표시됩니다.' }));
       } else {
-        body.replaceChildren(h('div', { class: 'lp-actlist' }, ACTIVITY.filter((a) => LM.visible(a)).map((a) => h('button', { class: 'lp-actrow', onclick: a.target ? () => nav.push(() => postDetail(nav, byId(a.target))) : null },
+        body.replaceChildren(h('div', { class: 'lp-actlist' }, ACTIVITY.filter((a) => LM.visible(a)).map((a) => h('button', {
+          class: 'lp-actrow',
+          onclick: a.target ? () => nav.push(() => postDetail(nav, byId(a.target))) : null,
+        },
           h('span', { class: 'lp-activicon' }, LM.icon(a.icon)),
-          h('span', { class: 'lp-actrowtext' }, a.text, h('small', null, a.meta))))));
+          h('span', { class: 'lp-actrowtext' }, a.text, h('small', null, fmtMeta(a.meta)))))));
       }
     };
     draw();
@@ -639,9 +652,11 @@
 
   /* ---------- DM ---------- */
   const THREADS = [
-    { id: 'jihoon', name: '지훈', handle: 'jihoon_j', last: '게시물을 공유했습니다', at: '1/8 21:14', unread: 1 },
+    { id: 'jihoon', name: '지훈', handle: 'jihoon_j', last: '게시물을 공유했습니다', at: '1/8 21:14', unread: 1, eid: 'E-40' },
     { id: 'seoa', name: '서아', handle: 'seoa.film', last: '그날 얘기 조금만 더 할 수 있어?', at: '3/14 20:44', unread: 0 },
-    { id: 'harin', name: '박하린', handle: 'harin.daily', last: '초안: 죄송합니다. 그 계좌 제 계…', at: '3/11 02:40', unread: 0 },
+    { id: 'harin', name: '박하린', handle: 'harin.daily', last: '초안: 죄송합니다. 그 계좌 제 계…', at: '3/11 02:40', unread: 0, eid: 'E-45' },
+    { id: 'minji', name: '윤민지', handle: 'minji.sw', last: '교육 끝 🍰', at: '1/20', unread: 0, eid: 'E-104' },
+    { id: 'imp', name: '@jh_lee_99', handle: 'jh_lee_99', last: '도현아 연락 좀 해', at: '3/15 13:20', unread: 1, eid: 'E-46' },
   ];
   const DRAFTS = { harin: '죄송합니다. 그 계좌 제 계좌예요. 돈은 제가 어떻게든…' };
   THREADS.forEach((t) => { t.threadId = t.id; t.itemId = 'loopdm:' + t.id; });
@@ -657,9 +672,9 @@
     const rt = LM.msg.list('loop', t.id);
     if (rt.length) {
       const m = rt[rt.length - 1];
-      return { text: m.text, at: LM.fmt.date(m.at, 'mdhm') };
+      return { text: m.text || (m.attach && m.attach.title) || '첨부', at: LM.fmt.list(m.at) };
     }
-    return { text: t.last, at: t.at };
+    return { text: t.last, at: LM.fmt.list(t.at) };
   }
   function threadAtMs(t) {
     const rt = LM.msg.list('loop', t.id);
@@ -704,9 +719,10 @@
       bubbles.appendChild(h('div', { class: 'lp-brow ' + (who === 'me' ? 'me' : '') },
         who === 'me' ? null : ui.avatar(avName(t.handle), 28),
         h('div', { class: 'lp-bcol' },
-          shared ? h('button', { class: 'lp-sharecard', onclick: () => ui.toast('원본 게시물(프로토타입)') },
+          shared && shared.media ? h('button', { class: 'lp-sharecard', onclick: () => ui.share({ eid: t.eid, title: shared.title || '부업 추천', kind: 'post', app: 'loop' }) },
             ui.photo(shared.media, { ratio: '16 / 9', alt: '부업 추천 카드', caption: false }),
-            h('span', null, shared.title), h('small', null, 'side.money.kr')) : h('div', { class: 'lp-bubble' }, text),
+            h('span', null, shared.title), h('small', null, 'side.money.kr')) :
+            h('div', { class: 'lp-bubble' }, text, shared && shared.attach ? h('div', { class: 'att-card' }, LM.icon('doc'), h('div', null, h('b', null, shared.attach.title || '첨부'), h('small', null, shared.attach.kind || ''))) : null),
           h('small', { class: 'lp-btime' }, at))));
     };
     const draw = () => {
@@ -721,25 +737,30 @@
         bubbles.appendChild(h('div', { class: 'lp-datediv' }, '3/11'));
         bubbles.appendChild(h('div', { class: 'lp-draftnote' }, '보내지 못한 초안'));
       }
-      LM.msg.list('loop', t.id).forEach((m) => addBubble(m.from === 'out' ? 'me' : 'them', m.text, LM.fmt.date(m.at, 'hm')));
+      LM.msg.list('loop', t.id).forEach((m) => {
+        if (m.eid) LM.C.see(m.eid);
+        addBubble(m.from === 'out' ? 'me' : 'them', m.text, LM.fmt.date(m.at, 'hm'), { attach: m.attach });
+      });
+      if (LM.dialogue && LM.dialogue.typing('loop', t.id)) {
+        bubbles.appendChild(h('div', { class: 'lp-brow' },
+          ui.avatar(avName(t.handle), 28),
+          h('div', { class: 'lp-bcol' }, h('div', { class: 'lp-bubble' }, h('span', { class: 'typing-dot' }, h('i'), h('i'), h('i'))))));
+      }
     };
     draw();
-    const inp = h('input', { type: 'text', placeholder: '메시지…', 'aria-label': '메시지', value: DRAFTS[t.id] || '' });
-    inp.addEventListener('input', () => { DRAFTS[t.id] = inp.value; });
-    const send = h('button', { class: 'lp-send', onclick: () => {
-      const v = inp.value.trim();
-      if (!v) return;
-      if (!LM.online()) { ui.toast('온라인이 필요합니다'); return; }
-      LM.msg.add('loop', t.id, { from: 'out', text: v, at: LM.G.gameMs, silent: true });
-      inp.value = ''; DRAFTS[t.id] = '';
-      draw();
-      bubbles.scrollTop = bubbles.scrollHeight;
-    } }, '보내기');
-    const footer = h('div', { class: 'lp-composer' }, inp, send);
+    const NPC = { jihoon: 'JH', seoa: 'SA', harin: 'HR', minji: 'MJ', imp: 'IMP' };
+    const footer = LM.composer.bar({
+      target: { app: 'loop', thread: t.id, npc: NPC[t.id] || null, name: t.name },
+      placeholder: '메시지…',
+      onSent: () => { DRAFTS[t.id] = ''; bubbles.scrollTop = bubbles.scrollHeight; },
+    });
     const page = ui.page({ title: t.name, back: '메시지', nav, large: false, body: bubbles, footer });
     LM.read.markThread('loop', t.id);
+    if (t.eid) LM.C.see(t.eid);
+    LM.setEid(t.eid || null);
     const offRead = LM.on('read', (e) => { if (!bubbles.isConnected) { offRead(); return; } if (!e || !e.appId || e.appId === 'loop') draw(); });
     const offMsg = LM.on('msg', (e) => { if (!bubbles.isConnected) { offMsg(); return; } if (e.appId === 'loop' && e.threadId === t.id) { LM.read.mark('loop', t.itemId); draw(); } });
+    const offTyping = LM.on('dlg:typing', (e) => { if (!bubbles.isConnected) { offTyping(); return; } if (e && e.app === 'loop' && e.thread === t.id) draw(); });
     setTimeout(() => { const s = page.scroller; if (s) s.scrollTop = s.scrollHeight; }, 0);
     return page;
   }

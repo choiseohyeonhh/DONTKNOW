@@ -62,7 +62,11 @@
       h('div', { class: 'wv-tools' },
         tool('chevron-left', '뒤로', back, !loaded),
         tool('chevron-right', '앞으로', () => {}, true),
-        tool('share', '공유', () => ui.share(loaded || '웨이브')),
+        tool('share', '공유', () => {
+          const eid = /side\.money\.kr/.test(loaded || '') ? 'E-141' : /cheongun/.test(loaded || '') ? 'E-142' : /haedam/.test(loaded || '') ? 'E-220' : (loaded ? 'E-140' : null);
+          if (eid) LM.C.see(eid);
+          ui.share({ eid: eid, title: loaded || '웨이브', kind: 'search', app: 'wave' });
+        }),
         tool('grid', '탭', () => openLibrary('tabs')),
         tool('list', '라이브러리', () => openLibrary('visits'))));
 
@@ -109,6 +113,8 @@
     const go = (url) => { nav.pop(); openUrl(url); };
     const draw = () => {
       const parts = [];
+      if (tab === 'tabs') { LM.C.see('E-142'); LM.setEid('E-142'); }
+      else if (tab === 'searches') { LM.C.see('E-140'); LM.setEid('E-140'); if (LM.online()) LM.C.see('E-220'); }
       if (tab === 'tabs') {
         parts.push(h('div', { class: 'wv-tabs' },
           h('button', { class: 'wv-tab', onclick: () => go(null) },
@@ -138,11 +144,11 @@
   }
 
   function visitRow(v, go) {
-    return ui.row({ title: v.title, subtitle: v.url, meta: v.at, lead: h('span', { class: 'wv-bm-ic' }, LM.icon('globe')), onClick: () => go(v.url) });
+    return ui.row({ title: v.title, subtitle: v.url, meta: LM.fmt.list(v.at), lead: h('span', { class: 'wv-bm-ic' }, LM.icon('globe')), onClick: () => go(v.url) });
   }
   function searchRow(s, go) {
     return ui.row({
-      title: s.q, subtitle: s.result || s.at, meta: s.result ? s.at : null,
+      title: s.q, subtitle: s.result || s.at, meta: s.result ? LM.fmt.list(s.at) : null,
       lead: h('span', { class: 'wv-bm-ic' }, LM.icon('search')),
       onClick: () => go(s.q),
     });

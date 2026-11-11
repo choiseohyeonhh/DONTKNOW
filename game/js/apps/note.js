@@ -10,18 +10,18 @@
   /* 캐논 본문은 문서 그대로. '장보기'·'과제'는 장식(캐논 없음) */
   const notes = [
     {
-      id: 'n-320', title: '3/20 준비', date: '3/14 18:20', sort: 202603141820,
+      id: 'n-320', title: '3/20 준비', date: '3/14 18:20', sort: 202603141820, eid: 'E-27',
       body: '캡처 12장\n녹음(폰)\n실장 이름??\n아빠한테 뭐라고',
     },
     {
-      id: 'n-dad', title: '아빠한테', date: '3/13 23:50', sort: 202603132350, locked: true,
+      id: 'n-dad', title: '아빠한테', date: '3/13 23:50', sort: 202603132350, locked: true, eid: 'E-25',
       body: '아빠 나 사실 아빠 빚 알아. 고1 때 그 사람들 왔을 때부터.\n' +
         '그래서 돈 벌었어. 근데 이상한 데서 벌었어. 나 경찰서 가야 돼.\n' +
         '아빠는 모른 척해도 돼. 근데 남은 거 4,820은 내가 진짜 갚을 거야.\n' +
         '이건 안 보낼 거야.',
     },
     {
-      id: 'n-money', title: '돌려줄 돈', date: '3/12 수정', sort: 202603120000,
+      id: 'n-money', title: '돌려줄 돈', date: '3/12 수정', sort: 202603120000, eid: 'E-28',
       body: '박미선님 2,800\n카메라 45 ✓\n기타 20 ✓\n모니터 12\n현금 65 (서랍)\n→ 계좌 정지됨. 경찰한테 물어보기',
     },
     {
@@ -33,11 +33,11 @@
       body: '우유, 달걀, 라면', // 자리표시(캐논 없음)
     },
     {
-      id: 'n-left', title: '남은 거', date: '2/26', sort: 202602261200,
+      id: 'n-left', title: '남은 거', date: '2/26', sort: 202602261200, eid: 'E-24',
       body: '목표: 졸업 전에 0\n\n2024.08 시작 7,420\n2025.12 5,620\n\n2/26 48,200,000',
     },
     {
-      id: 'n-pw', title: '비번', date: '', sort: 202601010000, locked: true,
+      id: 'n-pw', title: '비번', date: '', sort: 202601010000, locked: true, eid: 'E-26',
       body: '누리: 엄마+내 생일 끝자리\n루프 부: 메일로',
     },
   ];
@@ -108,7 +108,7 @@
               const row = ui.row({
                 title: n.title,
                 subtitle: preview(n),
-                meta: n.date || '',
+                meta: LM.fmt.list(n.date || ''),
                 lead: leadFor(n),
                 onClick: () => openNote(nav, n),
               });
@@ -184,6 +184,8 @@
   }
 
   function noteView(nav, n) {
+    if (n.eid) LM.C.see(n.eid);
+    LM.setEid(n.eid || null);
     const title = h('input', { class: 'nt-title', value: n.title, 'aria-label': '메모 제목', oninput: (e) => { n.title = e.target.value; LM.emit('notechange'); } });
     const area = h('textarea', { class: 'nt-body', 'aria-label': '메모 본문', oninput: (e) => { n.body = e.target.value; meta.textContent = metaText(n); LM.emit('notechange'); } });
     area.value = n.body;
@@ -192,7 +194,7 @@
     const more = h('button', { class: 'nb-btn', 'aria-label': '더 보기', onclick: () => ui.actionSheet({
       title: n.title,
       actions: [
-        { label: '공유', onClick: () => ui.share(n.title) },
+        { label: '공유', onClick: () => ui.share({ eid: n.eid, title: n.title, kind: 'memo', app: 'note' }) },
         { label: '삭제', destructive: true, onClick: () => ui.actionSheet({
           title: '메모를 삭제할까요?',
           text: '이 폰에서 지워진다.',

@@ -12,23 +12,23 @@
 
   const FILES = [
     {
-      id: 'edu', name: '교육자료.pdf', folder: 'nearby', kind: 'PDF', size: '1.8MB', pages: 12,
+      id: 'edu', name: '교육자료.pdf', folder: 'nearby', kind: 'PDF', size: '1.8MB', pages: 12, eid: 'E-216',
       received: '1/20 14:12', sourceLabel: '근처 공유', sourceDevice: '민석의 폰',
       // 사기 수법 내용은 쓰지 않는다. 표지·날짜·쪽수만 캐논(E-216).
       preview: { title: 'GJ 신입 교육', sub: 'side.money.kr', meta: '2026. 1. 20. · 전체 12쪽', lines: ['1. 교육 일정과 준비물'], foot: '미리보기는 첫 페이지만 표시됩니다.' },
     },
     {
-      id: 'attend', name: '출석요구서.pdf', folder: 'mail', kind: 'PDF', size: '240KB', pages: 2,
+      id: 'attend', name: '출석요구서.pdf', folder: 'mail', kind: 'PDF', size: '240KB', pages: 2, eid: 'E-11',
       received: '3/13 10:02', sourceLabel: '메일 첨부', sourceDevice: '성원경찰서',
       preview: { title: '출석요구서', sub: '성원경찰서 수사과', meta: '2026. 3. 13.', lines: ['이도현 귀하', '일시: 2026. 3. 20. 10:00', '장소: 성원경찰서'], foot: '미리보기는 첫 페이지만 표시됩니다.' },
     },
     {
-      id: 'contract', name: '고시원_계약서.pdf', folder: 'mail', kind: 'PDF', size: '380KB', pages: 3,
+      id: 'contract', name: '고시원_계약서.pdf', folder: 'mail', kind: 'PDF', size: '380KB', pages: 3, eid: 'E-13b',
       received: '2/25 16:30', sourceLabel: '메일 첨부', sourceDevice: '청운고시원',
       preview: { title: '청운고시원 입실 계약서', sub: '성원구청로 18', meta: '2026. 2. 25.', lines: ['호실: 304호', '입실 예정: 2026. 3. 16.', '총무: 오정자'], foot: '미리보기는 첫 페이지만 표시됩니다.' },
     },
     {
-      id: 'rules', name: '업무수칙.pdf', folder: 'mail', kind: 'PDF', size: '120KB', pages: 1,
+      id: 'rules', name: '업무수칙.pdf', folder: 'mail', kind: 'PDF', size: '120KB', pages: 1, eid: 'E-15b',
       received: '1/9 10:12', sourceLabel: '메일 첨부', sourceDevice: '굿잡',
       // 자리표시(캐논 없음): 본문 첫 줄만 판독된다는 사실만 캐논. 수법 내용은 쓰지 않는다.
       preview: { title: '업무수칙', sub: '굿잡', meta: '2026. 1. 9. · 1쪽', lines: ['담당자의 안내에 따라 업무를 시작합니다.'], foot: '첫 줄만 표시됩니다.' },
@@ -47,13 +47,13 @@
     const row = ui.row({
       title: f.name,
       subtitle: f.size + ' · ' + f.sourceLabel + (f.sourceDevice ? ' · ' + f.sourceDevice : ''),
-      meta: f.received.split(' ')[0],
+      meta: LM.fmt.list(f.received),
       icon: 'doc',
       onClick: () => nav.push(() => detail(nav, f)),
       onLong: () => ui.actionSheet({
         title: f.name,
         actions: [
-          { label: '공유', onClick: () => ui.share(f.name) },
+          { label: '공유', onClick: () => ui.share({ eid: f.eid, title: f.name, kind: 'file', app: 'file' }) },
           { label: '정보', onClick: () => ui.info(f.name, infoPairs(f)) },
           { label: '삭제', destructive: true, onClick: () => { const i = FILES.indexOf(f); if (i >= 0) FILES.splice(i, 1); if (row.isConnected) row.remove(); ui.toast('파일을 삭제했다'); } },
         ],
@@ -141,6 +141,8 @@
 
   /* ---------- 파일 미리보기 ---------- */
   function detail(nav, f) {
+    if (f.eid) LM.C.see(f.eid);
+    LM.setEid(f.eid || null);
     const paper = h('div', { class: 'file-paper' },
       h('div', { class: 'file-paper-head' },
         h('span', { class: 'file-paper-title' }, f.preview.title),
@@ -160,7 +162,7 @@
 
     return ui.page({
       title: f.name, back: '파일', nav, large: false,
-      right: h('button', { class: 'nb-btn', 'aria-label': '공유', onclick: () => ui.share(f.name) }, LM.icon('share')),
+      right: h('button', { class: 'nb-btn', 'aria-label': '공유', onclick: () => ui.share({ eid: f.eid, title: f.name, kind: 'file', app: 'file' }) }, LM.icon('share')),
       body,
     });
   }

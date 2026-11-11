@@ -7,7 +7,7 @@
 
   const POSTS = [
     {
-      id: 'gosiwon', board: 'b-home', my: true, title: '성원구청 근처 싼 고시원 추천 좀',
+      id: 'gosiwon', board: 'b-home', my: true, eid: 'E-130', title: '성원구청 근처 싼 고시원 추천 좀',
       anon: '익명', at: '2/20', body: '다음 달부터 지낼 곳을 찾고 있어요. 성원구청 근처에 싼 고시원 있으면 추천 부탁드립니다. 역에서 멀지 않으면 좋겠어요.',
       comments: [
         { anon: '익명1', body: '청운 괜찮음 역 4분' },
@@ -17,7 +17,7 @@
       commentCount: 3,
     },
     {
-      id: 'jail', board: 'b-alba', my: true, title: '통장 빌려준 건데 이거 나 감옥 가냐',
+      id: 'jail', board: 'b-alba', my: true, eid: 'E-131', title: '통장 빌려준 건데 이거 나 감옥 가냐',
       anon: '익명', at: '3/9 04:10', body: '작년부터 통장을 빌려줬어요. 돈이 들어오는 건 알았는데 제가 무슨 일을 한 건지 이제 알았습니다. 이거 나 감옥 가는 거냐. 진짜 모르고 했어요.',
       comments: [
         { anon: '익명3', body: '일단 은행에 바로 말해' }, // 자리표시(캐논 없음)
@@ -93,8 +93,11 @@
   function post(nav, p) {
     const back = (BOARDS.find((b) => b.id === p.board) || {}).name || '모아';
     const online = LM.online();
+    if (p.eid) LM.C.see(p.eid);
+    LM.setEid(p.eid || null);
     return ui.page({
       title: '글', back, nav, large: false,
+      right: h('button', { class: 'nb-btn', 'aria-label': '공유', onclick: () => ui.share({ eid: p.eid, title: p.title, kind: 'post', app: 'moa' }) }, LM.icon('share')),
       body: [
         h('div', { class: 'mo-detail' },
           h('h2', null, p.title),
@@ -126,11 +129,13 @@
   function msgList(nav) {
     return ui.page({
       title: '쪽지함', back: '모아', nav, large: false,
-      body: [ui.group({ plain: true, rows: [ui.row({ title: '익명7', subtitle: '나도 정지될까 무서움… 루프 minji.sw로 연락해', meta: '3/9 09:12', avatar: '익명7', avatarSize: 52, onClick: () => nav.push(() => msgRoom(nav)) })] })],
+      body: [ui.group({ plain: true, rows: [ui.row({ title: '익명7', subtitle: '나도 정지될까 무서움… 루프 minji.sw로 연락해', meta: LM.fmt.list('3/9 09:12'), avatar: '익명7', avatarSize: 52, onClick: () => nav.push(() => msgRoom(nav)) })] })],
     });
   }
 
   function msgRoom(nav) {
+    LM.C.see('E-133');
+    LM.setEid('E-133');
     const log = h('div', { class: 'mo-bubbles' });
     log.appendChild(h('div', { class: 'mo-datediv' }, '3/9'));
     MSG.messages.forEach((m) => {

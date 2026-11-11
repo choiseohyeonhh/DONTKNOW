@@ -30,7 +30,7 @@
     return ui.row({
       title: c.name,
       subtitle: DIR[c.direction] + (c.grouped ? ' · 묶음' : ''),
-      meta: c.start,
+      meta: LM.fmt.list(c.start),
       value: c.duration !== '—' ? c.duration : null,
       lead: dirIcon(c),
       class: missed ? 'phone-missed' : '',

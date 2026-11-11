@@ -462,3 +462,44 @@ button.row:active { background: var(--lm-fill-2); }
 
 /* 읽음 상태에서 계산되는 배지는 0이면 숨긴다. */
 .badge[hidden], .tab-badge[hidden] { display: none; }
+
+/* ---------- 공용 작성창(SCR-OS-COMPOSER) ---------- */
+.cmp-sheet { display: flex; flex-direction: column; min-height: 60vh; }
+.cmp-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px; border-bottom: var(--lm-separator-w) solid var(--lm-separator); }
+.cmp-head-btn { min-height: 44px; padding: 0 10px; border: 0; background: none; color: var(--lm-app-tint); font-size: 16px; }
+.cmp-head-btn.strong { font-weight: 700; }
+.cmp-head-title { flex: 1; text-align: center; font-weight: 700; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmp-modal { padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); }
+.cmp-to { display: flex; gap: 10px; align-items: baseline; padding: 8px 0 12px; font-size: 14px; color: var(--lm-label-2); }
+.cmp-to b { color: var(--lm-label); font-size: 16px; }
+.cmp-bar { display: block; padding: 6px 10px calc(6px + env(safe-area-inset-bottom)); background: var(--lm-material-thick); border-top: var(--lm-separator-w) solid var(--lm-separator); }
+.cmp-main { display: flex; align-items: center; gap: 6px; }
+.cmp-input { flex: 1; min-width: 0; min-height: 36px; max-height: 120px; padding: 8px 14px; border: 0; border-radius: 18px; background: var(--lm-fill-2); color: var(--lm-label); font: inherit; font-size: 15px; resize: none; }
+.cmp-plus, .cmp-send { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--lm-fill-2); color: var(--lm-label); }
+.cmp-send { background: var(--lm-app-tint); color: var(--lm-app-on-tint); }
+.cmp-send[disabled] { background: var(--lm-fill); color: var(--lm-label-3); opacity: 1; }
+.cmp-state { display: block; padding: 2px 2px 0; font-size: 11px; color: var(--lm-label-2); }
+.cmp-sugg { display: flex; gap: 8px; overflow-x: auto; padding: 6px 0 4px; scrollbar-width: none; }
+.cmp-sugg::-webkit-scrollbar { display: none; }
+.cmp-sugg-chip { flex: none; height: 28px; padding: 0 12px; border: 0; border-radius: 14px; background: var(--lm-fill-2); color: var(--lm-label); font-size: 13px; }
+.cmp-clip { display: flex; padding: 2px 0; }
+.cmp-clip-chip { display: flex; align-items: center; gap: 6px; max-width: 100%; padding: 3px 8px; border: 0; border-radius: 8px; background: var(--lm-fill-2); color: var(--lm-label); font-size: 11px; }
+.cmp-clip-chip span { font-weight: 600; }
+.cmp-clip-chip small { color: var(--lm-label-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmp-attach { padding: 2px 0; }
+.cmp-attach[hidden] { display: none; }
+.cmp-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 5px 6px 5px 10px; border-radius: 10px; background: var(--lm-fill-2); font-size: 12px; }
+.cmp-chip > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmp-chip-x { width: 22px; height: 22px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--lm-fill); color: var(--lm-label-2); }
+.share-recent .grp-h { padding: 0 var(--lm-side) 4px; }
+.share .notice { margin: 0 var(--lm-side) 12px; }
+/* 첨부가 있는 말풍선 */
+.att-card { display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin-top: 4px; border-radius: 10px; background: var(--lm-fill-2); font-size: 12px; }
+.att-card b { font-size: 13px; }
+.att-card small { color: var(--lm-label-2); }
+/* 입력 중 표시 */
+.typing-dot { display: inline-flex; gap: 4px; align-items: center; min-height: 20px; }
+.typing-dot i { width: 6px; height: 6px; border-radius: 50%; background: var(--lm-label-2); animation: typingb 1s infinite ease-in-out; }
+.typing-dot i:nth-child(2) { animation-delay: .15s; }
+.typing-dot i:nth-child(3) { animation-delay: .3s; }
+@keyframes typingb { 0%, 60%, 100% { opacity: .35; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-2px); } }

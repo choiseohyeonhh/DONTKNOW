@@ -19,12 +19,8 @@
       { ssid: 'CHEONGUN_3F', first: '3/1 14:02', last: '3/1 14:40' },
       { ssid: 'HAEDAM_2F', first: '3/15 10:34 · 다른 기기에서 추가됨', last: '—', onlineOnly: true },
     ],
-    clipboard: [['taeyun.kim@sw.police.kr', '3/13 10:20'], ['352-1048-7731', ''], ['side.money.kr', '3/11 23:39'], ['38러 5512', '3/14 20:05'], ['청운고시원 성원구청로 18', '2/25'], ['해담고시텔 성원구청로 31', '3/1 14:30'], ['dohyun.lee0921@cirrus.kr', '2/27 09:10'], ['010-XXXX-2290', '3/13 10:22'], ['2,800,000', '3/9 04:15'], ['110221', '2/26 14:05']],
-    replace: [
-      { k: 'ㄷㅎ', v: '이도현', from: '이 기기 · 2024' },
-      { k: 'ㅎㅈ', v: '352-1048-7731', from: '이 기기 · 1/9' },
-      { k: 'ㅈㅅ', v: '성원구청로 31 해담고시텔 207호', from: '도현의 슬레이트 · 3/15 13:00', onlineOnly: true },
-    ],
+    clipboard: ((LM.C.keyboard && LM.C.keyboard.clipboard) || []).map((x) => [x.v, x.t]),
+    replace: (LM.C.keyboard && LM.C.keyboard.replace) || [],
     places: [['리버뷰타워', '17회 · 1/9~3/14, 화·금'], ['한서대학교', '9회'], ['청운고시원 일대', '1회 · 3/1']],
     privacy: [['음성 메모', '마이크 3/14 20:09~20:51'], ['카메라', '카메라 3/14 20:02'], ['바로택시', '위치 3/14 21:04~21:22'], ['웨이브', '접속 도메인: side.money.kr, cheongun-gosiwon.kr, police.go'], ['블링크', '네트워크 3/14 18:40, 21:30']],
     nearby: [['받음', '민석의 폰', '1/20 14:12', '교육자료.pdf'], ['보냄', '서아의 폰', '2025.12.24', '사진 4장'], ['받음', '지훈', '2025.11.02', '동영상 1']],
@@ -193,9 +189,10 @@
     ]);
   }
   function nearby(nav) {
+    LM.C.see('E-197');
     return sub(nav, '근처 공유', [
       ui.group({ header: '받기', rows: ['끔', '연락처만', '모든 사람(10분)'].map((v) => ui.row({ title: v, check: v === '연락처만' })) }),
-      ui.group({ header: '최근 주고받음', rows: D.nearby.map(([dir, dev, t, what]) => ui.row({ title: dev, subtitle: dir + ' · ' + what, meta: t, icon: dir === '받음' ? 'download' : 'upload' })) }),
+      ui.group({ header: '최근 주고받음', rows: D.nearby.map(([dir, dev, t, what]) => ui.row({ title: dev, subtitle: dir + ' · ' + what, meta: LM.fmt.list(t), icon: dir === '받음' ? 'download' : 'upload' })) }),
     ], '일반');
   }
   function storage(nav) {
@@ -226,8 +223,10 @@
   }
 
   function keyboard(nav) {
+    LM.C.see('E-180', 'E-198');
+    LM.setEid('E-198');
     return sub(nav, '키보드', [
-      ui.group({ header: '클립보드 기록', rows: D.clipboard.map(([v, t]) => ui.row({ title: v, meta: t, onLong: () => ui.contextMenu([{ label: '복사', onClick: () => ui.toast('복사됨') }], v), onClick: () => ui.toast('복사됨') })) }),
+      ui.group({ header: '클립보드 기록', rows: D.clipboard.map(([v, t]) => ui.row({ title: v, meta: t ? LM.fmt.list(t) : '', onLong: () => ui.contextMenu([{ label: '복사', onClick: () => ui.toast('복사됨') }], v), onClick: () => ui.toast('복사됨') })) }),
       ui.group({ header: '텍스트 대치', footer: LM.online() ? null : '다른 기기에서 만든 대치는 온라인이 되면 동기화된다.', rows: D.replace.filter((r) => !r.onlineOnly || LM.online()).map((r) => ui.row({ title: r.k, subtitle: r.v, meta: r.from })) }),
     ]);
   }

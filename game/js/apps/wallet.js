@@ -8,8 +8,8 @@
   /* 승하차: 3/14 19:31 성원구청역 승차 → 19:52 리버뷰역 하차가 캐논(E-39).
    * 그 밖의 날짜·시각은 "1/9 이후 화·금 리버뷰역 반복"을 보여 주기 위한 자리표시다. */
   const RIDES = [
-    { date: '3/14', time: '19:31', station: '성원구청역', type: '승차', repeat: false },
-    { date: '3/14', time: '19:52', station: '리버뷰역', type: '하차', repeat: false },
+    { date: '3/14', time: '19:31', station: '성원구청역', type: '승차', repeat: false, eid: 'E-39' },
+    { date: '3/14', time: '19:52', station: '리버뷰역', type: '하차', repeat: false, eid: 'E-39' },
     { date: '3/13', time: '08:12', station: '성원구청역', type: '승차', repeat: false },
     { date: '3/13', time: '18:40', station: '리버뷰역', type: '하차', repeat: false },
     { date: '3/10', time: '08:05', station: '성원구청역', type: '승차', repeat: false },
@@ -20,7 +20,7 @@
 
   /* 결제: 3/14 21:22 바로택시 12,400원, 현장 결제(E-39). 등록 카드 없음. */
   const PAYMENTS = [
-    { id: 'p1', merchant: '바로택시', at: '3/14 21:22', amount: '12,400원', method: '현장 결제' },
+    { id: 'p1', merchant: '바로택시', at: '3/14 21:22', amount: '12,400원', method: '현장 결제', eid: 'E-39' },
   ];
 
   LM.register({ id: 'wallet', render(app) { app.start((nav) => home(nav)); } });
@@ -84,7 +84,7 @@
         ui.group({
           header: '결제 내역',
           rows: PAYMENTS.map((p) => ui.row({
-            title: p.merchant, subtitle: p.method, meta: p.at, value: p.amount,
+            title: p.merchant, subtitle: p.method, meta: LM.fmt.list(p.at), value: p.amount,
             onClick: () => nav.push(() => paymentDetail(nav, p)),
           })),
         }),

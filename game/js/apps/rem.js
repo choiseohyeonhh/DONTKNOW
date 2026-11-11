@@ -6,7 +6,7 @@
   const LM = window.LM, h = LM.h, ui = LM.ui;
 
   const lists = [{
-    id: 'l-320',
+    id: 'l-320', eid: 'E-214',
     nameOffline: '3/20 준비',
     nameOnline: '3/18',
     changedAt: '3/16 23:12',
@@ -17,7 +17,7 @@
       { id: 'i3', text: '실장 이름', checked: false },
       { id: 'i4', text: '아빠한테 말하기', checked: false },
       { id: 'i5', text: '9시 메일 예약', checked: true, checkedAt: '3/16 23:12', online: true, origin: '슬레이트' },
-      { id: 'i6', text: '해담 연장 3/21', checked: false, online: true, origin: '슬레이트' },
+      { id: 'i6', text: '해담 연장 3/21', checked: false, online: true, origin: '슬레이트', eid: 'E-214b' },
     ],
   }];
 
@@ -48,7 +48,7 @@
             subtitle: sub,
             value: String(openCount(l)),
             lead: h('span', { class: 'rem-list-ic' }, LM.icon('list')),
-            onClick: () => nav.push(() => listPage(nav, l)),
+            onClick: () => { if (l.eid) LM.C.see(l.eid); nav.push(() => listPage(nav, l)); },
           });
         }),
         footer: LM.online() ? null : '슬레이트에서 바뀐 내용은 온라인이 되면 동기화된다.',
@@ -60,6 +60,8 @@
   }
 
   function listPage(nav, l) {
+    if (l.eid) LM.C.see(l.eid);
+    LM.setEid(l.eid || null);
     const body = h('div');
     const draw = () => {
       const v = visible(l);
@@ -90,17 +92,19 @@
     const sub = item.checked
       ? (item.checkedAt || '') + (item.origin ? ' · ' + item.origin + '에서 체크됨' : '')
       : (item.origin ? item.origin + '에서 추가됨' : null);
-    return h('button', {
+    const el = h('button', {
       class: 'rem-row' + (item.checked ? ' done' : ''),
       role: 'checkbox',
       'aria-checked': item.checked,
       'aria-label': item.text + (item.checked ? ', 완료' : ', 미완료'),
-      onclick: () => { item.checked = !item.checked; if (item.checked && !item.checkedAt) item.checkedAt = ''; redraw(); },
+      onclick: () => { if (item.eid) LM.C.see(item.eid); item.checked = !item.checked; if (item.checked && !item.checkedAt) item.checkedAt = ''; redraw(); },
     },
     h('span', { class: 'rem-check' + (item.checked ? ' on' : '') }, item.checked ? LM.icon('check') : null),
     h('span', { class: 'rem-txt' },
       h('span', { class: 'rem-name' }, item.text),
       sub ? h('span', { class: 'rem-sub' }, sub) : null));
+    if (item.eid) LM.longPress(el, () => ui.share({ eid: item.eid, title: item.text, kind: 'note', app: 'rem' }));
+    return el;
   }
 
   LM.searchSources.push({

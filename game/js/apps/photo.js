@@ -11,19 +11,19 @@
   const RECENT = [
     P('family', '가족사진 2019 늦여름 성원아파트', '가족사진', [
       ['촬영', '2019년 늦여름'], ['위치', '성원아파트'], ['기기', '도현의 폰'], ['앨범', '최근 항목'],
-    ]),
+    ], { eid: 'E-30' }),
     P('group', '리버뷰타워 1월 단체사진 저녁', '단체사진', [
       ['촬영', '2026.01.20 15:02'], ['위치', '리버뷰타워'], ['기기', '도현의 폰'], ['편집됨', '예 · 원본 5명'],
-    ], { edited: true }),
+    ], { edited: true, eid: 'E-32' }),
     P('burst', BURST_KEY, '버스트', [
       ['촬영', '2026.03.14 20:02'], ['위치', '리버뷰타워 지하 2층 주차장'], ['기기', '도현의 폰'], ['버스트', '18장'],
-    ], { burst: 18 }),
+    ], { burst: 18, eid: 'E-33' }),
     P('shot1', '블링크 캡처 그만둘게요 장난하냐', '스크린샷', [
       ['촬영', '2026.03.10 14:21'], ['위치', '없음'], ['기기', '도현의 폰'], ['앨범', '스크린샷'],
-    ]),
+    ], { eid: 'E-36' }),
     P('shot2', '굿잡 모집 공고 캡처 side.money.kr', '스크린샷', [
       ['촬영', '2026.01.08'], ['위치', '없음'], ['기기', '도현의 폰'], ['앨범', '스크린샷'],
-    ]),
+    ], { eid: 'E-36b' }),
     // 자리표시(캐논 없음): 최근 항목의 노이즈 사진.
     P('noise1', '성원대교 노을 산책', '성원대교', [
       ['촬영', '2025.10.03 18:40'], ['위치', '성원대교'], ['기기', '도현의 폰'], ['앨범', '최근 항목'],
@@ -39,7 +39,7 @@
   ];
   const SHOTS = SHOT_NAMES.map(([id, name, when]) => P(id, name + ' 스크린샷', name, [
     ['촬영', when], ['위치', '없음'], ['기기', '도현의 폰'], ['앨범', '스크린샷'],
-  ]));
+  ], { eid: id === 'shot1' ? 'E-36' : 'E-36b' }));
   // 자리표시(캐논 없음): 스크린샷 앨범의 나머지 캡처. 캐논은 "증거 캡처 12장"만 정한다.
   const SHOT_LABELS = ['은행 화면', '거래 내역', '메모', '지도', '웨이브 검색', '모아 글', '튜브 화면', '활동 기록', '계약서', '택시 영수증'];
   for (let n = 0; n < 10; n++) {
@@ -50,18 +50,24 @@
 
   // 자리표시(캐논 없음): 사진 자리표시의 색만 다르게. 캐논은 "한결 우편 3장 + 채무조정서"만 정한다.
   const HIDDEN = [
-    P('h1', '한결 우편 독촉 우편 1', '한결 우편', [['촬영', '2023.11.20'], ['위치', '없음'], ['기기', '도현의 폰'], ['앨범', '숨김 · 한결 우편']]),
-    P('h2', '한결 우편 독촉 우편 2', '한결 우편', [['촬영', '2023.11.20'], ['위치', '없음'], ['기기', '도현의 폰'], ['앨범', '숨김 · 한결 우편']]),
-    P('h3', '한결 우편 독촉 우편 3', '한결 우편', [['촬영', '2023.11.20'], ['위치', '없음'], ['기기', '도현의 폰'], ['앨범', '숨김 · 한결 우편']]),
-    P('h4', '채무조정서 2024 02', '채무조정서', [['촬영', '2024.02'], ['위치', '없음'], ['기기', '도현의 폰'], ['앨범', '숨김 · 한결 우편']]),
+    P('h1', '한결 우편 독촉 우편 1', '한결 우편', [['촬영', '2023.11.20'], ['위치', '없음'], ['기기', '도현의 폰'], ['앨범', '숨김 · 한결 우편']], { eid: 'E-34' }),
+    P('h2', '한결 우편 독촉 우편 2', '한결 우편', [['촬영', '2023.11.20'], ['위치', '없음'], ['기기', '도현의 폰'], ['앨범', '숨김 · 한결 우편']], { eid: 'E-34' }),
+    P('h3', '한결 우편 독촉 우편 3', '한결 우편', [['촬영', '2023.11.20'], ['위치', '없음'], ['기기', '도현의 폰'], ['앨범', '숨김 · 한결 우편']], { eid: 'E-34' }),
+    P('h4', '채무조정서 2024 02', '채무조정서', [['촬영', '2024.02'], ['위치', '없음'], ['기기', '도현의 폰'], ['앨범', '숨김 · 한결 우편']], { eid: 'E-34' }),
   ];
 
   const ROOM = P('room', '청운고시원 304호 방 문 번호판', '청운고시원 304호', [
     ['촬영', '2026.03.01 14:30'], ['위치', '청운고시원 304호'], ['기기', '도현의 폰'], ['앨범', '최근 삭제 · 남은 15일'],
-  ], { deleted: true });
+  ], { deleted: true, eid: 'E-35' });
 
   let hiddenOpen = false;
   const alive = (items) => items.filter((it) => !LM.isDeleted('photo', it.id));
+  function shotItems() {
+    return (LM.G.shots || []).map((s) => P(s.id, s.key || s.title, s.title, [
+      ['촬영', LM.fmt.date(s.at)], ['기기', '도현의 폰'], ['단서', s.eid || '—'], ['앨범', '스크린샷'],
+    ], { eid: s.eid, runtime: true }));
+  }
+  const recentItems = () => shotItems().concat(alive(RECENT));
 
   LM.register({
     id: 'photo',
@@ -80,8 +86,8 @@
       right: h('button', { class: 'nb-btn', 'aria-label': '지도에서 보기', onclick: () => ui.toast('지도에서 보기는 프로토타입에 없다') }, LM.icon('location')),
       body: [
         ui.section('최근 항목'),
-        grid(alive(RECENT), (i) => nav.push(() => viewer(nav, alive(RECENT), i))),
-        h('div', { class: 'ph-foot' }, '최근 항목 · ' + alive(RECENT).length + '장'),
+        grid(recentItems(), (i) => nav.push(() => viewer(nav, recentItems(), i))),
+        h('div', { class: 'ph-foot' }, '최근 항목 · ' + recentItems().length + '장'),
       ],
     });
   }
@@ -95,6 +101,7 @@
       }, ui.photo(it.key, { ratio: '1 / 1', caption: false }));
       if (it.burst) cell.appendChild(h('span', { class: 'ph-count' }, LM.icon('grid'), it.burst));
       if (it.edited) cell.appendChild(h('span', { class: 'ph-edit' }, LM.icon('edit')));
+      if (it.eid) LM.longPress(cell, () => ui.share({ eid: it.eid, title: it.title, kind: it.burst ? 'photo' : 'photo', app: 'photo' }));
       return cell;
     }));
   }
@@ -162,6 +169,8 @@
 
     const draw = () => {
       const it = list[i];
+      if (it.eid) LM.C.see(it.eid);
+      LM.setEid(it.eid || null);
       stage.replaceChildren(fullPhoto(it));
       count.textContent = (i + 1) + ' / ' + list.length;
       foot.replaceChildren(
@@ -177,7 +186,8 @@
       h('header', { class: 'phv-bar' },
         h('button', { class: 'phv-back', onclick: () => nav.pop() }, LM.icon('chevron-left'), h('span', null, '뒤로')),
         count,
-        h('button', { class: 'phv-info', 'aria-label': '정보', onclick: () => ui.info('정보', list[i].info) }, LM.icon('info'))),
+        h('button', { class: 'phv-info', 'aria-label': '공유', onclick: () => ui.share({ eid: list[i].eid, title: list[i].title, kind: 'photo', app: 'photo' }) }, LM.icon('share')),
+        h('button', { class: 'phv-info', 'aria-label': '정보', onclick: () => { if (list[i].eid) LM.C.see(list[i].eid); ui.info('정보', list[i].info); } }, LM.icon('info'))),
       stage,
       foot);
 
@@ -202,6 +212,8 @@
 
   /* ---------- 버스트 18장 ---------- */
   function burst(nav, item) {
+    if (item.eid) LM.C.see(item.eid);
+    LM.setEid(item.eid || null);
     let i = 10;
     let zoom = false;
     const stage = h('div', { class: 'burst-stage' });
@@ -227,7 +239,8 @@
       h('header', { class: 'phv-bar' },
         h('button', { class: 'phv-back', onclick: () => nav.pop() }, LM.icon('chevron-left'), h('span', null, '뒤로')),
         counter,
-        h('button', { class: 'phv-info', 'aria-label': '정보', onclick: () => ui.info('정보', item.info) }, LM.icon('info'))),
+        h('button', { class: 'phv-info', 'aria-label': '공유', onclick: () => ui.share({ eid: item.eid, title: '버스트 11번째 프레임', kind: 'photo', app: 'photo' }) }, LM.icon('share')),
+        h('button', { class: 'phv-info', 'aria-label': '정보', onclick: () => { if (item.eid) LM.C.see(item.eid); ui.info('정보', item.info); } }, LM.icon('info'))),
       stage,
       strip,
       h('div', { class: 'burst-tools' },

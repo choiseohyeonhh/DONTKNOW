@@ -503,10 +503,15 @@
     const f = h('div', { class: 'flash' });
     dev.appendChild(f);
     setTimeout(() => f.remove(), 100);
-    LM.emit('screenshot', curApp ? curApp.id : 'home');
+    const app = curApp ? curApp.id : 'home';
+    const eid = LM.currentEid || 'SHOT';
+    const info = LM.C && LM.C.evInfo ? LM.C.evInfo(eid) : { title: '스크린샷' };
+    LM.saveShot && LM.saveShot({ eid: eid, title: eid === 'SHOT' ? '스크린샷' : info.title, app: app });
+    LM.emit('screenshot', app);
     ui.toast('스크린샷이 사진에 저장됨');
   }
   LM.screenshot = screenshot;
+  LM.setEid = (eid) => { LM.currentEid = eid || null; };
 
   /* 전역 검색: 접근 가능한 데이터 = 각 앱이 LM.searchSources에 등록 */
   LM.searchSources = [];

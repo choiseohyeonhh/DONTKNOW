@@ -5,9 +5,9 @@
 
   const ROOMS = [
     {
-      id: 'dad', name: '아빠', avatar: '아빠', type: '1:1',
+      id: 'dad', name: '아빠', avatar: '아빠', type: '1:1', npc: null,
       messages: [
-        { dir: 'out', body: '오늘 좀 늦어 먼저 자', day: '3/14', time: '18:52' },
+        { dir: 'out', body: '오늘 좀 늦어 먼저 자', day: '3/14', time: '18:52', eid: 'E-20' },
         { dir: 'in', body: '도현아 어디냐', day: '3/15', time: '08:10', onlineOnly: true, unread: 1 },
         { dir: 'in', body: '경찰서 다녀왔다. 성인이라 가출로 본단다', day: '3/15', time: '22:40', onlineOnly: true, unread: 1 },
         { dir: 'in', body: '서아가 토요일 밤 10시까지 같이 있었다더라. 서아랑 있었으면 연락 좀 해라', day: '3/16', time: '14:05', onlineOnly: true, unread: 1 },
@@ -17,7 +17,7 @@
       ],
     },
     {
-      id: 'group', name: '경영 26 새내기', avatar: '경', type: 'group',
+      id: 'group', name: '경영 26 새내기', avatar: '경', type: 'group', npc: null,
       messages: [
         { dir: 'in', sender: '지훈', body: '오늘 저녁 7시 학교 앞 ㄱ?', day: '3/14', time: '16:12', unread: 0 },
         { dir: 'in', sender: '지훈', body: '단톡 왜 안 봐', day: '3/14', time: '23:41', unread: 0 },
@@ -25,18 +25,18 @@
       ],
     },
     {
-      id: 'jihoon', name: '지훈', avatar: '지훈', type: '1:1',
+      id: 'jihoon', name: '지훈', avatar: '지훈', type: '1:1', npc: 'JH',
       messages: [
         { dir: 'in', body: '내일 학식 ㄱ?', day: '3/10', time: '22:04', unread: 0 },
-        { dir: 'in', body: '야 너 어디야 전화 좀 받아', day: '3/14', time: '23:58', unread: 1 },
-        { dir: 'out', body: '폰 잃어버림… 우리 아빠한테는 말하지 마', day: '3/15', time: '10:40', onlineOnly: true, fromSlate: true }, // 도현(슬레이트) → 지훈(E-23)
+        { dir: 'in', body: '야 너 어디야 전화 좀 받아', day: '3/14', time: '23:58', unread: 1, eid: 'E-21' },
+        { dir: 'out', body: '폰 잃어버림… 우리 아빠한테는 말하지 마', day: '3/15', time: '10:40', onlineOnly: true, fromSlate: true, eid: 'E-23' }, // 도현(슬레이트) → 지훈(E-23)
       ],
     },
     {
-      id: 'seoa', name: '서아', avatar: '서아', type: '1:1',
+      id: 'seoa', name: '서아', avatar: '서아', type: '1:1', npc: 'SA',
       messages: [
         // 도현이 슬레이트에서 보냄(E-22). 3/14 밤엔 폰도 켜져 있어 오프라인 캐시에 있다
-        { dir: 'out', body: '혹시 경찰이 물어보면 그날 나랑 저녁 먹었다고 해줘', day: '3/14', time: '22:31', fromSlate: true },
+        { dir: 'out', body: '혹시 경찰이 물어보면 그날 나랑 저녁 먹었다고 해줘', day: '3/14', time: '22:31', fromSlate: true, eid: 'E-22' },
         { dir: 'out', body: '이유는 나중에 말할게', day: '3/14', time: '22:31', fromSlate: true },
         { dir: 'in', body: '알겠어. 근데 무슨 일인데?', day: '3/14', time: '22:52', unread: 0 },
       ],
@@ -72,7 +72,8 @@
     return LM.msg.list('talk', room.id).map((rt) => ({
       id: rt.id, dir: rt.from === 'out' ? 'out' : 'in', body: rt.text,
       day: LM.fmt.date(rt.at, 'md'), time: LM.fmt.date(rt.at, 'hm'),
-      attach: rt.attach || null, rt: true,
+      attach: rt.attach || null, eid: rt.eid || (rt.attach && rt.attach.eid) || null,
+      npc: rt.npc || null, rt: true,
     }));
   }
   function staticVisible(room) {
@@ -102,7 +103,7 @@
       host.replaceChildren(ui.group({ plain: true, rows: ROOMS.filter((r) => last(r)).map((r) => {
         const m = last(r);
         const row = ui.row({
-          title: r.name, subtitle: m ? m.body : '메시지 없습니다', meta: m ? m.day + ' ' + m.time : '—',
+          title: r.name, subtitle: m ? (m.body || (m.attach && m.attach.title) || '첨부') : '메시지 없습니다', meta: m ? LM.fmt.list(m.day + ' ' + m.time) : '—',
           avatar: r.avatar, avatarSize: 56, badge: roomUnread(r) || null,
           class: 'talk-chatrow', onClick: () => nav.push(() => room(nav, r)),
         });
@@ -184,18 +185,25 @@
         else prev = null;
       });
       if (!ms.length) kids.push(ui.empty({ icon: 'chat', title: '메시지가 없습니다' }));
+      if (LM.dialogue && LM.dialogue.typing('talk', r.id)) {
+        kids.push(h('div', { class: 'talk-line' },
+          h('div', { class: 'talk-av' }, ui.avatar(r.avatar, 32)),
+          h('div', { class: 'talk-body' }, h('div', { class: 'talk-row' }, h('div', { class: 'talk-bubble' }, h('span', { class: 'typing-dot' }, h('i'), h('i'), h('i')))))));
+      }
       if (!LM.online()) kids.push(h('div', { class: 'talk-pending' }, '오프라인 · 읽음과 발신은 다음 온라인 때 전송된다'));
       log.replaceChildren(...kids);
     }
 
     function line(r, m, ghost, i) {
       const out = m.dir === 'out';
-      const b = h('div', { class: 'talk-bubble' }, m.body);
+      const b = h('div', { class: 'talk-bubble' }, m.body,
+        m.attach ? h('div', { class: 'att-card' }, LM.icon('doc'), h('div', null, h('b', null, m.attach.title || '첨부'), h('small', null, m.attach.kind || ''))) : null);
+      if (m.eid) LM.C.see(m.eid);
       LM.longPress(b, () => ui.actionSheet({ actions: [
         { label: '답장', onClick: () => ui.toast('답장은 입력창에서 한다') },
         { label: '복사', onClick: () => ui.toast('복사됨') },
-        { label: '공유', onClick: () => ui.share(m.body) },
-        { label: '정보', onClick: () => ui.info('메시지 정보', [['보낸 사람', out ? '나' : r.name], ['시각', m.day + ' ' + m.time], ['보낸 기기', m.fromSlate ? '도현의 슬레이트' : '도현의 폰']]) },
+        { label: '공유', onClick: () => ui.share({ eid: m.eid, eids: m.eid ? [m.eid] : [], title: m.body || (m.attach && m.attach.title), kind: m.attach ? m.attach.kind : 'message', app: 'talk' }) },
+        { label: '정보', onClick: () => ui.info('메시지 정보', [['보낸 사람', out ? '나' : r.name], ['시각', m.day + ' ' + m.time], ['보낸 기기', m.fromSlate ? '도현의 슬레이트' : '도현의 폰'], ['단서', m.eid || '—']]) },
       ] }));
       const unread = m.dir === 'in' && LM.read.isUnread('talk', m.id);
       const side = h('div', { class: 'talk-side' },
@@ -254,26 +262,22 @@
       setTimeout(() => { scroller.scrollTop = scroller.scrollHeight; }, 20);
     });
     LM.read.markThread('talk', r.id);
+    visible(r).forEach((m) => LM.C.see(m.eid));
+    const lastEidMsg = visible(r).slice().reverse().find((m) => m.eid);
+    LM.setEid(lastEidMsg ? lastEidMsg.eid : null);
+    const offTyping = LM.on('dlg:typing', (e) => {
+      if (!log.isConnected) { offTyping(); return; }
+      if (e && e.app === 'talk' && e.thread === r.id) draw();
+    });
     return page;
   }
 
   function composer(r, precheck, onSend) {
-    const inp = h('input', { class: 'talk-inp', type: 'text', placeholder: r.muted ? '알림 꺼짐 · 메시지 입력' : '메시지 입력', 'aria-label': '메시지 입력' });
-    const send = () => {
-      const text = inp.value;
-      if (!text.trim()) return;
-      if (precheck() === false) return;
-      inp.value = '';
-      onSend(text);
-    };
-    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); send(); } });
-    return h('div', { class: 'talk-composer' },
-      h('button', { class: 'talk-plus', 'aria-label': '첨부', onclick: () => ui.actionSheet({ actions: [
-        { label: '사진', onClick: () => ui.toast('프로토타입: 사진 첨부는 보내지 않는다') },
-        { label: '파일', onClick: () => ui.toast('프로토타입: 파일 첨부는 보내지 않는다') },
-      ] }) }, LM.icon('plus')),
-      inp,
-      h('button', { class: 'talk-send', onclick: send }, '보내기'));
+    return LM.composer.bar({
+      target: { app: 'talk', thread: r.id, npc: r.npc, name: r.name },
+      placeholder: r.muted ? '알림 꺼짐 · 메시지 입력' : '메시지 입력',
+      onSent: () => ui.toast('보냈다'),
+    });
   }
 
   function drawer(r) {
