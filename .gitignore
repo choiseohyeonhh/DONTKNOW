@@ -5,3 +5,4 @@ documents/.env
 !.env.example
 game/dist/
 phone-prototype/dist/
+.claude/settings.local.json
