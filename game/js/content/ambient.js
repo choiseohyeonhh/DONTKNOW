@@ -85,7 +85,7 @@ window.LM.C.ambient = {
   },
   {
    "id": "BG-007",
-   "name": "배지훈",
+   "name": "배승우",
    "circle": "성원고 동창",
    "relation": "고3 반 친구 · 축구",
    "talk": true,
@@ -94,7 +94,7 @@ window.LM.C.ambient = {
    "canon": false,
    "background": true,
    "tone": "casual",
-   "loop": "minjae.bae"
+   "loop": "seungwoo.bae"
   },
   {
    "id": "BG-008",
@@ -514,7 +514,7 @@ window.LM.C.ambient = {
   },
   {
    "id": "BG-040",
-   "name": "박상철",
+   "name": "박종석",
    "circle": "지난 알바",
    "relation": "편의점 점장",
    "talk": true,
@@ -1779,7 +1779,7 @@ window.LM.C.ambient = {
    "history": [
     {
      "dir": "in",
-     "sender": "정지훈",
+     "sender": "임동현",
      "body": "주말에 시간 돼?",
      "at": "2025-11-03T01:38:22+09:00",
      "day": "11/3",
@@ -1795,7 +1795,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "정지훈",
+     "sender": "홍예슬",
      "body": "다들 뭐 하고 지내? 나는 요즘 집에만 있음",
      "at": "2025-11-04T10:42:27+09:00",
      "day": "11/4",
@@ -1867,7 +1867,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "주말에 축구할 사람?",
      "at": "2025-11-19T07:23:33+09:00",
      "day": "11/19",
@@ -1915,7 +1915,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "풋살 몇 시야?",
      "at": "2025-12-03T07:47:23+09:00",
      "day": "12/3",
@@ -1955,7 +1955,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "정지훈",
+     "sender": "신건우",
      "body": "이번 주 토요일 동창 모임 어때?",
      "at": "2025-12-08T03:37:33+09:00",
      "day": "12/8",
@@ -2035,7 +2035,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "풋살 인원 두 명 부족한데",
      "at": "2025-12-24T05:34:45+09:00",
      "day": "12/24",
@@ -2051,7 +2051,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "좋아 그럼 예약 확정",
      "at": "2025-12-24T23:10:17+09:00",
      "day": "12/24",
@@ -2059,7 +2059,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "정지훈",
+     "sender": "장소연",
      "body": "고등학교 앞 지나갔는데 감회가 새롭다",
      "at": "2025-12-26T21:54:49+09:00",
      "day": "12/26",
@@ -2115,7 +2115,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "오늘 풋살했는데 다리 후들",
      "at": "2026-01-09T12:01:29+09:00",
      "day": "1/9",
@@ -2203,7 +2203,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "정지훈",
+     "sender": "고나영",
      "body": "오늘은 집에서 영상만 봄",
      "at": "2026-01-27T10:47:48+09:00",
      "day": "1/27",
@@ -2219,7 +2219,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "정지훈",
+     "sender": "이준서",
      "body": "오늘 저녁 먹었어?",
      "at": "2026-01-31T19:15:24+09:00",
      "day": "1/31",
@@ -2275,7 +2275,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "이번 주말 경기 있음?",
      "at": "2026-02-25T16:35:54+09:00",
      "day": "2/25",
@@ -2355,7 +2355,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "주말 경기 인원 몇 명이야?",
      "at": "2026-03-10T06:17:16+09:00",
      "day": "3/10",
@@ -3260,7 +3260,7 @@ window.LM.C.ambient = {
    "history": [
     {
      "dir": "in",
-     "sender": "박상철",
+     "sender": "박종석",
      "body": "이번 주 토요일 2시 교대 바꿀 사람?",
      "at": "2025-01-20T07:14:53+09:00",
      "day": "1/20",
@@ -3292,7 +3292,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "박상철",
+     "sender": "박종석",
      "body": "냉장고 온도 확인 부탁해요",
      "at": "2025-04-08T17:00:34+09:00",
      "day": "4/8",
@@ -3300,7 +3300,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "박상철",
+     "sender": "박종석",
      "body": "내일 야간 대타 가능한 사람?",
      "at": "2025-04-13T00:55:20+09:00",
      "day": "4/13",
@@ -3340,7 +3340,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "박상철",
+     "sender": "박종석",
      "body": "다음 주 스케줄 올렸습니다",
      "at": "2025-06-16T16:19:45+09:00",
      "day": "6/16",
@@ -3372,7 +3372,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "박상철",
+     "sender": "박종석",
      "body": "야간 교대 구합니다",
      "at": "2025-07-25T16:37:08+09:00",
      "day": "7/25",
@@ -3420,7 +3420,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "박상철",
+     "sender": "박종석",
      "body": "주말에 재고 조사 있습니다",
      "at": "2025-09-11T20:26:05+09:00",
      "day": "9/11",
@@ -3452,7 +3452,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "박상철",
+     "sender": "박종석",
      "body": "다들 수고했어요",
      "at": "2025-11-07T07:56:04+09:00",
      "day": "11/7",
@@ -3866,7 +3866,7 @@ window.LM.C.ambient = {
   },
   {
    "id": "talk.dm.05",
-   "name": "배지훈",
+   "name": "배승우",
    "type": "1:1",
    "circle": "성원고 동창",
    "count": 2,
@@ -3879,7 +3879,7 @@ window.LM.C.ambient = {
    "history": [
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "이번 주 풋살 갈 거야?",
      "at": "2025-10-12T18:27:36+09:00",
      "day": "10/12",
@@ -3887,7 +3887,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "토요일 8시야",
      "at": "2025-10-18T07:31:12+09:00",
      "day": "10/18",
@@ -3895,7 +3895,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "축구화 챙겨",
      "at": "2025-10-18T12:17:12+09:00",
      "day": "10/18",
@@ -3903,7 +3903,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "나 조금 늦게 갈 수도 있어",
      "at": "2025-10-23T17:05:34+09:00",
      "day": "10/23",
@@ -3911,7 +3911,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "먼저 가 있어",
      "at": "2025-11-14T02:24:24+09:00",
      "day": "11/14",
@@ -3919,7 +3919,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "오늘 경기 재밌었지?",
      "at": "2025-11-21T02:01:34+09:00",
      "day": "11/21",
@@ -3935,7 +3935,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "다음 주에도 하자",
      "at": "2025-12-27T06:16:48+09:00",
      "day": "12/27",
@@ -3959,7 +3959,7 @@ window.LM.C.ambient = {
     },
     {
      "dir": "in",
-     "sender": "배지훈",
+     "sender": "배승우",
      "body": "확인했음",
      "at": "2026-03-06T20:46:36+09:00",
      "day": "3/6",
@@ -4989,9 +4989,9 @@ window.LM.C.ambient = {
   },
   {
    "id": "LBG-015",
-   "handle": "minjae.bae",
-   "displayName": "배지훈",
-   "name": "배지훈",
+   "handle": "seungwoo.bae",
+   "displayName": "배승우",
+   "name": "배승우",
    "bio": "성원고 동창 · 축구",
    "circle": "성원고 동창",
    "followsDohyun": true,
@@ -5320,7 +5320,7 @@ window.LM.C.ambient = {
   {
    "id": "LBP-0004",
    "kind": "photo",
-   "author": "minjae.bae",
+   "author": "seungwoo.bae",
    "createdAt": "2025-03-05T22:06:00+09:00",
    "likes": 16,
    "comments": [],
@@ -6831,7 +6831,7 @@ window.LM.C.ambient = {
   {
    "id": "LBP-0052",
    "kind": "photo",
-   "author": "minjae.bae",
+   "author": "seungwoo.bae",
    "createdAt": "2025-08-22T01:41:00+09:00",
    "likes": 20,
    "comments": [],
@@ -6998,7 +6998,7 @@ window.LM.C.ambient = {
    "likes": 16,
    "comments": [
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2025-09-04T01:54:45.009147+09:00",
      "body": "분위기 좋다"
     },
@@ -7308,7 +7308,7 @@ window.LM.C.ambient = {
      "body": "다음에 같이 하자"
     },
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2025-09-21T14:24:52.138646+09:00",
      "body": "ㅋㅋㅋ"
     },
@@ -8202,7 +8202,7 @@ window.LM.C.ambient = {
      "body": "커피 맛있어?"
     },
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2025-10-30T07:34:58.208302+09:00",
      "body": "나도 가고 싶다"
     }
@@ -8294,7 +8294,7 @@ window.LM.C.ambient = {
   {
    "id": "LBP-0100",
    "kind": "photo",
-   "author": "minjae.bae",
+   "author": "seungwoo.bae",
    "createdAt": "2025-11-02T16:56:00+09:00",
    "likes": 54,
    "comments": [
@@ -9387,7 +9387,7 @@ window.LM.C.ambient = {
   {
    "id": "LBP-0135",
    "kind": "photo",
-   "author": "minjae.bae",
+   "author": "seungwoo.bae",
    "createdAt": "2025-12-12T22:20:00+09:00",
    "likes": 51,
    "comments": [],
@@ -9794,7 +9794,7 @@ window.LM.C.ambient = {
    "likes": 21,
    "comments": [
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2025-12-31T00:23:58.628141+09:00",
      "body": "하늘 예쁘다"
     },
@@ -10166,7 +10166,7 @@ window.LM.C.ambient = {
    "likes": 64,
    "comments": [
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2026-01-10T17:48:53.638487+09:00",
      "body": "힘내"
     },
@@ -10611,7 +10611,7 @@ window.LM.C.ambient = {
   {
    "id": "LBP-0174",
    "kind": "photo",
-   "author": "minjae.bae",
+   "author": "seungwoo.bae",
    "createdAt": "2026-01-17T22:06:00+09:00",
    "likes": 35,
    "comments": [
@@ -10855,7 +10855,7 @@ window.LM.C.ambient = {
    "likes": 14,
    "comments": [
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2026-01-21T20:13:33.970664+09:00",
      "body": "ㅋㅋㅋ"
     },
@@ -11619,7 +11619,7 @@ window.LM.C.ambient = {
   {
    "id": "LBP-0207",
    "kind": "text",
-   "author": "minjae.bae",
+   "author": "seungwoo.bae",
    "createdAt": "2026-02-10T00:33:00+09:00",
    "likes": 49,
    "comments": [
@@ -12539,7 +12539,7 @@ window.LM.C.ambient = {
   {
    "id": "LBP-0239",
    "kind": "photo",
-   "author": "minjae.bae",
+   "author": "seungwoo.bae",
    "createdAt": "2026-02-21T01:26:00+09:00",
    "likes": 17,
    "comments": [
@@ -13549,7 +13549,7 @@ window.LM.C.ambient = {
    "likes": 17,
    "comments": [
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2026-03-05T05:10:40.573115+09:00",
      "body": "다들 언제 모여?"
     },
@@ -13897,7 +13897,7 @@ window.LM.C.ambient = {
   {
    "id": "LBP-0284",
    "kind": "photo",
-   "author": "minjae.bae",
+   "author": "seungwoo.bae",
    "createdAt": "2026-03-07T13:21:00+09:00",
    "likes": 36,
    "comments": [
@@ -14295,7 +14295,7 @@ window.LM.C.ambient = {
    "likes": 15,
    "comments": [
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2026-03-09T15:42:45.943856+09:00",
      "body": "경기 언제야?"
     }
@@ -14928,7 +14928,7 @@ window.LM.C.ambient = {
   {
    "id": "LBP-0317",
    "kind": "photo",
-   "author": "minjae.bae",
+   "author": "seungwoo.bae",
    "createdAt": "2026-03-11T19:16:00+09:00",
    "likes": 36,
    "comments": [],
@@ -15236,7 +15236,7 @@ window.LM.C.ambient = {
      "body": "ㅋㅋㅋ"
     },
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2026-03-13T02:18:09.056351+09:00",
      "body": "공감"
     }
@@ -15569,7 +15569,7 @@ window.LM.C.ambient = {
    "likes": 17,
    "comments": [
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2026-03-13T01:40:54.947580+09:00",
      "body": "ㅋㅋㅋ"
     }
@@ -15916,7 +15916,7 @@ window.LM.C.ambient = {
   {
    "id": "LBP-0349",
    "kind": "photo",
-   "author": "minjae.bae",
+   "author": "seungwoo.bae",
    "createdAt": "2026-03-14T00:38:00+09:00",
    "likes": 36,
    "comments": [
@@ -16139,12 +16139,12 @@ window.LM.C.ambient = {
    "likes": 14,
    "comments": [
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2026-03-14T21:57:24.854235+09:00",
      "body": "나도 배고파"
     },
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2026-03-14T22:20:12.130390+09:00",
      "body": "다음에 같이 가자"
     },
@@ -16240,7 +16240,7 @@ window.LM.C.ambient = {
    "likes": 12,
    "comments": [
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2026-03-14T19:32:01.874791+09:00",
      "body": "디자인 좋다"
     },
@@ -16285,7 +16285,7 @@ window.LM.C.ambient = {
      "body": "공감"
     },
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2026-03-15T02:03:44.627778+09:00",
      "body": "좋다"
     }
@@ -16362,7 +16362,7 @@ window.LM.C.ambient = {
    "likes": 24,
    "comments": [
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2026-03-15T02:43:18.816670+09:00",
      "body": "우리도 보자"
     },
@@ -16615,7 +16615,7 @@ window.LM.C.ambient = {
    "likes": 22,
    "comments": [
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2026-03-15T02:18:35.364768+09:00",
      "body": "좋다"
     }
@@ -17119,7 +17119,7 @@ window.LM.C.ambient = {
   {
    "id": "LBP-0387",
    "kind": "text",
-   "author": "minjae.bae",
+   "author": "seungwoo.bae",
    "createdAt": "2026-03-16T12:34:00+09:00",
    "likes": 25,
    "comments": [],
@@ -18799,7 +18799,7 @@ window.LM.C.ambient = {
      "body": "응원합니다"
     },
     {
-     "author": "minjae.bae",
+     "author": "seungwoo.bae",
      "createdAt": "2026-03-18T08:30:59.602698+09:00",
      "body": "맛있겠다"
     }

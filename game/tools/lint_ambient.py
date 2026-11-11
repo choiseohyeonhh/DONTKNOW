@@ -47,6 +47,22 @@ FORBIDDEN = [
 ]
 FORBIDDEN_NUM = ["7731", "5512", "680403", "070921", "110221", "38러", "1203", "207", "304"]
 
+# L26: 배경 인물의 이름(성 제외)이 캐논 인물과 겹치면 안 된다.
+CANON_GIVEN_NAMES = {"도현", "상철", "지훈", "서아", "하린", "민지", "민석", "태윤", "미선"}
+
+
+def given_name_candidates(name):
+    """성(첫 글자, 필요하면 두 글자)을 뗀 이름 후보. 기관명은 자연히 걸리지 않는다."""
+    if not isinstance(name, str):
+        return set()
+    name = name.strip()
+    cands = {name}
+    if len(name) >= 2:
+        cands.add(name[1:])
+    if len(name) >= 3:
+        cands.add(name[2:])
+    return cands
+
 
 def load_ambient():
     src = open(AMBIENT, encoding="utf-8").read()
@@ -295,6 +311,47 @@ def main():
     for path, text in all_strings:
         check_particles(text, names_by_len, path, errors)
 
+    # ---- L26 캐논 이름·캐논 발신자 침범 ----
+    canon_people = [p for p in people if p.get("canon")]
+    canon_names = {p.get("name") for p in canon_people if p.get("name")}
+    canon_ids = {p.get("id") for p in canon_people}
+    canon_handles = {
+        a.get("handle") for a in accounts
+        if a.get("personId") in canon_ids
+        or a.get("displayName") in canon_names
+        or a.get("name") in canon_names
+    }
+    for p in people:
+        if p.get("canon"):
+            continue
+        hit = given_name_candidates(p.get("name")) & CANON_GIVEN_NAMES
+        if hit:
+            errors.append((f"L26 people[{p.get('id')}].name",
+                           f"background given name collides with canon: {','.join(sorted(hit))}",
+                           p.get("name", "")))
+    for r in rooms:
+        for i, msg in enumerate(r.get("history", [])):
+            sender = msg.get("sender")
+            if sender in canon_names:
+                errors.append((f"L26 rooms[{r.get('id')}].history[{i}].sender",
+                               f"canon person as background sender: {sender}", msg.get("body", "")[:80]))
+    for it in pool_items:
+        for k in ("sender", "author"):
+            if it.get(k) in canon_names or it.get(k) in canon_handles:
+                errors.append((f"L26 pool[{it.get('id')}].{k}",
+                               f"canon person as background sender/author: {it.get(k)}", it.get("text", "")[:80]))
+    for p in posts + live:
+        pid = p.get("id")
+        author = p.get("author")
+        if author in canon_names or author in canon_handles:
+            errors.append((f"L26 loopPosts[{pid}].author",
+                           f"canon person as background author: {author}", ""))
+        for i, c in enumerate(p.get("comments", [])):
+            cauthor = c.get("author")
+            if cauthor in canon_names or cauthor in canon_handles:
+                errors.append((f"L26 loopPosts[{pid}].comments[{i}].author",
+                               f"canon person as background comment author: {cauthor}", ""))
+
     # ---- 참고 검사 ----
     if len(pool_items) < 300:
         errors.append(("R-POOL", f"pool items={len(pool_items)} < 300", ""))
@@ -320,7 +377,8 @@ def main():
     pass_msg = (
         f"L19 forbidden words: 0 | L20 noise: {bg_n} background vs {canon_n} canon key ({source}) | "
         f"L21 authors/circles: ok | L22 future/cache ts: ok | "
-        f"L23 braces: 0 | L24 pool/history dup<=2 | L25 particle/받침: ok"
+        f"L23 braces: 0 | L24 pool/history dup<=2 | L25 particle/받침: ok | "
+        f"L26 canon given-name/sender: ok"
     )
     if errors:
         for path, msg, text in errors:
