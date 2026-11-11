@@ -92,11 +92,12 @@
     if (changed) { g.sched.sort(sort); saveSoon(); }
   }
 
-  function nextDue(target) {
+  function nextDue(target, skip) {
     const g = ensure();
     let best = null;
     for (const e of g.sched) {
       if (e.at == null || e.at > target) continue;
+      if (skip && skip.has(e.id)) continue;
       if (e.opts && e.opts.needsOnline && !online()) continue;
       if (!best || sort(e, best) < 0) best = e;
     }
@@ -118,14 +119,26 @@
     saveSoon();
   }
 
+  const missingWarned = Object.create(null);
+
   function advanceTo(target) {
     const g = ensure();
     resolveAfterOnline();
+    const skip = new Set();
     let guard = 0;
     for (;;) {
-      const e = nextDue(target);
+      const e = nextDue(target, skip);
       if (!e) break;
-      if (!defs[e.id]) break; // 등록 전에는 순서를 지키기 위해 기다린다
+      if (!defs[e.id]) {
+        /* 미등록 이벤트는 그 자리에 남겨 두고, 같은 id 순서만 지킨다.
+         * 다른 id의 이벤트는 막지 않는다(예전에는 여기서 전부 멈췄다). */
+        if (!missingWarned[e.id]) {
+          missingWarned[e.id] = true;
+          console.warn('[scheduler] 등록되지 않은 이벤트를 건너뛴다:', e.id);
+        }
+        skip.add(e.id);
+        continue;
+      }
       if (e.at > g.gameMs) g.gameMs = e.at;
       fire(e);
       if (++guard > 2000) { console.warn('[scheduler] 너무 많은 이벤트'); break; }

@@ -19,13 +19,16 @@
     {
       id: 'group', name: '경영 26 새내기', avatar: '경', type: 'group',
       messages: [
+        { dir: 'in', sender: '지훈', body: '오늘 저녁 7시 학교 앞 ㄱ?', day: '3/14', time: '16:12', unread: 0 },
+        { dir: 'in', sender: '지훈', body: '단톡 왜 안 봐', day: '3/14', time: '23:41', unread: 0 },
         { dir: 'in', body: '도현이 휴학한대?', day: '3/17', time: '22:30', unread: 1, onlineOnly: true, at: new Date(2026, 2, 17, 22, 30) }, // EV-41: 게임 중 새 글
       ],
     },
     {
       id: 'jihoon', name: '지훈', avatar: '지훈', type: '1:1',
       messages: [
-        { dir: 'in', body: '야 너 어디야 전화 좀 받아', day: '3/14', time: '23:58', unread: 0 },
+        { dir: 'in', body: '내일 학식 ㄱ?', day: '3/10', time: '22:04', unread: 0 },
+        { dir: 'in', body: '야 너 어디야 전화 좀 받아', day: '3/14', time: '23:58', unread: 1 },
         { dir: 'out', body: '폰 잃어버림… 우리 아빠한테는 말하지 마', day: '3/15', time: '10:40', onlineOnly: true, fromSlate: true }, // 도현(슬레이트) → 지훈(E-23)
       ],
     },
@@ -35,10 +38,14 @@
         // 도현이 슬레이트에서 보냄(E-22). 3/14 밤엔 폰도 켜져 있어 오프라인 캐시에 있다
         { dir: 'out', body: '혹시 경찰이 물어보면 그날 나랑 저녁 먹었다고 해줘', day: '3/14', time: '22:31', fromSlate: true },
         { dir: 'out', body: '이유는 나중에 말할게', day: '3/14', time: '22:31', fromSlate: true },
+        { dir: 'in', body: '알겠어. 근데 무슨 일인데?', day: '3/14', time: '22:52', unread: 0 },
       ],
     },
   ];
-  ROOMS.forEach((r) => { r.extra = []; r.muted = false; });
+  ROOMS.forEach((r) => {
+    r.extra = []; r.muted = false;
+    r.messages.forEach((m, i) => { if (m.id == null) m.id = r.id + ':' + i; m.threadId = r.id; });
+  });
 
   const FRIENDS = [
     { name: '지훈', favorite: true, room: 'jihoon' },
@@ -50,30 +57,63 @@
   LM.register({ id: 'talk', render(app) {
     app.setTabs([
       { label: '친구', icon: 'user', build: (nav) => friends(nav) },
-      { label: '채팅', icon: 'chat', badge: totalUnread(), build: (nav) => chats(nav) },
+      { label: '채팅', icon: 'chat', badge: () => totalUnread(), build: (nav) => chats(nav) },
       { label: '더보기', icon: 'more', build: (nav) => more(nav) },
     ], 1);
   } });
 
-  function visible(room) { return room.messages.filter((m) => (!m.onlineOnly || LM.online()) && (!m.at || LM.now() >= m.at)).concat(room.extra); }
+  function atMs(m) {
+    if (m.at instanceof Date) return m.at.getTime();
+    if (typeof m.at === 'number') return m.at;
+    const d = LM.fmt && LM.fmt.toDate ? LM.fmt.toDate((m.day || '') + ' ' + (m.time || '00:00')) : null;
+    return d ? d.getTime() : 0;
+  }
+  function runtime(room) {
+    return LM.msg.list('talk', room.id).map((rt) => ({
+      id: rt.id, dir: rt.from === 'out' ? 'out' : 'in', body: rt.text,
+      day: LM.fmt.date(rt.at, 'md'), time: LM.fmt.date(rt.at, 'hm'),
+      attach: rt.attach || null, rt: true,
+    }));
+  }
+  function staticVisible(room) {
+    return room.messages.filter((m) => LM.visible(m) && (!m.at || LM.now() >= m.at));
+  }
+  function visible(room) {
+    return staticVisible(room).concat(room.extra, runtime(room)).sort((a, b) => atMs(a) - atMs(b));
+  }
   function last(room) { const m = visible(room); return m.length ? m[m.length - 1] : null; }
-  function roomUnread(room) { return visible(room).reduce((n, m) => n + (m.dir === 'in' ? (m.unread || 0) : 0), 0); }
+  function roomUnread(room) {
+    return visible(room).filter((m) => m.dir === 'in' && LM.read.isUnread('talk', m.id)).length;
+  }
   function totalUnread() { return ROOMS.reduce((n, r) => n + roomUnread(r), 0); }
 
+  LM.read.register('talk', () => {
+    const out = [];
+    ROOMS.forEach((r) => {
+      staticVisible(r).forEach((m) => { if (m.dir === 'in' && m.unread > 0) out.push({ id: m.id, threadId: r.id }); });
+      LM.msg.list('talk', r.id).forEach((rt) => { if (rt.from !== 'out') out.push({ id: rt.id, threadId: r.id }); });
+    });
+    return out;
+  });
+
   function chats(nav) {
-    return ui.page({
-      title: '채팅',
-      body: ui.group({ plain: true, rows: ROOMS.filter((r) => last(r)).map((r) => {
+    const host = h('div');
+    const draw = () => {
+      host.replaceChildren(ui.group({ plain: true, rows: ROOMS.filter((r) => last(r)).map((r) => {
         const m = last(r);
         const row = ui.row({
-          title: r.name, subtitle: m ? m.body : '메시지 없음', meta: m ? m.day + ' ' + m.time : '—',
+          title: r.name, subtitle: m ? m.body : '메시지 없습니다', meta: m ? m.day + ' ' + m.time : '—',
           avatar: r.avatar, avatarSize: 56, badge: roomUnread(r) || null,
           class: 'talk-chatrow', onClick: () => nav.push(() => room(nav, r)),
         });
         r._titleEl = row.querySelector('.row-title');
         return row;
-      }) }),
-    });
+      }) }));
+    };
+    draw();
+    const offRead = LM.on('read', () => { if (host.isConnected) draw(); else offRead(); });
+    const offMsg = LM.on('msg', () => { if (host.isConnected) draw(); else offMsg(); });
+    return ui.page({ title: '채팅', body: host });
   }
 
   function friends(nav) {

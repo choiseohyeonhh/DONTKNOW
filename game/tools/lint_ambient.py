@@ -63,6 +63,56 @@ def parse_ts(s):
         return None
 
 
+def walk_strings(value, path, out):
+    if isinstance(value, str):
+        out.append((path, value))
+    elif isinstance(value, dict):
+        for k, v in value.items():
+            walk_strings(v, f"{path}.{k}", out)
+    elif isinstance(value, list):
+        for i, v in enumerate(value):
+            walk_strings(v, f"{path}[{i}]", out)
+
+
+def has_final_consonant(text):
+    """마지막 한글 음절의 받침 유무. 한글이 아니면 None."""
+    if not text:
+        return None
+    ch = text[-1]
+    if not (0xAC00 <= ord(ch) <= 0xD7A3):
+        return None
+    return (ord(ch) - 0xAC00) % 28 != 0
+
+
+def final_is_rieul(text):
+    if not text:
+        return False
+    ch = text[-1]
+    if not (0xAC00 <= ord(ch) <= 0xD7A3):
+        return False
+    return (ord(ch) - 0xAC00) % 28 == 8
+
+
+def expected_particles(name):
+    has_batchim = has_final_consonant(name)
+    if has_batchim is None:
+        return None
+    if has_batchim:
+        return {"은", "이", "을", "과", "으로"} | ({"로"} if final_is_rieul(name) else set())
+    return {"는", "가", "를", "와", "로"}
+
+
+def check_particles(text, names, path, errors):
+    for name in names:
+        expected = expected_particles(name)
+        if not expected:
+            continue
+        for m in re.finditer(re.escape(name) + r"(은|는|이|가|을|를|과|와|으로|로)", text):
+            particle = m.group(1)
+            if particle not in expected:
+                errors.append((path, f"L25 particle after '{name}': '{particle}' (expected {'/'.join(sorted(expected))})", text[:80]))
+
+
 def scan(text, path, errors):
     if not isinstance(text, str):
         return
@@ -208,6 +258,43 @@ def main():
             elif t > CACHE_CUT:
                 errors.append((f"L22 rooms[{r.get('id')}].history[{i}].at", f"after cache cutoff: {m.get('at')}", ""))
 
+    # ---- L23 중괄호 플레이스홀더 ----
+    all_strings = []
+    walk_strings(A, "L23", all_strings)
+    for path, text in all_strings:
+        if "{" in text or "}" in text:
+            errors.append((path, "L23 brace placeholder", text[:80]))
+
+    # ---- L24 풀·방 과거 대화 문장 중복 ----
+    sentence_count = {}
+    sentence_where = {}
+    for it in pool_items:
+        t = it.get("text")
+        if isinstance(t, str):
+            sentence_count[t] = sentence_count.get(t, 0) + 1
+            sentence_where.setdefault(t, []).append(f"pool[{it.get('id')}]")
+    for r in rooms:
+        for i, msg in enumerate(r.get("history", [])):
+            t = msg.get("body")
+            if isinstance(t, str):
+                sentence_count[t] = sentence_count.get(t, 0) + 1
+                sentence_where.setdefault(t, []).append(f"rooms[{r.get('id')}].history[{i}]")
+    for t, n in sentence_count.items():
+        if n > 2:
+            errors.append(("L24", f"duplicate sentence used {n} times (>2)", t[:80] + " :: " + ", ".join(sentence_where[t][:4])))
+
+    # ---- L25 이름 뒤 조사 받침 ----
+    name_set = set()
+    for p in people:
+        if p.get("name"):
+            name_set.add(p["name"])
+    for r in rooms:
+        if r.get("name"):
+            name_set.add(r["name"])
+    names_by_len = sorted(name_set, key=len, reverse=True)
+    for path, text in all_strings:
+        check_particles(text, names_by_len, path, errors)
+
     # ---- 참고 검사 ----
     if len(pool_items) < 300:
         errors.append(("R-POOL", f"pool items={len(pool_items)} < 300", ""))
@@ -232,7 +319,8 @@ def main():
 
     pass_msg = (
         f"L19 forbidden words: 0 | L20 noise: {bg_n} background vs {canon_n} canon key ({source}) | "
-        f"L21 authors/circles: ok | L22 future/cache ts: ok"
+        f"L21 authors/circles: ok | L22 future/cache ts: ok | "
+        f"L23 braces: 0 | L24 pool/history dup<=2 | L25 particle/받침: ok"
     )
     if errors:
         for path, msg, text in errors:

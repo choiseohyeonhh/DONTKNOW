@@ -14,7 +14,7 @@ import re
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 APPS = sorted(p.name for p in (ROOT / "js" / "apps").glob("*.js"))
 CONTENT = sorted(p.name for p in (ROOT / "js" / "content").glob("*.js")) if (ROOT / "js" / "content").is_dir() else []
-ENGINE_ORDER = ["state.js", "clock.js", "scheduler.js", "notify.js", "pause.js", "prologue.js", "debug.js"]
+ENGINE_ORDER = ["state.js", "clock.js", "scheduler.js", "notify.js", "read.js", "msg.js", "pause.js", "prologue.js", "debug.js"]
 _engine_all = sorted(p.name for p in (ROOT / "js" / "engine").glob("*.js")) if (ROOT / "js" / "engine").is_dir() else []
 ENGINE = [n for n in ENGINE_ORDER if n in _engine_all] + [n for n in _engine_all if n not in ENGINE_ORDER]
 CSS = sorted(p.name for p in (ROOT / "css").glob("apps-*.css"))

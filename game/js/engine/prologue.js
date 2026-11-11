@@ -108,10 +108,38 @@
     return h('div', { class: 'cine-still still-' + kind, html: svg });
   }
 
+  /* 'dk.meta'는 게임 밖 메타 기록(엔딩 목록). 엔딩을 본 적이 있으면 프롤로그를 건너뛸 수 있다. */
+  function meta() {
+    try {
+      const raw = localStorage.getItem('dk.meta');
+      const o = raw ? JSON.parse(raw) : {};
+      return o && typeof o === 'object' ? o : {};
+    } catch (e) { return {}; }
+  }
+  function writeMeta(o) {
+    try { localStorage.setItem('dk.meta', JSON.stringify(o)); return true; } catch (e) { return false; }
+  }
+  LM.meta = {
+    read: meta,
+    hasEnding() {
+      const o = meta();
+      return Array.isArray(o.endings) && o.endings.length > 0;
+    },
+    recordEnding(id) {
+      const o = meta();
+      o.endings = Array.isArray(o.endings) ? o.endings : [];
+      if (o.endings.indexOf(id) < 0) o.endings.push(id);
+      o.lastEnding = id;
+      o.lastEndingAt = Date.now();
+      return writeMeta(o);
+    },
+  };
+
   function play(done) {
     if (!LM.G) return;
     const dev = document.querySelector('.device');
     if (!dev || dev.querySelector('.cine-prologue')) return;
+    const canSkip = !!(LM.meta && LM.meta.hasEnding());
 
     LM.pause('cinematic');
     dev.classList.add('cine-open');
@@ -124,7 +152,7 @@
     const el = h('div', { class: 'cine-prologue', role: 'dialog', 'aria-label': '프롤로그' },
       stillHolder,
       h('div', { class: 'cine-scrim' }),
-      h('button', { class: 'cine-skip', onclick: (e) => { e.stopPropagation(); finish(); } }, '건너뛰기'),
+      canSkip ? h('button', { class: 'cine-skip', onclick: (e) => { e.stopPropagation(); finish(); } }, '건너뛰기') : null,
       h('div', { class: 'cine-capwrap' }, linesEl),
       dots,
       h('button', { class: 'cine-next', 'aria-label': '다음 컷', onclick: (e) => { e.stopPropagation(); next(); } }, '다음'));
@@ -164,7 +192,7 @@
 
     function onKey(e) {
       if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); next(); }
-      else if (e.key === 'Escape') { e.preventDefault(); finish(); }
+      else if (e.key === 'Escape' && canSkip) { e.preventDefault(); finish(); }
     }
 
     el.addEventListener('click', () => next());

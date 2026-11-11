@@ -87,6 +87,49 @@
   LM.fmtDate = (d) => (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + '일월화수목금토'[d.getDay()] + '요일';
   LM.fmtDateTime = (d) => (d.getMonth() + 1) + '/' + d.getDate() + ' ' + LM.fmtTime(d);
 
+  /* 앱 전체가 쓰는 단일 날짜·금액 포매터(UI_UX_GUIDELINES 2.5). */
+  function toDate(v, fallbackYear) {
+    if (v == null || v === '') return null;
+    if (v instanceof Date) return v;
+    if (typeof v === 'number') return new Date(v);
+    const s = String(v).trim();
+    let m = s.match(/^(\d{4})[.\-\/]\s*(\d{1,2})[.\-\/]\s*(\d{1,2})\.?(?:\s+(\d{1,2}):(\d{2}))?/);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0));
+    m = s.match(/^(\d{1,2})[\/.](\d{1,2})(?:\s+(\d{1,2}):(\d{2}))?$/);
+    if (m) return new Date(fallbackYear || 2026, +m[1] - 1, +m[2], +(m[3] || 0), +(m[4] || 0));
+    const t = new Date(s);
+    return Number.isFinite(t.getTime()) ? t : null;
+  }
+  function amount(v) {
+    if (typeof v === 'string') {
+      const t = v.replace(/[^\d.-]/g, '');
+      if (t === '' || t === '-') return v;
+      const n = Number(t);
+      if (!Number.isFinite(n)) return v;
+      v = n;
+    }
+    if (typeof v !== 'number' || !Number.isFinite(v)) return String(v == null ? '' : v);
+    const sign = v < 0 ? '−' : '';
+    return sign + Math.abs(v).toLocaleString('ko-KR') + '원';
+  }
+  LM.fmt = {
+    pad,
+    date: (v, style) => {
+      const d = toDate(v);
+      if (!d) return String(v == null ? '' : v);
+      switch (style) {
+        case 'abs': return d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate());
+        case 'md': return (d.getMonth() + 1) + '/' + d.getDate();
+        case 'hm': return pad(d.getHours()) + ':' + pad(d.getMinutes());
+        case 'mdhm': return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+        case 'long': return (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + '일월화수목금토'[d.getDay()] + '요일';
+        default: return d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+      }
+    },
+    amount,
+    toDate,
+  };
+
   /* ---------- 앱 등록 ---------- */
   LM.apps = {};
   LM.register = (def) => { LM.apps[def.id] = def; };
@@ -186,18 +229,34 @@
       const body = h('div', { class: 'tabbody' });
       layer.appendChild(body);
       const bar = h('nav', { class: 'tabbar', role: 'tablist' });
+      const syncBadges = () => {
+        if (!bar.isConnected) { offRead(); offMsg(); return; }
+        tabs.forEach((t) => {
+          if (!t._badgeEl) return;
+          const n = typeof t.badge === 'function' ? t.badge() : t.badge;
+          t._badgeEl.textContent = n ? String(n) : '';
+          t._badgeEl.hidden = !n;
+        });
+      };
+      const offRead = LM.on('read', syncBadges);
+      const offMsg = LM.on('msg', syncBadges);
       tabs.forEach((t, i) => {
         const holder = h('div', { class: 'tabpane', hidden: true });
         body.appendChild(holder);
         const st = new Stack(holder, app);
         app.stacks.push(st);
         t._holder = holder;
+        if (t.badge !== undefined) {
+          t._badgeEl = h('i', { class: 'tab-badge' });
+          t._badgeEl.hidden = true;
+        }
         t._btn = h('button', { class: 'tab', role: 'tab', 'aria-label': t.label, onclick: () => app.select(i) },
-          LM.icon(t.icon, 'tab-ic'), h('span', null, t.label), t.badge ? h('i', { class: 'tab-badge' }, t.badge) : null);
+          LM.icon(t.icon, 'tab-ic'), h('span', null, t.label), t._badgeEl || null);
         bar.appendChild(t._btn);
       });
       layer.appendChild(bar);
       layer.classList.add('has-tabbar');
+      syncBadges();
       app.select = (i) => {
         if (app.active === i && app.stacks[i].depth() > 1) { while (app.stacks[i].depth() > 1) app.stacks[i].pop(); }
         app.active = i;
@@ -221,7 +280,7 @@
   ui.page = function (o) {
     const small = h('div', { class: 'nb-title' }, o.title || '');
     const left = h('div', { class: 'nb-left' });
-    if (o.back) left.appendChild(h('button', { class: 'nb-back', 'aria-label': '뒤로', onclick: o.onBack || (() => o.nav && o.nav.pop()) }, LM.icon('chevron-left', 'nb-back-ic'), h('span', null, o.back === true ? '' : o.back)));
+    if (o.back) left.appendChild(h('button', { class: 'nb-back', 'aria-label': '뒤로', onclick: o.onBack || (() => o.nav && o.nav.pop()) }, LM.icon('chevron-left', 'nb-back-ic'), h('span', null, '뒤로')));
     if (o.left) append(left, [o.left]);
     const right = h('div', { class: 'nb-right' }, o.right || null);
     const bar = h('header', { class: 'nb' + (o.large === false ? ' nb-std' : '') + (o.transparent ? ' nb-clear' : '') }, left, small, right);
@@ -291,7 +350,7 @@
     return el;
   };
 
-  ui.badge = (n) => h('span', { class: 'badge', 'aria-label': '안 읽음 ' + n }, n);
+  ui.badge = (n) => h('span', { class: 'badge', 'aria-label': '안 읽은 메시지 ' + n + '개' }, n);
 
   ui.button = (o) => h('button', { class: 'btn ' + (o.kind || 'filled') + ' ' + (o.size || 'm'), onclick: o.onClick, disabled: o.disabled }, o.icon ? LM.icon(o.icon) : null, o.label);
 
