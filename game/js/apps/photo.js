@@ -175,7 +175,7 @@
 
     const scr = h('section', { class: 'scr phv' },
       h('header', { class: 'phv-bar' },
-        h('button', { class: 'phv-back', onclick: () => nav.pop() }, LM.icon('chevron-left'), h('span', null, '보관함')),
+        h('button', { class: 'phv-back', onclick: () => nav.pop() }, LM.icon('chevron-left'), h('span', null, '뒤로')),
         count,
         h('button', { class: 'phv-info', 'aria-label': '정보', onclick: () => ui.info('정보', list[i].info) }, LM.icon('info'))),
       stage,
@@ -225,7 +225,7 @@
 
     const scr = h('section', { class: 'scr burstv' },
       h('header', { class: 'phv-bar' },
-        h('button', { class: 'phv-back', onclick: () => nav.pop() }, LM.icon('chevron-left'), h('span', null, '버스트 18장')),
+        h('button', { class: 'phv-back', onclick: () => nav.pop() }, LM.icon('chevron-left'), h('span', null, '뒤로')),
         counter,
         h('button', { class: 'phv-info', 'aria-label': '정보', onclick: () => ui.info('정보', item.info) }, LM.icon('info'))),
       stage,

@@ -122,8 +122,12 @@
       listTime: LM.fmt.date(rt.at, 'md'), timeFull: LM.fmt.date(rt.at), body: [rt.text || ''], attachments: rt.attach ? [rt.attach] : [], unread: rt.from !== 'out', online: false, rt: true,
     }));
   }
+  const mailAt = (m) => {
+    const d = LM.fmt.toDate(m.timeFull) || LM.fmt.toDate(m.listTime);
+    return d ? d.getTime() : 0;
+  };
   const folderMails = (key) => MAILS.filter((m) => m.account === account && m.folder === key && (!m.online || LM.online()) && !LM.isDeleted('mail', m.id))
-    .concat(runtimeMails(key));
+    .concat(runtimeMails(key)).sort((a, b) => mailAt(b) - mailAt(a));
   const folderLabel = (key) => (FOLDERS.find((f) => f.key === key) || {}).label || '메일함';
   const bodyText = (m) => m.body.join(' ');
   const match = (m, q) => (m.from + ' ' + m.subject + ' ' + m.preview + ' ' + bodyText(m) + ' ' + m.fromAddr).toLowerCase().includes(String(q).toLowerCase());
