@@ -210,11 +210,21 @@
     }
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
-      if (!pauseEl) return;
+      if (pauseEl) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.target.closest && e.target.closest('input, textarea')) return;
+        closePause();
+        return;
+      }
+      // 데스크톱: 앱·시트 없이 홈/잠금화면에 있을 때 Esc = 일시정지
+      const d = dev();
+      const busy = d && d.querySelector('.sheet-wrap, .as-wrap, .al-wrap, .passcode, .appwin');
+      const cur = LM.current && LM.current();
+      if (busy || cur || LM.state.locked) return;
       e.preventDefault();
       e.stopPropagation();
-      if (e.target.closest && e.target.closest('input, textarea')) return;
-      closePause();
+      open();
     }, true);
   }
 

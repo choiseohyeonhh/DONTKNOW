@@ -203,6 +203,7 @@
       LM.emit('state', {});
       LM.emit('gload', { slot: slot, savedAt: data.savedAt || null });
       if (LM._onlineCheck) LM._onlineCheck();
+      if (LM.sched && LM.sched._flush) LM.sched._flush();
       return true;
     } catch (e) {
       return false;
