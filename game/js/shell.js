@@ -129,7 +129,7 @@
     return h('button', { class: 'ncard', 'aria-label': (LM.APPS[n.app] || n.app) + ' 알림, ' + n.title },
       LM.appIcon(n.app, 38),
       h('div', null,
-        h('div', { class: 'ncard-app' }, LM.APPS[n.app] || n.app),
+        h('div', { class: 'ncard-app' }, LM.APPS[n.app] || n.app, n.muted ? h('span', { class: 'ncard-dot', 'aria-label': '알림이 꺼진 대화' }, '•') : null),
         n.title !== LM.APPS[n.app] ? h('div', { class: 'ncard-t' }, n.title) : null,
         h('div', { class: 'ncard-b' + (hidden ? ' hidden' : '') }, hidden ? '새 메시지' : n.body),
         h('span', { class: 'ncard-time' }, n.t || (n.at ? LM.notifTime(n.at) : ''))),
@@ -331,7 +331,7 @@
   LM.current = () => curApp;
 
   function placeholderApp(id) {
-    return { id, render(app) { app.start(() => ui.page({ title: LM.APPS[id], body: ui.empty({ icon: 'info', title: '아직 비어 있는 앱', text: '이 앱의 화면은 준비 중이다.' }) })); } };
+    return { id, render(app) { app.start(() => ui.page({ title: LM.APPS[id], body: ui.empty({ icon: 'info', title: '아직 비어 있는 앱', text: '이 앱은 이 기기에서 열리지 않는다.' }) })); } };
   }
 
   /* 홈 인디케이터: 위로 밀면 홈 */

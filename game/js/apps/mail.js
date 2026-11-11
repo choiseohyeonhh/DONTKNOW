@@ -458,7 +458,7 @@
     const base = o.reply || o.forward;
     const reply = !!o.reply;
     const toInp = h('input', { type: 'email', placeholder: '받는 사람', value: reply && base ? base.fromAddr : '', 'aria-label': '받는 사람' });
-    const subjInp = h('input', { value: base ? (reply ? 'Re: ' : 'Fwd: ') + base.subject : '', placeholder: '제목', 'aria-label': '제목' });
+    const subjInp = h('input', { value: base ? (reply ? '답장: ' : '전달: ') + base.subject : '', placeholder: '제목', 'aria-label': '제목' });
     const bodyInp = h('textarea', { class: 'mail-body-input', rows: '7', 'aria-label': '본문', placeholder: '본문' });
     if (o.reply) bodyInp.value = '\n\n--------------------------------\n' + bodyText(base);
     if (o.forward) bodyInp.value = '\n\n---------- 전달된 메일 ----------\n' + bodyText(base);

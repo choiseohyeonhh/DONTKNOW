@@ -134,7 +134,7 @@
       title: '막혔을 때', cancel: '닫기',
       body: h('div', { class: 'pause-hint' },
         h('div', { class: 'pause-hint-step' }, '안내'),
-        h('p', null, '힌트는 준비 중입니다.'),
+        h('p', null, '폰 안에서 직접 찾아야 합니다.'),
         h('p', { class: 'pause-hint-sub' }, '폰 안에서 직접 찾아야 합니다.')),
     }), 'medium');
   }

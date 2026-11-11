@@ -355,7 +355,7 @@
         });
         LM.notify({
           id: ev.id, app: 'talk', title: room.name, body: ev.item.text, at: at,
-          thread: ev.room, ambient: true, noBanner: roomMuted(room),
+          thread: ev.room, ambient: true, noBanner: roomMuted(room), muted: roomMuted(room),
         });
       } finally { emitting = false; }
     } else {

@@ -416,7 +416,7 @@
       body.push(h('div', { class: 'lp-acts' },
         h('button', { class: 'lp-act', 'aria-label': '댓글', onclick: () => { const i = nav.root.querySelector('.lp-composer input'); if (i) i.focus(); } }, LM.icon('comment', 'lp-ic'), h('span', null, fmt(p.commentCount || 0))),
         reBtn, likeBtn,
-        h('button', { class: 'lp-act', 'aria-label': '인용', onclick: () => ui.toast('인용 화면은 준비 중이다') }, LM.icon('edit', 'lp-ic')),
+        h('button', { class: 'lp-act', 'aria-label': '인용', onclick: () => ui.toast('글 게시물만 인용할 수 있다') }, LM.icon('edit', 'lp-ic')),
         h('span', { class: 'lp-flex' }),
         h('button', { class: 'lp-act', 'aria-label': '저장', onclick: () => { p.saved = !p.saved; ui.toast(p.saved ? '저장했습니다' : '저장을 취소했습니다'); } }, LM.icon('bookmark', 'lp-ic'))));
       body.push(hashtagRow(nav, p));
@@ -459,7 +459,7 @@
 
   function postMenu(nav, p) {
     const actions = [];
-    if (p.kind === 'text') actions.push({ label: '인용하기', onClick: () => ui.toast('인용 화면은 준비 중이다') });
+    if (p.kind === 'text') actions.push({ label: '인용하기', onClick: () => ui.toast('글 게시물만 인용할 수 있다') });
     if (p.kind === 'photo' || p.kind === 'text') actions.push({ label: '공유', onClick: () => ui.share({ eid: p.eid, title: p.caption || p.body || '게시물', kind: 'post', app: 'loop' }) });
     actions.push({ label: p.saved ? '저장 취소' : '저장', onClick: () => { p.saved = !p.saved; ui.toast(p.saved ? '저장했습니다' : '저장을 취소했습니다'); } });
     if (p.edited) actions.push({ label: '편집 기록 보기', onClick: () => editHistory(nav, p) });
@@ -765,7 +765,7 @@
         out.push(h('div', { class: 'lp-trendhead' }, '지금 성원에서'));
         out.push(ui.group({ plain: true, rows: [
           ['1', '성원대교', '성원구'], ['2', '해담', '성원구청'], ['3', '성원구청역', '성원구'], ['4', '한서대', '성원구'], ['5', '리버뷰타워', '성원구'],
-        ].map(([n, name, area]) => ui.row({ title: n + '  ' + name, subtitle: area, onClick: () => name === '리버뷰타워' ? nav.push(() => placePage(nav, name)) : ui.toast('장소·태그는 준비 중이다') })) }));
+        ].map(([n, name, area]) => ui.row({ title: n + '  ' + name, subtitle: area, onClick: () => name === '리버뷰타워' ? nav.push(() => placePage(nav, name)) : ui.toast('이 장소는 아직 등록되지 않았다') })) }));
         out.push(h('div', { class: 'lp-trendhead' }, '사진'));
         const photos = POSTS.filter((p) => p.kind === 'photo' && !isBlocked(p.author) && postVisible(p)).concat(ambientFeed().filter((p) => p.kind === 'photo' && !isBlocked(p.author))).slice(0, 12);
         out.push(h('div', { class: 'lp-grid3' }, photos.map((p) => h('button', { class: 'lp-cell', onclick: () => nav.push(() => postDetail(nav, p)) }, mediaEl(p.media[0], { ratio: '1 / 1', alt: p.caption, caption: false, square: true })))));
@@ -803,7 +803,7 @@
         LM.online() ? null : ui.notice('오프라인에서는 게시할 수 없습니다. 입력은 초안으로 남습니다.', 'warn'),
         ui.segmented(['사진', '글'], kind, (m) => { kind = m; draw(); }),
         kind === '사진'
-          ? h('div', { class: 'lp-picker' }, Array.from({ length: 6 }, (_, i) => h('button', { class: 'lp-pick', 'aria-label': '사진 선택', onclick: () => ui.toast('사진 선택은 준비 중이다') }, ui.photo('새 게시물 사진 ' + i, { ratio: '1 / 1', alt: '사진', caption: false }))))
+          ? h('div', { class: 'lp-picker' }, Array.from({ length: 6 }, (_, i) => h('button', { class: 'lp-pick', 'aria-label': '사진 선택', onclick: () => ui.toast('사진은 기기 사진첩에서 고른다') }, ui.photo('새 게시물 사진 ' + i, { ratio: '1 / 1', alt: '사진', caption: false }))))
           : null,
         h('textarea', { class: 'lp-captionfield', placeholder: kind === '사진' ? '문구를 입력하세요' : '무슨 일이 있었나요?', maxlength: '300', 'aria-label': '본문' }),
         h('div', { class: 'lp-createfoot' }, h('span', null, '300자'), ui.button({ label: '게시', kind: LM.online() ? 'filled' : 'gray', size: 's', onClick: () => { if (!LM.online()) { ui.toast('온라인이 필요합니다'); return; } if (LM.trace) LM.trace('TR-14', { action: 'post' }); ui.toast('게시했습니다'); } })));
@@ -887,7 +887,7 @@
     const offMsg = LM.on('msg', () => { if (host.isConnected) draw(); else offMsg(); });
     return ui.page({
       title: '메시지', back: '루프', nav, large: false,
-      right: h('button', { class: 'nb-btn', 'aria-label': '새 메시지', onclick: () => ui.toast('새 메시지는 준비 중이다') }, LM.icon('compose')),
+      right: h('button', { class: 'nb-btn', 'aria-label': '새 메시지', onclick: () => ui.toast('받은 대화에서만 답장할 수 있다') }, LM.icon('compose')),
       body: host,
     });
   }

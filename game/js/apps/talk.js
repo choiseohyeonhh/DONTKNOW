@@ -203,7 +203,7 @@
         ui.group({ rows: [ui.row({ title: '이도현', subtitle: '상태 메시지 없음', avatar: '이도현', avatarSize: 58, class: 'talk-meprofile' })] }), // 상태 메시지 자리표시(캐논 없음)
         ui.group({ rows: [
           ui.row({ title: '톡 설정', icon: 'gear', onClick: () => nav.push(() => moreSettings(nav)) }),
-          ui.row({ title: '도움말', icon: 'info', onClick: () => nav.push(() => ui.page({ title: '도움말', back: '더보기', nav, large: false, grouped: true, body: ui.empty({ icon: 'info', title: '도움말', text: '도움말은 준비 중이다.' }) })) }),
+          ui.row({ title: '도움말', icon: 'info', onClick: () => nav.push(() => ui.page({ title: '도움말', back: '더보기', nav, large: false, grouped: true, body: ui.empty({ icon: 'info', title: '도움말', text: '대화방에서 메시지를 길게 누르면 복사·공유·정보를 볼 수 있다.' }) })) }),
           ui.row({ title: '앱 정보', icon: 'doc', onClick: () => nav.push(() => ui.page({ title: '앱 정보', back: '더보기', nav, large: false, grouped: true, body: ui.group({ rows: [kv('이름', '톡')] }) })) }),
         ] }),
       ],

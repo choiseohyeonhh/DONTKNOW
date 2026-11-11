@@ -45,7 +45,7 @@
     const drawStores = () => {
       const list = STORES.filter((s) => !q || (s.name + ' ' + s.sub).includes(q));
       storeHost.replaceChildren(...(list.length
-        ? list.map((s) => h('button', { class: 'hk-store', onclick: () => ui.toast('가게 화면은 준비 중이다') },
+        ? list.map((s) => h('button', { class: 'hk-store', onclick: () => ui.toast('지금은 주문을 받지 않는 가게다') },
           h('span', { class: 'hk-thumb' }, ui.photo(s.photo, { caption: false })),
           h('span', { class: 'hk-store-t' }, h('span', { class: 'hk-store-n' }, s.name), h('span', { class: 'hk-store-s' }, s.sub), h('span', { class: 'hk-store-m' }, s.time))))
         : [ui.empty({ icon: 'store', title: '가게가 없습니다' })]));

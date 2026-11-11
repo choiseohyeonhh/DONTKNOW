@@ -60,6 +60,7 @@
       hidden: !!o.hidden,
       ambient: !!o.ambient,
       noBanner: !!o.noBanner,
+      muted: !!o.muted,
     };
     LM.G.notifs = Array.isArray(LM.G.notifs) ? LM.G.notifs : [];
     const i = LM.G.notifs.findIndex((x) => x.id === n.id);
