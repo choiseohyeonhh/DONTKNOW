@@ -3,5 +3,5 @@ documents/.env
 .env
 .env.*
 !.env.example
-mvp/dist/
+game/dist/
 phone-prototype/dist/
