@@ -96,10 +96,9 @@
   }
 
   LM.notifList = function () {
-    const list = LM.G && Array.isArray(LM.G.notifs) ? LM.G.notifs.slice() : [];
-    if (!LM.G) return initialEntries();
-    const ids = new Set(list.map((n) => n.id));
-    initialEntries().forEach((n) => { if (!ids.has(n.id)) list.push(n); });
-    return list;
+    /* 새 게임에서 data.js의 초기 알림을 G.notifs로 옮겨 두었으므로, 이후에는 G.notifs가 원본이다.
+     * (지운 알림이 다시 살아나지 않게 여기서 다시 합치지 않는다.) */
+    if (LM.G && Array.isArray(LM.G.notifs)) return LM.G.notifs.slice();
+    return initialEntries();
   };
 })();

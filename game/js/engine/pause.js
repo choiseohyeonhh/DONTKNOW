@@ -214,6 +214,8 @@
         e.preventDefault();
         e.stopPropagation();
         if (e.target.closest && e.target.closest('input, textarea')) return;
+        const topSheet = pauseEl.querySelector('.sheet-wrap');
+        if (topSheet && topSheet.close) { topSheet.close(); return; }
         closePause();
         return;
       }

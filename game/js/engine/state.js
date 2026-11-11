@@ -246,7 +246,7 @@
     for (const k in GAME_KEYS) {
       if (!Object.prototype.hasOwnProperty.call(patch, k)) continue;
       const path = GAME_KEYS[k];
-      if (k === 'preview') LM.gset(path, Object.assign({}, patch[k] || {}));
+      if (k === 'preview') LM.gset(path, Object.assign({}, (G.device && G.device.preview) || {}, patch[k] || {}));
       else LM.gset(path, !!patch[k]);
     }
     if (Object.prototype.hasOwnProperty.call(patch, 'locked')) {

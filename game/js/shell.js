@@ -58,22 +58,25 @@
       h('button', { class: 'lost-btn', onclick: () => { fail.textContent = '서비스 없음'; setTimeout(() => (fail.textContent = ''), 2500); } }, LM.icon('phone-out'), '통화'), fail);
 
     const stack = h('div', { class: 'nstack' });
-    const groups = {};
-    notifList().forEach((n) => { (groups[n.app] = groups[n.app] || []).push(n); });
-    const order = Object.keys(groups);
-    order.forEach((app) => {
-      const list = groups[app];
-      const g = h('div', { class: 'ngroup collapsed' + (list.length === 1 ? ' single' : '') });
-      list.forEach((n, i) => {
-        const card = notifCard(n, i === 0 && list.length > 1 ? list.length - 1 : 0);
-        card.addEventListener('click', () => {
-          if (g.classList.contains('collapsed') && list.length > 1) { g.classList.remove('collapsed'); return; }
-          showPasscode(() => openApp(n.app, n.thread ? { open: n.thread, thread: n.thread } : undefined));
+    function fillNotifs() {
+      stack.replaceChildren();
+      const groups = {};
+      notifList().forEach((n) => { (groups[n.app] = groups[n.app] || []).push(n); });
+      Object.keys(groups).forEach((app) => {
+        const list = groups[app];
+        const g = h('div', { class: 'ngroup collapsed' + (list.length === 1 ? ' single' : '') });
+        list.forEach((n, i) => {
+          const card = notifCard(n, i === 0 && list.length > 1 ? list.length - 1 : 0);
+          card.addEventListener('click', () => {
+            if (g.classList.contains('collapsed') && list.length > 1) { g.classList.remove('collapsed'); return; }
+            showPasscode(() => openApp(n.app, n.thread ? { open: n.thread, thread: n.thread } : undefined));
+          });
+          g.appendChild(card);
         });
-        g.appendChild(card);
+        stack.appendChild(g);
       });
-      stack.appendChild(g);
-    });
+    }
+    fillNotifs();
 
     const scroll = h('div', { class: 'lock-scroll' },
       lost,
@@ -99,6 +102,7 @@
     el.addEventListener('pointerup', (e) => { if (sy != null && sy - e.clientY > 60) showPasscode(); sy = null; });
     el.querySelector('.lock-hint').style.pointerEvents = 'auto';
     el.querySelector('.lock-hint').addEventListener('click', () => showPasscode());
+    el._refreshNotifs = fillNotifs;
     return el;
   }
 
@@ -114,7 +118,7 @@
 
   function notifCard(n, more) {
     const hidden = notifHidden(n);
-    return h('button', { class: 'ncard', 'aria-label': LM.APPS[n.app] + ' 알림, ' + n.title },
+    return h('button', { class: 'ncard', 'aria-label': (LM.APPS[n.app] || n.app) + ' 알림, ' + n.title },
       LM.appIcon(n.app, 38),
       h('div', null,
         h('div', { class: 'ncard-app' }, LM.APPS[n.app] || n.app),
@@ -556,6 +560,8 @@
       else if (a === 'pause') { if (LM.pauseUI) LM.pauseUI.open(); }
       else if (a === 'theme') LM.set({ theme: LM.state.theme === 'dark' ? 'light' : 'dark' });
     }));
+    // 알림이 새로 오면 잠금화면 목록도 다시 그린다(알림 센터는 열 때마다 최신).
+    LM.on('notifs', () => { if (lockEl && lockEl._refreshNotifs) lockEl._refreshNotifs(); });
     if (LM._onlineCheck) LM._onlineCheck();
     if (LM.sched) LM.sched._flush();
     if (LM.pauseUI) LM.pauseUI.init();

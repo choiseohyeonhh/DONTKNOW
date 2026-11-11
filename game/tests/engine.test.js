@@ -118,6 +118,24 @@ async function run(name, fn) {
     await ctx.close();
   });
 
+  await run('스케줄러: 예약이 저장·불러오기 후에도 살아남는다', async () => {
+    const { ctx, page, errors } = await open(browser, '?unlock');
+    await page.evaluate(() => {
+      LM.sched.after('persist', 10, () => { window.__persist = true; });
+      LM.saveGame('auto');
+    });
+    ok('예약이 G.sched에 저장됨', await page.evaluate(() => LM.G.sched.some((e) => e.id === 'persist')));
+    await page.reload();
+    await page.waitForFunction(() => window.LM && window.LM.G);
+    await page.evaluate(() => {
+      LM.sched.def('persist', () => { window.__persist = true; });
+      LM.advance(10);
+    });
+    ok('불러온 뒤 발화', (await page.evaluate(() => window.__persist)) === true);
+    ok('콘솔 오류 없음', errors.length === 0, errors.join(' / '));
+    await ctx.close();
+  });
+
   await run('알림: 알림 센터에 나타난다', async () => {
     const { ctx, page, errors } = await open(browser, '?unlock');
     await page.evaluate(() => {
@@ -128,6 +146,33 @@ async function run(name, fn) {
     const text = await page.locator('.nc').innerText();
     ok('알림 센터에 본문 표시', text.includes('테스트 알림') && text.includes('본문입니다'), text.slice(0, 80));
     ok('G.notifs에 저장', await page.evaluate(() => LM.G.notifs.some((n) => n.id === 'test-notif')));
+    ok('콘솔 오류 없음', errors.length === 0, errors.join(' / '));
+    await ctx.close();
+  });
+
+  await run('온라인: 잠금 전에 켜 두면 해제 순간 첫 온라인', async () => {
+    const { ctx, page, errors } = await open(browser, '?unlock');
+    await page.evaluate(() => { LM.set({ locked: true }); LM.set({ wifi: true, airplane: false }); });
+    const before = await page.evaluate(() => LM.G.firstOnlineAt);
+    ok('잠긴 동안에는 첫 온라인 없음', before == null, String(before));
+    await page.evaluate(() => LM.set({ locked: false }));
+    ok('해제하면 첫 온라인 기록', (await page.evaluate(() => LM.G.firstOnlineAt)) != null);
+    ok('콘솔 오류 없음', errors.length === 0, errors.join(' / '));
+    await ctx.close();
+  });
+
+  await run('일시정지 메뉴: 열면 시계가 멈추고 닫으면 재개', async () => {
+    const { ctx, page, errors } = await open(browser, '?unlock');
+    await page.evaluate(() => LM.pauseUI.open());
+    await page.waitForSelector('.pause');
+    const t0 = await page.evaluate(() => LM.G.gameMs);
+    await page.waitForTimeout(500);
+    const t1 = await page.evaluate(() => LM.G.gameMs);
+    ok('열려 있는 동안 시계 정지', t0 === t1, `${t1 - t0}ms`);
+    ok('메뉴 항목 5개', (await page.locator('.pause-item').count()) === 5);
+    await page.locator('.pause-item', { hasText: '계속하기' }).click();
+    await page.waitForTimeout(250);
+    ok('닫으면 시계 재개', (await page.evaluate(() => LM.paused())) === false);
     ok('콘솔 오류 없음', errors.length === 0, errors.join(' / '));
     await ctx.close();
   });
