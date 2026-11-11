@@ -93,4 +93,4 @@
 
 - 1인용 **웹 게임**. 메신저·SNS·메일은 게임 속 가상 앱이다. 상대는 대본이 있는 NPC다. 실제 계정·서버·DB·네트워크는 없다.
 - 기술: 바닐라 JS(ES2020) + DOM/CSS, JSON 콘텐츠 → Python 빌드 → 단일 HTML, localStorage 저장, Playwright 테스트. 새 라이브러리 없음.
-- `mvp/`, `prototype/`은 폐기된 v5 코드다. 참고만 하고 수정하지 않는다. 새 구현은 `game/`.
+- v5 코드(`mvp/`, `prototype/`)와 `docs/`는 2026-11-11 삭제했다. 새 구현은 `game/`, 디자인 기준 화면은 `phone-prototype/`.

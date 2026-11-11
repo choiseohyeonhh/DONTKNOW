@@ -8,7 +8,7 @@
 ## 0. 적용 전제
 
 1. **P0 설계 잠금 전에는 `game/` 구현을 시작하지 않는다.** 이 문서 묶음(v6.2)에 대한 서현 승인이 P0 완료다.
-2. `design/`의 v6.2 문서가 캐논이다. `docs/`, `mvp/`, `prototype/`의 폐기 설계를 구현 근거로 쓰지 않는다.
+2. `design/`의 v6.2 문서가 캐논이다. 폐기 설계(`docs/`, `mvp/`, `prototype/`, 2026-11-11 삭제)를 구현 근거로 쓰지 않는다.
 3. 구현 폴더는 새 `game/`이다. 모듈 트리·테스트 이름·빌드 방식은 [`FRONTEND_ARCHITECTURE`](../04-tech/FRONTEND_ARCHITECTURE.md)와 [`TESTING_STRATEGY`](../05-quality/TESTING_STRATEGY.md)를 따른다.
 4. 이 문서의 "P0"·"P1"은 **단계 이름**이다. [`NAVIGATION_ARCHITECTURE`](../02-design/NAVIGATION_ARCHITECTURE.md) 3절의 화면 우선순위 `P0`(34개)·`P1`(144개)와 다른 표기이므로 혼동하지 않는다.
 5. MVP 합격선은 **보수 90분 이상**, MVP 보수 목표는 **약 96분**이다. 측정은 P7에서 한다.

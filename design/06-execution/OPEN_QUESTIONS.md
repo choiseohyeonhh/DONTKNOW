@@ -383,20 +383,22 @@
 - **결정(2026-11-09):** 추천안 채택 — ① 4.3만으로 통일(43.2k는 같은 값의 정밀 표기).
 - 영향 문서: `01-product/CHARACTERS.md` P-05·A-16, `01-product/NARRATIVE_CANON.md`, `03-features/VIDEO_AND_COMMUNITY_SPECIFICATION.md`, `03-features/SNS_SPECIFICATION.md`
 
-#### Q-OPEN-183 — 톡 시작 배지 숫자(6 vs 7 vs 8) · **보통** · 미결(2026-11-10 추가)
+#### Q-OPEN-183 — 톡 시작 배지 숫자(6 vs 7 vs 8) · **보통** · 결정됨
 
 - 출처: [05-quality/PROTOTYPE_FINDINGS.md](../05-quality/PROTOTYPE_FINDINGS.md) 3절 4·36번 · [02-design/SCREEN_SPECIFICATIONS.md](../02-design/SCREEN_SPECIFICATIONS.md) 4.2
 - 쟁점: 화면 명세는 홈 톡 배지 6과 지훈·서아 방 배지 1을 함께 적어 합이 맞지 않는다. 3/14 22:31 서아 방 마지막 메시지는 도현이 보낸 것이라 서아 방 안 읽음은 0이다.
 - 선택지: ① 배지는 전부 계산값(오프라인 시작 지훈 1 → 첫 온라인 후 아버지 6통 더해 7 → 3/17 22:30 단톡 글 이후 8) / ② 문서 숫자 6을 고정값으로 유지
 - 추천: ① — 읽음 공통 규칙(PROTOTYPE_FINDINGS 2절, AC-707)과 같은 원리. 문서에 적힌 숫자는 예시로 바꾼다.
+- **결정(2026-11-11):** 추천안 채택 — ① 배지는 전부 계산값.
 - 영향 문서: `02-design/SCREEN_SPECIFICATIONS.md` 4.2, `03-features/MESSAGING_SPECIFICATION.md` 5.1
 
-#### Q-OPEN-184 — 홈 1페이지 톡·루프 아이콘 중복 · **보통** · 미결(2026-11-10 추가)
+#### Q-OPEN-184 — 홈 1페이지 톡·루프 아이콘 중복 · **보통** · 결정됨
 
 - 출처: [05-quality/PROTOTYPE_FINDINGS.md](../05-quality/PROTOTYPE_FINDINGS.md) 3절 33번 · [03-features/SYSTEM_SHELL_SPECIFICATION.md](../03-features/SYSTEM_SHELL_SPECIFICATION.md) 4.2·8.2
 - 쟁점: 캐논은 톡·루프를 1페이지와 독에 함께 둔다. 같은 앱 아이콘이 한 화면에 두 번 나오는 건 홈 문법에 없다.
 - 선택지: ① 독에만 둔다(1페이지에서 뺀다) / ② 캐논대로 둘 다
 - 추천: ① — 프로토타입과 같고, 실제 폰과 같다. 빈 두 칸은 4×5 격자에 여유로 남긴다.
+- **결정(2026-11-11):** 추천안 채택 — ① 독에만 둔다.
 - 영향 문서: `03-features/SYSTEM_SHELL_SPECIFICATION.md`, `02-design/SCREEN_SPECIFICATIONS.md` 홈 10
 
 ---
@@ -571,7 +573,7 @@
 | design/15 5절 열린 결정 | 7 (그중 5개는 q.json에 없음) |
 | 입력 합계 | 254 |
 | 병합 후 | 182 (+2026-11-10 추가 2 = 184) |
-| A. 서현 결정 필요(기존 36건 결정됨 2026-11-09 + 미결 2건 2026-11-10) | 38 (치명 3 · 높음 18 · 보통 17) |
+| A. 서현 결정 필요(38건 전부 결정됨: 36건 2026-11-09, 2건 2026-11-11) | 38 (치명 3 · 높음 18 · 보통 17) |
 | B. 기본값 확정 | 125 |
 | C. 해결됨·무효 | 21 |
 

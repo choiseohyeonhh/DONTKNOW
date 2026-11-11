@@ -9,7 +9,7 @@ import { join, resolve } from 'node:path';
 
 const MODEL = '@cf/black-forest-labs/flux-1-schnell';
 const KEYS = ['CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_API_TOKEN'];
-// 카툰 방향(docs/content/art-prompts.md [STYLE])의 짧은 버전. FLUX schnell은 네거티브 프롬프트가 없으므로 금지 항목은 긍정문으로 쓴다.
+// 카툰 방향의 짧은 스타일 문구. FLUX schnell은 네거티브 프롬프트가 없으므로 금지 항목은 긍정문으로 쓴다.
 const STYLES = {
   cartoon:
     '2D cartoon illustration for a mature mystery game, flat colors with soft cel shading, clean dark outlines, muted desaturated palette, cinematic composition, graphic-novel look, no text, no letters',

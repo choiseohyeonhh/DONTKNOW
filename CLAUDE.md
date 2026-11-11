@@ -8,7 +8,7 @@
 ## 캐논
 - **정답은 `design/` (2026-11 전면 재구축, 게임 캐논 v6.2).** 시작은 `design/README.md`. 설정·숫자의 단일 출처는 `design/01-product/NARRATIVE_CANON.md`. 문서는 00-foundation~06-execution 7개 폴더, 단일 출처 표는 `design/06-execution/DESIGN_TRACEABILITY.md`.
 - v6 요지: 플레이어(아버지)는 실종된 아들의 폰을 돌려받아 수사한다. 사건은 청년 계좌 대여(보이스피싱 연루). 아들은 다른 기기로 같은 계정에 살아 있고 흔적을 원격으로 지운다. 진행은 세션이 아니라 접근 층·행동 증명·흔적과 반응·실시간 사건.
-- `docs/`의 v5.4 설계는 삭제했다. 남은 3개 파일은 v5 코드·이미지 도구의 입력일 뿐 설계 기준이 아니다(`docs/README.md`).
+- v6 이전 파일(`docs/`, `mvp/`, `prototype/`, v5 이미지 `assets/`, v5 배치 프롬프트)은 2026-11-11 전부 삭제했다. 필요하면 git 기록에서 본다.
 - 대사 작성 원칙: 인물은 자기가 모르는 것을 말할 수 없다(`design/01-product/CHARACTERS.md` 앎 매트릭스).
 - 소재 원칙: 사기는 흐름(누가·언제·얼마)만, 수법(대본·세탁·계정 탈취 기술)은 쓰지 않는다(`design/00-foundation/PRODUCT_PRINCIPLES.md` 콘텐츠 가이드라인).
 - 디자인 기둥: 폰이 곧 수사 도구 / 연결은 플레이어가 한다 / 폰은 살아 있다 / 모든 진실은 두 길 이상.
@@ -31,5 +31,5 @@
 
 ## 다음 작업 후보
 1. `design/06-execution/OPEN_QUESTIONS.md` A 범주(서현 결정) 확정 → P0 설계 잠금.
-2. v6 MVP 구현: 새 폴더 `game/`. `prototype/`, `mvp/`(v5)는 참고만 하고 수정하지 않는다.
+2. v6 본 구현: 폴더 `game/`. 디자인은 `phone-prototype/`(v6 폰 UI 프로토타입)을 그대로 차용한다.
 3. 콘텐츠 JSON 작성 + 린터(`design/04-tech/DATABASE_SCHEMA.md`).
