@@ -57,21 +57,20 @@
     preview: { blink: 'off', loopdm: 'off' },
     locked: true,
   }, saved.prefs || {});
+  /* 게임 상태와 UI 상태를 잇는 훅. state.js가 로드되면 LM.set이 게임 상태를 G에도 기록한다. */
   LM.set = (patch) => {
     Object.assign(LM.state, patch);
     try { localStorage.setItem('lm.proto', JSON.stringify({ prefs: { theme: LM.state.theme, textSize: LM.state.textSize, reduceMotion: LM.state.reduceMotion } })); } catch (e) { /* 저장 불가 무시 */ }
+    if (LM.onStateSet) { try { LM.onStateSet(patch); } catch (e) { console.error(e); } }
     LM.emit('state', patch);
   };
   LM.online = () => LM.state.wifi && !LM.state.airplane;
 
-  /* ---------- 게임 시계 ×4 (시작 2026-03-17 21:10) ---------- */
-  const START = new Date(2026, 2, 17, 21, 10, 0).getTime();
-  const realStart = Date.now();
-  LM.now = () => new Date(START + (Date.now() - realStart) * 4);
+  /* ---------- 표시 도우미 (시계 자체는 engine/clock.js) ---------- */
   const pad = (n) => String(n).padStart(2, '0');
   LM.fmtTime = (d) => pad(d.getHours()) + ':' + pad(d.getMinutes());
   LM.fmtDate = (d) => (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + '일월화수목금토'[d.getDay()] + '요일';
-  setInterval(() => LM.emit('tick', LM.now()), 1000);
+  LM.fmtDateTime = (d) => (d.getMonth() + 1) + '/' + d.getDate() + ' ' + LM.fmtTime(d);
 
   /* ---------- 앱 등록 ---------- */
   LM.apps = {};
@@ -349,7 +348,7 @@
   };
 
   ui.actionSheet = (o) => {
-    const dev = document.querySelector('.device');
+    const dev = o.host || document.querySelector('.device');
     const scrim = h('div', { class: 'scrim' });
     const box = h('div', { class: 'as', role: 'dialog' });
     const close = () => { animate(box, [{ transform: 'translateY(0)' }, { transform: 'translateY(110%)' }], { duration: 240, easing: SHEET }); animate(scrim, [{ opacity: 1 }, { opacity: 0 }], { duration: 240 }).then(() => wrap.remove()); };
@@ -365,7 +364,7 @@
 
   /* 중앙 경고창: 캐논상 원격 지우기·암호 변경 확인 두 곳만 */
   ui.alert = (o) => {
-    const dev = document.querySelector('.device');
+    const dev = o.host || document.querySelector('.device');
     const box = h('div', { class: 'al', role: 'alertdialog', 'aria-modal': 'true' },
       h('div', { class: 'al-t' }, o.title), o.text ? h('div', { class: 'al-s' }, o.text) : null,
       h('div', { class: 'al-btns' }, o.actions.map((a) => h('button', { class: 'al-b' + (a.destructive ? ' destr' : '') + (a.cancel ? ' cancel' : ''), onclick: () => { wrap.remove(); a.onClick && a.onClick(); } }, a.label))));
