@@ -516,6 +516,4 @@
       ui.group({ rows: [ui.row({ title: '복사', icon: 'copy', action: true, onClick: (e) => { e.target.closest('.sheet-wrap').close(); ui.toast('복사됨'); } }), ui.row({ title: '스크린샷으로 저장', icon: 'photo', action: true, onClick: (e) => { e.target.closest('.sheet-wrap').close(); ui.toast('사진에 저장됨'); } })] }));
     ui.sheet(null, ui.sheetPage({ title: '공유', body }), { size: 'medium' });
   };
-
-  };
 })();
