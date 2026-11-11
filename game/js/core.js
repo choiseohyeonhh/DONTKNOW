@@ -66,6 +66,21 @@
   };
   LM.online = () => LM.state.wifi && !LM.state.airplane;
 
+  /* 콘텐츠 스크립트가 엔진보다 먼저 로드되므로 스케줄러의 조기 등록을 받아 둔다. */
+  if (!LM.sched) {
+    const qDefs = {};
+    const qCalls = [];
+    LM.sched = {
+      _stub: true, _qDefs: qDefs, _qCalls: qCalls,
+      def(id, fn) { if (typeof fn === 'function') qDefs[id] = fn; return fn; },
+      at() { qCalls.push(['at', Array.prototype.slice.call(arguments)]); },
+      after() { qCalls.push(['after', Array.prototype.slice.call(arguments)]); },
+      afterOnline() { qCalls.push(['afterOnline', Array.prototype.slice.call(arguments)]); },
+      cancel() { return false; },
+      list() { return []; },
+    };
+  }
+
   /* ---------- 표시 도우미 (시계 자체는 engine/clock.js) ---------- */
   const pad = (n) => String(n).padStart(2, '0');
   LM.fmtTime = (d) => pad(d.getHours()) + ':' + pad(d.getMinutes());

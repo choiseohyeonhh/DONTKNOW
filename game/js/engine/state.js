@@ -121,6 +121,18 @@
     }
     o[ps[ps.length - 1]] = value;
     LM.emit('g', { path: String(path), value: value });
+    const key = String(path);
+    const mirrorKey = { 'net.wifi': 'wifi', 'net.airplane': 'airplane', 'device.dnd': 'dnd', 'device.preview': 'preview' }[key];
+    if (mirrorKey) {
+      LM.state[mirrorKey] = value;
+      LM.emit('state', { [mirrorKey]: value });
+      if (LM._onlineCheck) LM._onlineCheck();
+    } else if (key === 'device.locked') {
+      G.unlocked = !value;
+      LM.state.locked = !!value;
+      LM.emit('state', { locked: !!value });
+      if (LM._onlineCheck) LM._onlineCheck();
+    }
     autosaveSoon();
     return value;
   };

@@ -5,6 +5,8 @@
   'use strict';
   const LM = window.LM;
   const defs = Object.create(null);
+  const early = LM.sched && LM.sched._stub ? LM.sched : null;
+  if (early) Object.assign(defs, early._qDefs || {});
 
   function G() { return LM.G; }
   function online() { return !!(LM.online && LM.online()); }
@@ -150,4 +152,11 @@
     _advanceTo: advanceTo,
     _firstOnline: function () { resolveAfterOnline(); flush(); },
   };
+
+  if (early && Array.isArray(early._qCalls)) {
+    early._qCalls.forEach((pair) => {
+      const method = pair[0], args = pair[1] || [];
+      if (LM.sched[method]) LM.sched[method].apply(null, args);
+    });
+  }
 })();

@@ -59,7 +59,7 @@
 
     const stack = h('div', { class: 'nstack' });
     const groups = {};
-    LM.NOTIFS.forEach((n) => { (groups[n.app] = groups[n.app] || []).push(n); });
+    notifList().forEach((n) => { (groups[n.app] = groups[n.app] || []).push(n); });
     const order = Object.keys(groups);
     order.forEach((app) => {
       const list = groups[app];
@@ -68,7 +68,7 @@
         const card = notifCard(n, i === 0 && list.length > 1 ? list.length - 1 : 0);
         card.addEventListener('click', () => {
           if (g.classList.contains('collapsed') && list.length > 1) { g.classList.remove('collapsed'); return; }
-          showPasscode(() => openApp(n.app));
+          showPasscode(() => openApp(n.app, n.thread ? { open: n.thread, thread: n.thread } : undefined));
         });
         g.appendChild(card);
       });
@@ -102,16 +102,31 @@
     return el;
   }
 
+  function notifList() {
+    if (LM.notifList) return LM.notifList();
+    return LM.NOTIFS || [];
+  }
+
+  function notifHidden(n) {
+    if (LM.notifHidden) return LM.notifHidden(n);
+    return !!n.hidden;
+  }
+
   function notifCard(n, more) {
-    const hidden = n.hidden || (n.app === 'blink' && LM.state.preview.blink === 'off') || (n.app === 'loop' && n.body === '새 메시지');
+    const hidden = notifHidden(n);
     return h('button', { class: 'ncard', 'aria-label': LM.APPS[n.app] + ' 알림, ' + n.title },
       LM.appIcon(n.app, 38),
       h('div', null,
-        h('div', { class: 'ncard-app' }, LM.APPS[n.app]),
+        h('div', { class: 'ncard-app' }, LM.APPS[n.app] || n.app),
         n.title !== LM.APPS[n.app] ? h('div', { class: 'ncard-t' }, n.title) : null,
-        h('div', { class: 'ncard-b' + (hidden ? ' hidden' : '') }, n.body)),
-      h('span', { class: 'ncard-time' }, n.t),
+        h('div', { class: 'ncard-b' + (hidden ? ' hidden' : '') }, hidden ? '새 메시지' : n.body),
+        h('span', { class: 'ncard-time' }, n.t || (n.at ? LM.notifTime(n.at) : ''))),
       more ? h('div', { class: 'ncard-more' }, '알림 ' + more + '개 더 보기') : null);
+  }
+
+  function openNotif(n) {
+    LM.emit('notif', n);
+    openApp(n.app, n.thread ? { open: n.thread, thread: n.thread } : undefined);
   }
 
   /* ---------- 키패드: 6자리, 오답 6회째부터 30초 대기 ---------- */
@@ -403,15 +418,16 @@
 
   function buildNotif() {
     const d = LM.now();
-    const list = LM.NOTIFS.slice();
+    const list = notifList();
     const el = h('div', { class: 'overlay nc', role: 'dialog', 'aria-label': '알림 센터' },
       h('div', { class: 'nc-date' }, LM.fmtDate(d)), h('div', { class: 'nc-clock' }, LM.fmtTime(d)),
       h('div', { class: 'n-head' }, h('b', null, '알림'), h('button', { onclick: closeOverlay }, '닫기')),
-      h('div', { class: 'nstack' }, list.map((n) => { const c = notifCard(n); c.addEventListener('click', () => openApp(n.app)); return c; })),
+      h('div', { class: 'nstack' }, list.map((n) => { const c = notifCard(n); c.addEventListener('click', () => openNotif(n)); return c; })),
       h('div', { class: 'ov-grab', 'aria-hidden': true }));
     return el;
   }
   function openNotifCenter() { showOverlay(buildNotif(), 'top'); }
+  LM.openNotifCenter = openNotifCenter;
 
   function buildControl() {
     const s = LM.state;
@@ -486,11 +502,28 @@
   LM.banner = (n) => {
     if (LM.state.dnd || LM.state.locked) return;
     const b = h('div', { class: 'banner' }, notifCard(n));
-    b.addEventListener('click', () => { b.remove(); openApp(n.app); });
+    b.addEventListener('click', () => { b.remove(); openNotif(n); });
     dev.appendChild(b);
     LM.animate(b, [{ transform: 'translateY(-120%)' }, { transform: 'translateY(0)' }], { duration: 350, easing: LM.EASE.sheet });
     setTimeout(() => LM.animate(b, [{ transform: 'translateY(0)' }, { transform: 'translateY(-120%)' }], { duration: 240 }).then(() => b.remove()), 4000);
   };
+
+  function refreshShell() {
+    if (!dev) return;
+    if (curApp) closeApp(true);
+    closeOverlay(true);
+    const nl = buildLock();
+    const nh = buildHome();
+    lockEl.replaceWith(nl);
+    homeEl.replaceWith(nh);
+    lockEl = nl;
+    homeEl = nh;
+    lockEl.hidden = !LM.state.locked;
+    homeEl.hidden = !!LM.state.locked;
+    LM.emit('app', null);
+  }
+  LM.refreshShell = refreshShell;
+  LM.on('gload', refreshShell);
 
   /* ---------- 부팅 ---------- */
   LM.boot = function () {
@@ -506,9 +539,11 @@
       if (e.target.matches('input, textarea')) return;
       if (e.key === 'Escape') { if (dev.querySelector('.sheet-wrap')) dev.querySelector('.sheet-wrap').close(); else if (curApp && curApp.pop()) {} else goHomeAction(); }
     });
-    // 개발용: ?unlock 이면 잠금 해제 상태로, ?app=id 면 그 앱을 연다
+    // 개발용: ?unlock 이면 잠금 해제 상태로, ?app=id 면 그 앱을 연다. ?new 면 새 게임.
     const q = new URLSearchParams(location.search);
     if (q.has('light')) LM.set({ theme: 'light' });
+    const devBypass = !!(q.has('unlock') || q.get('app'));
+    if (!devBypass && LM.prologue && LM.G && !LM.G.prologueSeen) LM.prologue.play();
     if (q.has('unlock') || q.get('app')) unlock();
     if (q.get('app')) openApp(q.get('app'));
     document.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => {
@@ -518,7 +553,12 @@
       else if (a === 'search') { if (!LM.state.locked) openSearch(); }
       else if (a === 'home') goHomeAction();
       else if (a === 'lock') lockPhone();
+      else if (a === 'pause') { if (LM.pauseUI) LM.pauseUI.open(); }
       else if (a === 'theme') LM.set({ theme: LM.state.theme === 'dark' ? 'light' : 'dark' });
     }));
+    if (LM._onlineCheck) LM._onlineCheck();
+    if (LM.sched) LM.sched._flush();
+    if (LM.pauseUI) LM.pauseUI.init();
+    if (LM.debugPanel) LM.debugPanel.init();
   };
 })();
