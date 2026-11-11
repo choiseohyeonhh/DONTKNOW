@@ -197,8 +197,9 @@
         { label: '공유', onClick: () => ui.share(m.body) },
         { label: '정보', onClick: () => ui.info('메시지 정보', [['보낸 사람', out ? '나' : r.name], ['시각', m.day + ' ' + m.time], ['보낸 기기', m.fromSlate ? '도현의 슬레이트' : '도현의 폰']]) },
       ] }));
+      const unread = m.dir === 'in' && LM.read.isUnread('talk', m.id);
       const side = h('div', { class: 'talk-side' },
-        m.dir === 'in' && m.unread ? h('span', { class: 'talk-unread', 'aria-label': '안 읽은 메시지 ' + m.unread + '개' }, String(m.unread)) : null,
+        unread ? h('span', { class: 'talk-unread', 'aria-label': '안 읽은 메시지 1개' }, '1') : null,
         h('span', null, m.time),
         m.fromSlate ? h('span', { class: 'talk-slate' }, '슬레이트에서') : null);
       const bodyCol = h('div', { class: 'talk-body' },
@@ -214,9 +215,7 @@
       if (!LM.online()) return false;
       return true;
     }, (text) => {
-      const n = LM.now();
-      r.extra.push({ dir: 'out', body: text, day: (n.getMonth() + 1) + '/' + n.getDate(), time: LM.fmtTime(n) });
-      draw();
+      LM.msg.add('talk', r.id, { from: 'out', text: text, at: LM.G.gameMs, silent: true });
       setTimeout(() => { if (scroller) scroller.scrollTop = scroller.scrollHeight; }, 20);
     });
 
@@ -232,14 +231,29 @@
     scroller = page.scroller;
     draw();
     setTimeout(() => { scroller.scrollTop = scroller.scrollHeight; }, 30);
-    // 캐논: 방을 연 순간 "1"이 사라진다(읽음). 프로토타입은 화면 표시만 바꾼다(흔적 전송 없음)
-    const markRead = () => { if (!log.isConnected) return; let n = 0; visible(r).forEach((m) => { if (m.dir === 'in' && m.unread) { m.unread = 0; n++; } }); if (n) draw(); };
-    setTimeout(markRead, 900);
-    const off = LM.on('state', () => {
-      if (!log.isConnected) { off(); return; }
+    // 방을 여는 순간 읽음. 각 "1"은 160ms 페이드로 사라지고 목록·탭·홈 배지도 같은 상태에서 다시 계산된다.
+    const offRead = LM.on('read', (e) => {
+      if (!log.isConnected) { offRead(); return; }
+      if (e && e.appId && e.appId !== 'talk') return;
+      const badges = log.querySelectorAll('.talk-unread');
+      if (badges.length) {
+        badges.forEach((x) => x.classList.add('fading'));
+        setTimeout(() => { if (log.isConnected) draw(); }, 170);
+      } else draw();
+    });
+    const offMsg = LM.on('msg', (e) => {
+      if (!log.isConnected) { offMsg(); return; }
+      if (e.appId !== 'talk' || e.threadId !== r.id) return;
+      LM.read.markThread('talk', r.id);
+      draw();
+      setTimeout(() => { if (scroller) scroller.scrollTop = scroller.scrollHeight; }, 20);
+    });
+    const offState = LM.on('state', () => {
+      if (!log.isConnected) { offState(); return; }
       draw();
       setTimeout(() => { scroller.scrollTop = scroller.scrollHeight; }, 20);
     });
+    LM.read.markThread('talk', r.id);
     return page;
   }
 

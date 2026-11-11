@@ -71,6 +71,15 @@
   }
 
   /* 방/스레드 단위: provider가 가진 그 스레드의 안 읽은 후보를 한 번에 읽음 처리. */
+  function unmark(appId, itemId) {
+    const b = readTree()[String(appId)];
+    if (!b || !Object.prototype.hasOwnProperty.call(b, String(itemId))) return false;
+    delete b[String(itemId)];
+    LM.emit('read', { appId: String(appId), itemId: String(itemId), unread: true });
+    if (LM._autosave) LM._autosave();
+    return true;
+  }
+
   function markThread(appId, threadId) {
     let n = 0;
     candidates(appId).forEach((it) => {
@@ -106,6 +115,7 @@
 
   LM.read = {
     mark,
+    unmark,
     markThread,
     isUnread,
     unreadCount,

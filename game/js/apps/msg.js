@@ -39,26 +39,65 @@
       messages: HANKYUL,
     },
     {
+      id: 'market', type: 'system', name: '이웃마켓', address: '이웃마켓', icon: 'store', unread: 0,
+      messages: [{ dir: 'in', body: '[이웃마켓] 인증번호는 [482913] 입니다', day: '3/10', time: '15:20', origin: '이웃마켓' }],
+    },
+    {
+      id: 'nuricard', type: 'system', name: '누리카드', address: '누리카드', icon: 'card', unread: 0,
+      messages: [{ dir: 'in', body: '[자동이체 실패] 3/11 출금 잔액 부족', day: '3/11', time: '18:30', origin: '누리카드' }],
+    },
+    {
       id: 'cirrus', type: 'cirrus', name: '도현의 슬레이트', address: 'dohyun.lee0921@cirrus.kr', unread: 0,
       messages: [],
     },
   ];
 
-  THREADS.forEach((t) => { t.extra = []; });
+  THREADS.forEach((t) => {
+    t.extra = [];
+    t.messages.forEach((m, i) => { if (m.id == null) m.id = t.id + ':' + i; m.threadId = t.id; });
+  });
 
   LM.register({ id: 'msg', render(app) { app.start((nav) => list(nav)); } });
 
+  function ev06At() {
+    const first = LM.G && LM.G.firstOnlineAt;
+    return first == null ? null : first + 36 * 60000;
+  }
+  function ev06Visible() {
+    const at = ev06At();
+    return LM.online() && at != null && LM.now().getTime() >= at;
+  }
+  function runtime(t) {
+    return LM.msg.list('msg', t.id).map((rt) => ({
+      id: rt.id, dir: rt.from === 'out' ? 'out' : 'in', body: rt.text,
+      day: LM.fmt.date(rt.at, 'md'), time: LM.fmt.date(rt.at, 'hm'), rt: true,
+    }));
+  }
   function baseMessages(t) {
     if (t.id !== 'cirrus') return t.messages;
-    if (!LM.online()) return [];
-    const n = LM.now();
-    return [{ dir: 'in', body: EV06, day: (n.getMonth() + 1) + '/' + n.getDate(), time: LM.fmtTime(n), origin: '도현의 슬레이트', slate: true }];
+    if (!ev06Visible()) return [];
+    const at = new Date(ev06At());
+    return [{ id: 'cirrus:ev06', dir: 'in', body: EV06, day: LM.fmt.date(at, 'md'), time: LM.fmt.time(at), origin: '도현의 슬레이트', slate: true, syncedAt: 'online', unread: 1, threadId: t.id }];
   }
-  function messages(t) { return baseMessages(t).concat(t.extra); }
-  function unread(t) {
-    if (t.id === 'cirrus') return LM.online() ? 1 : 0;
-    return t.unread;
-  }
+  function messages(t) { return baseMessages(t).concat(t.extra, runtime(t)); }
+  function unread(t) { return LM.read.unreadCount('msg', t.id); }
+
+  LM.read.register('msg', () => {
+    const out = [];
+    THREADS.forEach((t) => {
+      if (t.id === 'cirrus') {
+        if (ev06Visible()) out.push({ id: 'cirrus:ev06', threadId: t.id });
+        return;
+      }
+      if (t.unread > 0) {
+        const ms = t.messages;
+        const lastIn = ms.slice().reverse().find((m) => m.dir === 'in');
+        if (lastIn) out.push({ id: lastIn.id, threadId: t.id });
+      }
+      LM.msg.list('msg', t.id).forEach((rt) => { if (rt.from !== 'out') out.push({ id: rt.id, threadId: t.id }); });
+    });
+    return out;
+  });
   function last(t) {
     const m = messages(t);
     return m.length ? m[m.length - 1] : null;
@@ -92,10 +131,15 @@
   }
 
   function list(nav) {
+    const host = h('div');
+    const draw = () => { host.replaceChildren(ui.group({ plain: true, rows: THREADS.map((t) => listRow(nav, t)) })); };
+    draw();
+    const offRead = LM.on('read', () => { if (host.isConnected) draw(); else offRead(); });
+    const offMsg = LM.on('msg', () => { if (host.isConnected) draw(); else offMsg(); });
     return ui.page({
       title: '메시지',
       right: h('button', { class: 'nb-btn', 'aria-label': '새 메시지', onclick: () => ui.toast(LM.online() ? '새 메시지는 온라인에서 동기화된다' : '오프라인 상태입니다') }, LM.icon('compose')),
-      body: ui.group({ plain: true, rows: THREADS.map((t) => listRow(nav, t)) }),
+      body: host,
     });
   }
 
@@ -111,7 +155,7 @@
         if (m.day !== day) { day = m.day; kids.push(h('div', { class: 'msg-day' }, h('time', null, day))); }
         kids.push(bubble(t, m, () => retry(t, m, draw, scroller)));
       });
-      if (!ms.length) kids.push(ui.empty({ icon: 'chat', title: '메시지 없음', text: t.id === 'cirrus' ? '첫 온라인 후 슬레이트에서 온 메시지가 동기화된다.' : null }));
+      if (!ms.length) kids.push(ui.empty({ icon: 'chat', title: '메시지가 없습니다', text: t.id === 'cirrus' ? '첫 온라인 후 슬레이트에서 온 메시지가 동기화된다.' : null }));
       log.replaceChildren(...kids);
     }
 
@@ -127,11 +171,24 @@
     scroller = page.scroller;
     draw();
     setTimeout(() => { scroller.scrollTop = scroller.scrollHeight; }, 30);
-    const off = LM.on('state', () => {
-      if (!log.isConnected) { off(); return; }
+    const offState = LM.on('state', () => {
+      if (!log.isConnected) { offState(); return; }
       draw();
       setTimeout(() => { scroller.scrollTop = scroller.scrollHeight; }, 20);
     });
+    const offRead = LM.on('read', (e) => {
+      if (!log.isConnected) { offRead(); return; }
+      if (e && e.appId && e.appId !== 'msg') return;
+      draw();
+    });
+    const offMsg = LM.on('msg', (e) => {
+      if (!log.isConnected) { offMsg(); return; }
+      if (e.appId !== 'msg' || e.threadId !== t.id) return;
+      LM.read.markThread('msg', t.id);
+      draw();
+      setTimeout(() => { if (scroller) scroller.scrollTop = scroller.scrollHeight; }, 20);
+    });
+    LM.read.markThread('msg', t.id);
     return page;
   }
 
@@ -159,30 +216,31 @@
     const inp = h('input', { class: 'msg-inp', type: 'text', placeholder: t.type === 'system' ? '답장할 수 없는 번호' : '메시지 입력', 'aria-label': '메시지 입력' });
     const go = () => onSend(inp.value);
     inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+    const btn = h('button', { class: 'msg-send', 'aria-label': '보내기', onclick: go }, LM.icon('send'));
+    const sync = () => {
+      const off = t.type === 'system' || !LM.online();
+      btn.disabled = off;
+      inp.disabled = t.type === 'system';
+      if (btn.isConnected) { btn.setAttribute('aria-disabled', off); }
+    };
+    sync();
+    const offState = LM.on('state', () => { if (btn.isConnected) sync(); else offState(); });
     return h('div', { class: 'msg-composer' },
       h('button', { class: 'msg-plus', 'aria-label': '첨부', onclick: () => ui.actionSheet({ actions: [
         { label: '사진', onClick: () => ui.toast('프로토타입: 사진 첨부는 보내지 않는다') },
         { label: '파일', onClick: () => ui.toast('프로토타입: 파일 첨부는 보내지 않는다') },
       ] }) }, LM.icon('plus')),
       inp,
-      h('button', { class: 'msg-send', 'aria-label': '보내기', onclick: go }, LM.icon('send')));
+      btn);
   }
 
   function send(t, text, draw, scroller) {
     if (!text.trim()) return;
-    const n = LM.now();
-    const day = (n.getMonth() + 1) + '/' + n.getDate();
-    const time = LM.fmtTime(n);
-    let fail = null;
-    if (t.type === 'system') fail = '서비스 없음';
-    else if (!LM.online()) fail = '온라인이 필요합니다';
-    const m = { dir: 'out', body: text, day, time, fail: !!fail, reason: fail };
-    t.extra.push(m);
-    draw();
-    if (!fail) {
-      const inp = document.querySelector('.appwin[data-app="msg"] .msg-inp');
-      if (inp) inp.value = '';
-    }
+    if (t.type === 'system') { ui.toast('서비스 없음'); return; }
+    if (!LM.online()) { ui.toast('온라인이 필요합니다'); return; }
+    LM.msg.add('msg', t.id, { from: 'out', text: text, at: LM.G.gameMs, silent: true });
+    const inp = document.querySelector('.appwin[data-app="msg"] .msg-inp');
+    if (inp) inp.value = '';
     setTimeout(() => { if (scroller) scroller.scrollTop = scroller.scrollHeight; }, 20);
   }
 
