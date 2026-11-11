@@ -33,6 +33,7 @@
 
   function canBanner(n) {
     if (!LM.G || !LM.G.unlocked || LM.state.locked) return false;
+    if (n && n.noBanner) return false;
     if (LM.state.dnd) return false;
     const cur = LM.current && LM.current();
     if (cur && cur.id === n.app) {
@@ -57,6 +58,8 @@
       thread: o.thread == null ? null : String(o.thread),
       silent: !!o.silent,
       hidden: !!o.hidden,
+      ambient: !!o.ambient,
+      noBanner: !!o.noBanner,
     };
     LM.G.notifs = Array.isArray(LM.G.notifs) ? LM.G.notifs : [];
     const i = LM.G.notifs.findIndex((x) => x.id === n.id);

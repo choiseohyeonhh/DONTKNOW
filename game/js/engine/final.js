@@ -28,19 +28,39 @@
     const defs = '<defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#171b22"/><stop offset="1" stop-color="#080a0d"/></linearGradient>' +
       '<linearGradient id="fw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4658"/><stop offset="1" stop-color="#1b222d"/></linearGradient>' +
       '<linearGradient id="fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9c79d" stop-opacity=".34"/><stop offset="1" stop-color="#d9c79d" stop-opacity="0"/></linearGradient></defs>';
-    if (kind === 'corridor') {
-      return base + defs + '<rect width="390" height="844" fill="url(#fg)"/>' +
-        '<rect x="0" y="0" width="390" height="70" fill="#0b0e13"/>' +
-        '<path d="M0 844 L0 300 L170 210 L390 300 L390 844 Z" fill="#12161d"/>' +
-        '<path d="M170 210 L170 844" stroke="#242b36" stroke-width="2"/>' +
-        '<rect x="212" y="300" width="140" height="330" rx="4" fill="#2a211a"/>' +
-        '<rect x="218" y="306" width="128" height="318" rx="3" fill="#191410"/>' +
-        '<rect x="238" y="326" width="88" height="120" rx="2" fill="#0c0d10" stroke="#3b3027" stroke-width="3"/>' +
-        '<circle cx="332" cy="480" r="7" fill="#c9b47a"/><rect x="326" y="470" width="12" height="6" rx="3" fill="#bfa96f"/>' +
-        '<text x="256" y="478" fill="#b8aa8c" font-size="18" font-family="sans-serif">207</text>' +
-        '<rect x="0" y="640" width="390" height="204" fill="#0a0c10"/>' +
-        '<ellipse cx="285" cy="440" rx="190" ry="250" fill="url(#fl)"/>' +
-        '<rect width="390" height="844" fill="#000" opacity=".22"/>' + '</svg>';
+    if (kind === 'corridor' || kind === 'corridor-open') {
+      const open = kind === 'corridor-open';
+      let g = '<rect width="390" height="844" fill="url(#fg)"/>' +
+        '<path d="M0 0h390v844H0z" fill="#0e1117"/>' +
+        '<path d="M0 844V286L195 200l195 86v558z" fill="#12161d"/>' +
+        '<path d="M0 844V286L195 200v644z" fill="#171c25"/>' +
+        '<path d="M195 200v644M0 300h390M0 844h390" stroke="#252c38" stroke-width="2"/>' +
+        '<path d="M0 844L195 520l195 324z" fill="#0a0c11"/>' +
+        '<ellipse cx="195" cy="260" rx="210" ry="170" fill="url(#fl)" opacity=".55"/>';
+      /* 좌우 각 4개의 똑같은 문. 문패는 흐려서 읽히지 않는다. */
+      const doors = [
+        [22, 322, 118, 238], [22, 590, 132, 210],
+        [250, 322, 118, 238], [236, 590, 132, 210],
+      ];
+      doors.forEach(([x, y, w, h], i) => {
+        const openDoor = open && i === 2;
+        g += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="3" fill="#211c17" stroke="#302820" stroke-width="3"/>';
+        if (openDoor) {
+          g += '<rect x="' + (x + 8) + '" y="' + (y + 8) + '" width="' + (w - 16) + '" height="' + (h - 16) + '" fill="#050607"/>' +
+            '<path d="M' + (x + 8) + ' ' + (y + 8) + 'l' + (w - 16) + ' ' + (h - 16) + 'v-' + (h - 16) + 'z" fill="#c9a76b" opacity=".18"/>' +
+            '<path d="M' + (x + w - 8) + ' ' + (y + h) + 'l86 120h-96z" fill="#d9c79d" opacity=".18"/>' +
+            '<rect x="' + (x + 16) + '" y="' + (y + 28) + '" width="26" height="18" rx="2" fill="#c9b47a" opacity=".8"/>' +
+            '<text x="' + (x + 16) + '" y="' + (y + 42) + '" fill="#2b2318" font-size="12" font-family="sans-serif">207</text>';
+        } else {
+          g += '<rect x="' + (x + 10) + '" y="' + (y + 10) + '" width="' + (w - 20) + '" height="' + (h - 20) + '" fill="#15110e"/>';
+          g += '<rect x="' + (x + 20) + '" y="' + (y + 28) + '" width="28" height="14" rx="2" fill="#4a4136" opacity=".55"/>';
+          g += '<circle cx="' + (x + w - 18) + '" cy="' + (y + h / 2) + '" r="4" fill="#8d7a50" opacity=".7"/>';
+        }
+      });
+      g += '<rect x="0" y="836" width="390" height="8" fill="#000"/>' +
+        '<ellipse cx="195" cy="620" rx="260" ry="220" fill="url(#fl)" opacity=".28"/>' +
+        '<rect width="390" height="844" fill="#000" opacity=".28"/>' + '</svg>';
+      return base + defs + g;
     }
     if (kind === 'counter') {
       return base + defs + '<rect width="390" height="844" fill="#151a20"/>' +
@@ -118,16 +138,14 @@
     if (!dev) return false;
     const thread = h('div', { class: 'final-thread', role: 'log', 'aria-live': 'polite' });
     const caption = h('div', { class: 'final-caption' });
+    const still = h('div', { class: 'final-still', html: svg(stillKind(dest, moved)) });
     const inp = h('input', { class: 'final-input', type: 'text', placeholder: '메시지', 'aria-label': '메시지' });
     const send = h('button', { class: 'final-send', 'aria-label': '보내기' }, LM.icon('send'));
     const end = h('button', { class: 'final-end', onclick: () => finish() }, '돌아서 나온다');
     const bar = h('div', { class: 'final-bar' }, inp, send, end);
     const el = h('div', { class: 'final-scene', role: 'dialog', 'aria-label': '최종 장면' },
-      h('div', { class: 'final-still', html: svg(stillKind(dest, moved)) }),
-      h('div', { class: 'final-scrim' }),
-      caption,
-      thread,
-      bar);
+      h('div', { class: 'final-stage' }, still, h('div', { class: 'final-scrim' }), caption),
+      h('div', { class: 'final-panel' }, thread, bar));
     active = el;
     dev.appendChild(el);
 
@@ -137,8 +155,13 @@
       thread.scrollTop = thread.scrollHeight;
     };
     const cap = (text) => { caption.textContent = text; };
+    const openDoor = () => {
+      if (dest !== 'haedam' || moved) return;
+      still.innerHTML = svg('corridor-open');
+    };
     let resolved = loc === 'exact';
     let asked = false;
+    let left = false;
 
     const askThreat = () => {
       if (asked) return;
@@ -146,7 +169,7 @@
       setTimeout(() => {
         say('in', '그 사람… 경찰이 알아?');
         if (threatResolved()) {
-          if (resolved) cap('문이 열린다.');
+          if (resolved) { openDoor(); cap('문이 열린다.'); }
         } else {
           say('in', '아빠 먼저 가. 9시에 나 혼자 갈게');
           cap('문은 열리지 않았다.');
@@ -155,7 +178,7 @@
     };
 
     if (dest === 'haedam' && !moved) {
-      cap('2층 복도. 207호 문이 보인다.');
+      cap('새벽, 해담고시텔 2층 복도. 문이 여덟 개다.');
       say('in', '__호 앞이야');
     } else if (dest === 'spa' && moved) {
       cap('성원스파 카운터. 도현이 고개를 든다.');
@@ -181,7 +204,7 @@
         LM.flag('CONFESS', true);
         setTimeout(() => say('in', '…언제부터 알았어'), 300);
       }
-      if (dest === 'haedam' && !moved && !resolved) {
+      if (dest === 'haedam' && !moved && !resolved && !left) {
         const m = text.match(/(\d{2,4})/);
         if (!m) {
           setTimeout(() => say('in', '숫자로 말해.'), 350);
@@ -190,13 +213,16 @@
         if (m[1] === '207') {
           resolved = true;
           LM.flag('LOC', 'exact');
-          cap('207호 앞. 발소리가 들린다.');
+          if (threatResolved()) { openDoor(); cap('207호 문 앞. 발소리가 들린다.'); }
+          else cap('207호 문 앞. 문은 닫혀 있다.');
           setTimeout(() => say('in', '…'), 300);
           askThreat();
         } else {
+          left = true;
           LM.flag('LOC', 'near');
           cap('다른 방 문이 열린다. 낯선 사람이 나온다.');
           setTimeout(() => say('in', '…'), 500);
+          setTimeout(() => cap('낯선 사람이 문을 닫는다. 복도 끝 창문이 열린다. 도현이 소리를 듣고 내려간다.'), 1700);
         }
       }
     };

@@ -246,3 +246,15 @@
 [data-app="moa"] .mo-brow.me .mo-bubble { background: var(--lm-tint-fill); color: var(--lm-on-tint); border-bottom-right-radius: 6px; }
 [data-app="moa"] .mo-btime { font-size: 11px; color: var(--lm-label-2); }
 [data-app="moa"] .mo-ok { color: var(--lm-success-ink); }
+
+/* 배경 게시물 장면 일러스트 — 장면 스펙(scene·palette)을 SVG로 그린다. */
+[data-app="loop"] .amb-media { position: relative; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; background: var(--lm-fill-2); }
+[data-app="loop"] .amb-media.square { aspect-ratio: 1 / 1; }
+[data-app="loop"] .amb-media-in, [data-app="loop"] .amb-media-in svg { display: block; width: 100%; height: 100%; }
+[data-app="loop"] .lp-cell .amb-media { height: 100%; aspect-ratio: auto; }
+[data-app="loop"] .lp-cell .amb-media-in svg { width: 100%; height: 100%; }
+[data-app="loop"] .lp-tmedia .amb-media { aspect-ratio: 1 / 1; }
+[data-app="loop"] .lp-tmedia .amb-media-in svg { width: 100%; height: 100%; }
+[data-app="loop"] .lp-newpill { position: sticky; top: 6px; z-index: 6; display: block; width: max-content; margin: 4px auto 0; padding: 8px 16px; border-radius: 999px; background: var(--lm-tint); color: var(--lm-on-tint); font-size: 13px; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,.35); }
+[data-app="loop"] .lp-newpill[hidden] { display: none; }
+[data-app="loop"] .lp-morebtn { display: block; width: 100%; min-height: 48px; padding: 12px; color: var(--lm-tint); font-size: 14px; }

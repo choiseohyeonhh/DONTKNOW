@@ -213,7 +213,7 @@
   function general(nav) {
     return sub(nav, '일반', [
       ui.group({ rows: [
-        ui.row({ title: '정보', onClick: () => nav.push(() => sub(nav, '정보', ui.group({ rows: [kv('이름', '도현의 폰'), kv('시러스 계정', 'dohyun.lee0921@cirrus.kr'), kv('소프트웨어 버전', 'LUMA 6.2')] }), '일반')) }),
+        ui.row({ title: '정보', onClick: () => nav.push(() => sub(nav, '정보', ui.group({ rows: [kv('이름', '도현의 폰'), kv('시러스 계정', 'dohyun.lee0921@cirrus.kr')] }), '일반')) }),
         ui.row({ title: '근처 공유', onClick: () => nav.push(() => nearby(nav)) }),
         ui.row({ title: '저장 공간', onClick: () => nav.push(() => storage(nav)) }),
       ] }),

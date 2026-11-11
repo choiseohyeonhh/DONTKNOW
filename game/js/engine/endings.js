@@ -44,42 +44,168 @@
 
   function endingSVG(kind) {
     const base = '<svg viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">';
-    const defs = '<defs><linearGradient id="eg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141a23"/><stop offset="1" stop-color="#07090c"/></linearGradient>' +
-      '<radialGradient id="el" cx=".5" cy=".42" r=".55"><stop offset="0" stop-color="#d9e6ff" stop-opacity=".4"/><stop offset="1" stop-color="#d9e6ff" stop-opacity="0"/></radialGradient></defs>';
-    if (kind === 'A' || kind === 'A′') {
-      return base + defs + '<rect width="390" height="844" fill="url(#eg)"/>' +
-        '<rect x="104" y="220" width="182" height="380" rx="4" fill="#3a2d22"/>' +
-        '<rect x="112" y="228" width="166" height="364" rx="3" fill="#0b0a09"/>' +
-        '<rect x="112" y="228" width="166" height="364" rx="3" fill="url(#el)"/>' +
-        '<ellipse cx="195" cy="420" rx="250" ry="300" fill="url(#el)"/>' +
-        (kind === 'A'
-          ? '<g fill="#07090c"><circle cx="160" cy="470" r="20"/><path d="M128 560c0-30 14-46 32-46s32 16 32 46z"/><circle cx="245" cy="466" r="20"/><path d="M213 558c0-32 15-48 32-48s32 16 32 48z"/></g>'
-          : '<g fill="#07090c"><circle cx="138" cy="480" r="18"/><path d="M110 560c0-28 12-44 28-44s28 16 28 44z"/><circle cx="252" cy="480" r="18"/><path d="M224 560c0-28 12-44 28-44s28 16 28 44z"/></g>') +
-        '<rect width="390" height="844" fill="#000" opacity=".18"/></svg>';
+    const defs = '<defs>' +
+      '<linearGradient id="eg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#151b24"/><stop offset="1" stop-color="#07090c"/></linearGradient>' +
+      '<radialGradient id="el" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#d9e6ff" stop-opacity=".38"/><stop offset="1" stop-color="#d9e6ff" stop-opacity="0"/></radialGradient>' +
+      '<linearGradient id="warm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9c79d" stop-opacity=".55"/><stop offset="1" stop-color="#d9c79d" stop-opacity="0"/></linearGradient>' +
+      '<linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#93b6d8" stop-opacity=".22"/><stop offset="1" stop-color="#93b6d8" stop-opacity=".06"/></linearGradient>' +
+      '</defs>';
+    const vignette = '<rect width="390" height="844" fill="#000" opacity=".18"/>';
+
+    if (kind === 'A') {
+      /* 새벽 해담고시텔 2층 복도. 문 하나가 열리고 빛이 새어 나온다. */
+      return base + defs +
+        '<rect width="390" height="844" fill="url(#eg)"/>' +
+        '<path d="M0 0h390v844H0z" fill="#10141b"/>' +
+        '<path d="M0 844V300L195 214l195 86v544z" fill="#151a22"/>' +
+        '<path d="M0 844V300L195 214v630z" fill="#1b222c"/>' +
+        '<path d="M195 214v630M0 328h390" stroke="#2b3442" stroke-width="2"/>' +
+        '<path d="M0 844L195 548l195 296z" fill="#0a0c10"/>' +
+        '<ellipse cx="195" cy="280" rx="215" ry="170" fill="url(#el)"/>' +
+        '<g>' +
+        '<rect x="28" y="326" width="116" height="232" rx="3" fill="#231d17" stroke="#352c23" stroke-width="3"/>' +
+        '<rect x="38" y="336" width="96" height="212" fill="#17120e"/>' +
+        '<rect x="54" y="352" width="26" height="12" rx="2" fill="#4c4338" opacity=".5"/>' +
+        '<rect x="246" y="326" width="116" height="232" rx="3" fill="#231d17" stroke="#352c23" stroke-width="3"/>' +
+        '<rect x="256" y="336" width="96" height="212" fill="#17120e"/>' +
+        '<rect x="58" y="596" width="108" height="190" rx="3" fill="#1e1914" stroke="#302820" stroke-width="3"/>' +
+        '<rect x="224" y="596" width="108" height="190" rx="3" fill="#1e1914" stroke="#302820" stroke-width="3"/>' +
+        '</g>' +
+        '<g>' +
+        /* 열린 문: 안쪽 어둠과 복도로 새는 빛 */
+        '<rect x="224" y="596" width="108" height="190" rx="2" fill="#050607"/>' +
+        '<path d="M226 596l104 188h-104z" fill="#c9a76b" opacity=".2"/>' +
+        '<path d="M248 812l48-14v26h-48z" fill="url(#warm)" opacity=".55"/>' +
+        '<rect x="330" y="608" width="6" height="44" rx="3" fill="#c9b47a" opacity=".55"/>' +
+        '<rect x="236" y="620" width="34" height="16" rx="2" fill="#c9b47a" opacity=".85"/>' +
+        '<text x="240" y="632" fill="#2b2318" font-size="11" font-family="sans-serif">207</text>' +
+        '</g>' +
+        /* 복도 끝, 두 사람의 아주 작은 뒷모습 */
+        '<g fill="#07090c" opacity=".92">' +
+        '<ellipse cx="184" cy="567" rx="7" ry="9"/><rect x="181" y="575" width="6" height="6" rx="3"/><path d="M166 612c0-18 8-28 18-31 10 3 18 13 18 31z"/>' +
+        '<ellipse cx="214" cy="565" rx="7" ry="9"/><rect x="211" y="573" width="6" height="6" rx="3"/><path d="M196 610c0-18 8-28 18-31 10 3 18 13 18 31z"/>' +
+        '</g>' +
+        '<ellipse cx="195" cy="650" rx="250" ry="220" fill="url(#el)" opacity=".22"/>' +
+        vignette + '</svg>';
+    }
+    if (kind === 'A′') {
+      /* 같은 경찰서 앞. 두 사람 사이에 한 사람만큼의 간격. */
+      return base + defs +
+        '<rect width="390" height="844" fill="url(#eg)"/>' +
+        '<rect x="0" y="0" width="390" height="120" fill="#0c1016"/>' +
+        '<rect x="24" y="150" width="342" height="430" rx="4" fill="#161c26" stroke="#28313f" stroke-width="3"/>' +
+        '<rect x="46" y="176" width="298" height="30" fill="#1f2835"/>' +
+        '<rect x="66" y="250" width="106" height="260" rx="3" fill="#0d1117" stroke="#2d3745" stroke-width="3"/>' +
+        '<rect x="218" y="250" width="106" height="260" rx="3" fill="#0d1117" stroke="#2d3745" stroke-width="3"/>' +
+        '<rect x="76" y="260" width="86" height="240" fill="#3e566e" opacity=".22"/>' +
+        '<rect x="228" y="260" width="86" height="240" fill="#3e566e" opacity=".22"/>' +
+        '<path d="M180 250v260M195 250v260M210 250v260" stroke="#2d3745" stroke-width="2"/>' +
+        '<rect x="0" y="580" width="390" height="264" fill="#10141a"/>' +
+        '<path d="M40 700h310M70 742h250M100 784h190" stroke="#27303c" stroke-width="10" stroke-linecap="round"/>' +
+        '<ellipse cx="195" cy="610" rx="250" ry="180" fill="url(#el)"/>' +
+        /* 두 사람의 뒷모습, 사이가 벌어져 있다. 얼굴은 보이지 않는다. */
+        '<g fill="#07090c">' +
+        '<ellipse cx="126" cy="592" rx="15" ry="18"/><rect x="121" y="608" width="10" height="10" rx="5"/>' +
+        '<ellipse cx="126" cy="636" rx="34" ry="17"/>' +
+        '<path d="M94 704c0-34 16-54 32-54s32 20 32 54z"/>' +
+        '<path d="M106 700l-8 42h12l10-36zM146 700l8 42h-12l-10-36z"/>' +
+        '<path d="M102 648c-8 16-12 32-10 48" stroke="#07090c" stroke-width="8" fill="none" stroke-linecap="round"/>' +
+        '<ellipse cx="258" cy="596" rx="14" ry="17"/><rect x="253" y="611" width="10" height="10" rx="5"/>' +
+        '<ellipse cx="258" cy="638" rx="32" ry="16"/>' +
+        '<path d="M228 704c0-32 14-52 30-52s30 20 30 52z"/>' +
+        '<path d="M240 700l-7 42h11l9-36zM276 700l7 42h-11l-9-36z"/>' +
+        '<path d="M282 650c8 16 12 32 10 48" stroke="#07090c" stroke-width="8" fill="none" stroke-linecap="round"/>' +
+        '</g>' +
+        '<path d="M158 620h24M238 620h-18" stroke="#0a0c10" stroke-width="2" opacity=".5"/>' +
+        vignette + '</svg>';
     }
     if (kind === 'B') {
-      return base + defs + '<rect width="390" height="844" fill="#17130f"/>' +
-        '<rect x="0" y="520" width="390" height="324" fill="#0d0b09"/>' +
-        '<rect x="40" y="180" width="180" height="150" rx="4" fill="#0b0d11" stroke="#2c2a26" stroke-width="3"/>' +
-        '<rect x="50" y="190" width="160" height="130" fill="#24303f" opacity=".5"/>' +
-        '<ellipse cx="200" cy="500" rx="250" ry="260" fill="url(#el)"/>' +
-        '<g fill="#0a0908"><circle cx="210" cy="470" r="24"/><path d="M170 610c0-44 18-70 40-70s40 26 40 70z"/></g>' +
-        '<rect width="390" height="844" fill="#000" opacity=".2"/></svg>';
+      /* 집 거실. 도현이 돌아와 앉아 있고 폰이 울린다. */
+      return base + defs +
+        '<rect width="390" height="844" fill="#16120f"/>' +
+        '<rect x="22" y="96" width="230" height="250" rx="4" fill="#0b0d11" stroke="#2c2a26" stroke-width="5"/>' +
+        '<rect x="34" y="108" width="206" height="226" fill="#0e1620"/>' +
+        '<path d="M34 250l60-58 52 44 38-34 56 66v66H34z" fill="#233142" opacity=".7"/>' +
+        '<circle cx="206" cy="148" r="16" fill="#5b6b7d" opacity=".55"/>' +
+        '<path d="M137 108v226M34 210h206" stroke="#2c2a26" stroke-width="3" opacity=".7"/>' +
+        '<rect x="0" y="360" width="390" height="484" fill="#100d0b"/>' +
+        '<ellipse cx="190" cy="520" rx="230" ry="190" fill="url(#warm)" opacity=".35"/>' +
+        /* 소파 */
+        '<rect x="46" y="480" width="298" height="126" rx="22" fill="#2a211a"/>' +
+        '<rect x="66" y="444" width="258" height="72" rx="20" fill="#33291f"/>' +
+        '<rect x="66" y="596" width="258" height="44" rx="12" fill="#241c15"/>' +
+        /* 앉은 사람: 등. 얼굴은 보이지 않는다. */
+        '<g fill="#0a0807">' +
+        '<ellipse cx="196" cy="476" rx="19" ry="21"/><rect x="190" y="494" width="12" height="10" rx="5"/>' +
+        '<ellipse cx="196" cy="532" rx="40" ry="20"/>' +
+        '<path d="M150 596c0-44 20-72 46-78 26 6 46 34 46 78z"/>' +
+        '</g>' +
+        '<path d="M160 526c-10 18-12 36-8 54" stroke="#3a2d23" stroke-width="9" fill="none" stroke-linecap="round"/>' +
+        '<path d="M232 532c8 16 10 32 7 48" stroke="#3a2d23" stroke-width="8" fill="none" stroke-linecap="round" opacity=".8"/>' +
+        /* 탁자와 울리는 폰 */
+        '<rect x="222" y="586" width="112" height="12" rx="4" fill="#3a2e23"/>' +
+        '<rect x="244" y="598" width="10" height="54" fill="#2a211a"/><rect x="306" y="598" width="10" height="54" fill="#2a211a"/>' +
+        '<rect x="286" y="566" width="26" height="18" rx="3" fill="#0a0a0c" stroke="#5b6b7d" stroke-width="2"/>' +
+        '<rect x="290" y="570" width="18" height="10" rx="1" fill="#9fc4e8" opacity=".75"/>' +
+        '<circle cx="299" cy="566" r="18" fill="url(#el)" opacity=".5"/>' +
+        vignette + '</svg>';
     }
     if (kind === 'C') {
-      return base + defs + '<rect width="390" height="844" fill="#0d1117"/>' +
-        '<rect x="0" y="170" width="390" height="10" fill="#2a3647"/>' +
-        '<rect x="40" y="180" width="310" height="360" fill="#274057" opacity=".32"/>' +
-        '<g stroke="#4b6a88" stroke-width="3" opacity=".5"><line x1="195" y1="180" x2="195" y2="540"/><line x1="40" y1="360" x2="350" y2="360"/></g>' +
-        '<g fill="#06080b"><circle cx="150" cy="420" r="26"/><path d="M108 560c0-44 18-72 42-72s42 28 42 72z"/></g>' +
-        '<ellipse cx="210" cy="420" rx="240" ry="240" fill="url(#el)"/>' +
-        '<rect width="390" height="844" fill="#000" opacity=".22"/></svg>';
+      /* 진술실 유리 너머. 도현은 유리에 비친 채 앉아 있다. */
+      return base + defs +
+        '<rect width="390" height="844" fill="#0c1118"/>' +
+        '<rect x="0" y="160" width="390" height="392" fill="#182636"/>' +
+        '<rect x="30" y="186" width="330" height="340" fill="url(#glass)"/>' +
+        '<g stroke="#4b6a88" stroke-width="3" opacity=".55">' +
+        '<line x1="195" y1="186" x2="195" y2="526"/><line x1="30" y1="356" x2="360" y2="356"/>' +
+        '<line x1="30" y1="186" x2="360" y2="526" stroke-width="1.5" opacity=".5"/>' +
+        '</g>' +
+        '<rect x="0" y="552" width="390" height="292" fill="#0a0d12"/>' +
+        '<rect x="36" y="560" width="318" height="12" fill="#28313d"/>' +
+        '<rect x="74" y="572" width="242" height="14" fill="#1b222d"/>' +
+        /* 유리 너머 앉은 사람 */
+        '<g fill="#070a0e" opacity=".88">' +
+        '<ellipse cx="186" cy="386" rx="22" ry="25"/><rect x="180" y="408" width="12" height="10" rx="5"/>' +
+        '<ellipse cx="186" cy="444" rx="48" ry="24"/>' +
+        '<path d="M138 526c0-42 22-70 48-76 26 6 48 34 48 76z"/>' +
+        '</g>' +
+        '<rect x="134" y="526" width="104" height="18" rx="7" fill="#070a0e" opacity=".88"/>' +
+        '<rect x="70" y="588" width="250" height="64" rx="6" fill="#141b24"/>' +
+        /* 의자 등받이, 이쪽에서 본 실루엣 */
+        '<path d="M150 652h90l-8 96h-74z" fill="#0a0d12"/>' +
+        '<path d="M168 748h54M186 748v42M204 748v42" stroke="#1c242f" stroke-width="8" stroke-linecap="round"/>' +
+        '<ellipse cx="195" cy="420" rx="240" ry="240" fill="url(#el)" opacity=".3"/>' +
+        vignette + '</svg>';
     }
-    return base + defs + '<rect width="390" height="844" fill="url(#eg)"/>' +
-      '<rect x="92" y="200" width="206" height="400" rx="4" fill="#332a22"/>' +
-      '<rect x="100" y="208" width="190" height="384" fill="#090909"/>' +
-      '<ellipse cx="195" cy="430" rx="230" ry="300" fill="url(#el)"/>' +
-      '<rect width="390" height="844" fill="#000" opacity=".28"/></svg>';
+    /* D: 빈 고시텔 방. 창문만 열려 있다. */
+    return base + defs +
+      '<rect width="390" height="844" fill="url(#eg)"/>' +
+      '<rect x="0" y="0" width="390" height="844" fill="#0d1015"/>' +
+      '<path d="M0 844V320h390v524z" fill="#12161d"/>' +
+      '<rect x="28" y="188" width="186" height="210" rx="3" fill="#0b0e13" stroke="#2a303a" stroke-width="4"/>' +
+      '<rect x="40" y="200" width="162" height="186" fill="#1c2a38"/>' +
+      '<path d="M40 200l162 0v186l-162 0z" fill="url(#el)" opacity=".5"/>' +
+      '<path d="M40 330l50-42 46 30 34-24 32 36v90H40z" fill="#101821" opacity=".9"/>' +
+      '<path d="M121 200v186M40 300h162" stroke="#2a303a" stroke-width="3"/>' +
+      /* 커튼이 바람에 들려 있다 */
+      '<path d="M40 200c34 34 10 108 32 186H40z" fill="#2a2f38" opacity=".62"/>' +
+      '<path d="M202 200c-26 48 6 112-18 186h18z" fill="#2a2f38" opacity=".5"/>' +
+      /* 빈 침대: 낮게 깔린 매트리스와 베개 */
+      '<rect x="164" y="574" width="206" height="104" rx="10" fill="#201a15"/>' +
+      '<rect x="170" y="560" width="194" height="26" rx="10" fill="#332a22"/>' +
+      '<rect x="300" y="552" width="58" height="30" rx="10" fill="#463a2e"/>' +
+      '<rect x="164" y="622" width="206" height="56" rx="8" fill="#17120f"/>' +
+      '<path d="M164 646h206" stroke="#2e2620" stroke-width="3" opacity=".7"/>' +
+      '<rect x="176" y="678" width="8" height="30" fill="#2a211a"/><rect x="350" y="678" width="8" height="30" fill="#2a211a"/>' +
+      '<rect x="156" y="700" width="218" height="6" rx="3" fill="#1a1511" opacity=".7"/>' +
+      /* 작은 책상과 의자 */
+      '<rect x="52" y="470" width="138" height="12" rx="3" fill="#2b241d"/>' +
+      '<rect x="60" y="482" width="8" height="92" fill="#211b16"/><rect x="174" y="482" width="8" height="92" fill="#211b16"/>' +
+      '<rect x="96" y="540" width="58" height="12" rx="5" fill="#221c17"/>' +
+      /* 바닥의 빛 */
+      '<path d="M40 614l162 0 96 92H0z" fill="#d9e6ff" opacity=".05"/>' +
+      '<ellipse cx="190" cy="640" rx="250" ry="200" fill="url(#el)" opacity=".2"/>' +
+      vignette + '</svg>';
   }
 
   const CAPTIONS = {
@@ -107,11 +233,26 @@
   function phoneScreen(kind) {
     const wrap = h('div', { class: 'end-phone' });
     if (kind === 'A') {
+      /* 이 폰은 도현의 계정이다. 도현이 보낸 "아빠"는 오른쪽 내 말풍선이고,
+       * 옆의 안 읽음 1은 아버지가 읽는 순간 사라진다. 톡 앱의 실제 렌더러/CSS를 쓴다. */
+      const msgs = [
+        { dir: 'in', body: '오늘 좀 늦어 먼저 자', day: '3/17', time: '18:52' },
+        { dir: 'out', body: '아빠', time: '09:02', outUnread: true },
+      ];
+      const talkRoom = (LM.talkPreview ? LM.talkPreview({ name: '아빠', messages: msgs })
+        : (() => {
+          const r = h('div', { class: 'talk-room' });
+          r.append(h('div', { class: 'talk-day' }, h('time', null, '3/17')));
+          r.append(h('div', { class: 'talk-line' }, h('div', { class: 'talk-av' }, ui.avatar('아빠', 32)), h('div', { class: 'talk-body' }, h('div', { class: 'talk-row' }, h('div', { class: 'talk-bubble' }, '오늘 좀 늦어 먼저 자'), h('div', { class: 'talk-side' }, h('span', null, '18:52'))))));
+          r.append(h('div', { class: 'talk-line out' }, h('div', { class: 'talk-av ghost' }), h('div', { class: 'talk-body' }, h('div', { class: 'talk-row out' }, h('div', { class: 'talk-side' }, h('span', { class: 'talk-unread' }, '1'), h('span', null, '09:02')), h('div', { class: 'talk-bubble' }, '아빠')))));
+          return r;
+        })());
+      wrap.setAttribute('data-app', 'talk');
       wrap.append(
         h('div', { class: 'end-phone-top' }, '아빠'),
-        h('div', { class: 'end-phone-body' },
-          h('div', { class: 'end-msg in' }, '아빠'),
-          h('div', { class: 'end-read' }, '읽음')));
+        h('div', { class: 'end-phone-body talk' }, talkRoom));
+      const side = talkRoom.querySelectorAll('.talk-line.out .talk-unread')[0];
+      if (side) setTimeout(() => { side.classList.add('fading'); setTimeout(() => side.remove(), 220); }, 1400);
     } else if (kind === 'A′') {
       wrap.append(
         h('div', { class: 'end-phone-top' }, '메모'),
@@ -175,8 +316,7 @@
       } else if (step === 2) {
         host.appendChild(h('div', { class: 'end-credits' },
           h('div', { class: 'end-credit-title' }, 'DONTKNOW'),
-          epilogue(kind).map((line) => h('p', null, line)),
-          h('div', { class: 'end-credit-foot' }, 'v6.2')));
+          epilogue(kind).map((line) => h('p', null, line))));
       } else {
         host.appendChild(replay(kind));
       }

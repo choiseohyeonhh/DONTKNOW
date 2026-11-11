@@ -52,6 +52,7 @@
       dlg: { revealed: false, seq: 0, used: {}, turns: {}, typing: {}, kt: [] },
       blink: { opened: false, expiry: {} },
       shots: [],
+      ambient: { cursor: 0, quietUntil: 0, quiet: [], muted: {} },
     };
   }
 
@@ -73,6 +74,9 @@
     out.blink = Object.assign({}, base.blink, st.blink || {});
     if (!out.blink.expiry || typeof out.blink.expiry !== 'object') out.blink.expiry = {};
     if (!Array.isArray(out.shots)) out.shots = [];
+    out.ambient = Object.assign({ cursor: 0, quietUntil: 0, quiet: [], muted: {} }, (st.ambient && typeof st.ambient === 'object' && !Array.isArray(st.ambient)) ? st.ambient : {});
+    if (!Array.isArray(out.ambient.quiet)) out.ambient.quiet = [];
+    if (!out.ambient.muted || typeof out.ambient.muted !== 'object' || Array.isArray(out.ambient.muted)) out.ambient.muted = {};
     ['seen', 'read', 'events', 'traces', 'msgs', 'deleted'].forEach((k) => {
       if (!out[k] || typeof out[k] !== 'object' || Array.isArray(out[k])) out[k] = {};
     });
