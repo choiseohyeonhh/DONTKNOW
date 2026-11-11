@@ -77,6 +77,11 @@
       '문의: 총무 오정자',
       '계약서를 첨부합니다.',
     ], { unread: true, attachments: [{ name: '고시원_계약서.pdf', kind: 'PDF', source: '메일 첨부' }] }),
+    F('E-54', 'inbox', '한서대학교', 'admission@hanseo.ac.kr', '새내기 오리엔테이션 사진 공유', '2026 새내기 오리엔테이션 사진을 공유합니다', '3/11', '2026. 3. 11. 08:00', [
+      '2026학년도 새내기 오리엔테이션 사진을 공유합니다.',
+      '첨부된 링크에서 내려받으실 수 있습니다.',
+      '— 한서대학교 학생지원팀',
+    ]),
     F('E-53', 'inbox', '한서대학교', 'admission@hanseo.ac.kr', '2026학년도 수시 최초합격 안내', '경영학과 최초합격을 축하합니다', '2025.12', '2025. 12. 12. 10:00', [
       '2026학년도 수시모집 최초합격을 축하합니다.',
       '모집단위: 경영학과',
@@ -109,10 +114,27 @@
     ], { online: true, scheduledAt: '2026. 3. 18. 09:00', to: 'taeyun.kim@sw.police.kr', attachments: Array.from({ length: 12 }, (_, i) => ({ name: '캡처 ' + (i + 1), kind: 'PNG', source: '사진 앨범' })) }),
   ];
 
-  const folderMails = (key) => MAILS.filter((m) => m.account === account && m.folder === key && (!m.online || LM.online()));
+  function runtimeMails(folder) {
+    return LM.msg.list('mail', folder).map((rt) => ({
+      id: rt.id, account: account, folder: folder, from: rt.from === 'out' ? '이도현' : (rt.title || rt.from || '메일'),
+      fromAddr: rt.fromAddr || '', to: rt.to || ACCOUNTS[account].address,
+      subject: rt.subject || rt.text || '(제목 없음)', preview: rt.preview || rt.text || '',
+      listTime: LM.fmt.date(rt.at, 'md'), timeFull: LM.fmt.date(rt.at), body: [rt.text || ''], attachments: rt.attach ? [rt.attach] : [], unread: rt.from !== 'out', online: false, rt: true,
+    }));
+  }
+  const folderMails = (key) => MAILS.filter((m) => m.account === account && m.folder === key && (!m.online || LM.online()) && !LM.isDeleted('mail', m.id))
+    .concat(runtimeMails(key));
   const folderLabel = (key) => (FOLDERS.find((f) => f.key === key) || {}).label || '메일함';
   const bodyText = (m) => m.body.join(' ');
   const match = (m, q) => (m.from + ' ' + m.subject + ' ' + m.preview + ' ' + bodyText(m) + ' ' + m.fromAddr).toLowerCase().includes(String(q).toLowerCase());
+
+  LM.read.register('mail', () => {
+    const out = [];
+    folderMails('inbox').forEach((m) => {
+      if (m.unread) out.push({ id: m.id, threadId: 'inbox' });
+    });
+    return out;
+  });
 
   LM.register({
     id: 'mail',
@@ -155,6 +177,8 @@
     };
     draw();
     LM.on('state', () => { if (wrap.isConnected) draw(); });
+    LM.on('read', () => { if (wrap.isConnected) draw(); });
+    LM.on('msg', () => { if (wrap.isConnected) draw(); });
     return ui.page({
       title: '메일함', nav,
       right: h('button', { class: 'nb-btn', 'aria-label': '새 메일', onclick: () => compose(nav) }, LM.icon('compose')),
@@ -175,18 +199,15 @@
   }
 
   function mailRow(nav, m) {
+    const unread = LM.read.isUnread('mail', m.id);
     const row = ui.row({
       title: m.from,
       subtitle: m.subject + (m.preview ? ' — ' + m.preview : ''),
       meta: m.listTime,
-      lead: h('span', { class: 'mail-dot' + (m.unread ? ' on' : '') }),
-      class: 'mail-row' + (m.unread ? ' unread' : ''),
+      lead: h('span', { class: 'mail-dot' + (unread ? ' on' : '') }),
+      class: 'mail-row' + (unread ? ' unread' : ''),
       onClick: () => {
-        m.unread = false;
-        LM.emit('state', {});
-        const dot = row.querySelector('.mail-dot');
-        if (dot) dot.classList.remove('on');
-        row.classList.remove('unread');
+        LM.read.mark('mail', m.id);
         if (m.folder === 'scheduled') nav.push(() => schedule(nav, m));
         else nav.push(() => detail(nav, m));
       },
@@ -199,7 +220,7 @@
     ui.actionSheet({
       title: m.subject,
       actions: [
-        { label: m.unread ? '읽음으로 표시' : '읽지 않음으로 표시', onClick: () => { m.unread = !m.unread; row.classList.toggle('unread', m.unread); const d = row.querySelector('.mail-dot'); if (d) d.classList.toggle('on', m.unread); } },
+        { label: LM.read.isUnread('mail', m.id) ? '읽음으로 표시' : '읽지 않음으로 표시', onClick: () => { if (LM.read.isUnread('mail', m.id)) LM.read.mark('mail', m.id); else LM.read.unmark('mail', m.id); } },
         { label: '보관', onClick: () => { m.folder = 'archive'; if (row.isConnected) row.remove(); LM.emit('state', {}); ui.toast('보관함으로 옮겼다'); } },
         { label: '삭제', destructive: true, onClick: () => { m.folder = 'trash'; if (row.isConnected) row.remove(); LM.emit('state', {}); ui.toast('휴지통으로 이동했다'); } },
         { label: '정보', onClick: () => ui.info(m.subject, [['보낸 사람', m.from], ['받는 사람', m.to], ['시각', m.timeFull], ['첨부', String((m.attachments || []).length) + '개']]) },
@@ -222,6 +243,8 @@
       );
     };
     render('');
+    const offRead = LM.on('read', () => { if (wrap.isConnected) render(''); else offRead(); });
+    const offMsg = LM.on('msg', () => { if (wrap.isConnected) render(''); else offMsg(); });
     return ui.page({
       title: f.label, back: '메일함', nav,
       onBack: () => { nav.pop(); refreshRoot && refreshRoot(); },
@@ -233,12 +256,12 @@
   /* ---------- 메일 본문 ---------- */
   function detail(nav, m) {
     const details = h('div', { class: 'mail-head-detail', hidden: true },
-      ui.group({ rows: [kv('보낸 사람', m.from + ' <' + m.fromAddr + '>'), kv('받는 사람', m.to), kv('시각', m.timeFull), kv('첨부', String((m.attachments || []).length) + '개')] }));
+      ui.group({ rows: [kv('보낸 사람', m.from + ' <' + m.fromAddr + '>'), kv('받는 사람', m.to), kv('시각', LM.fmt.date(m.timeFull)), kv('첨부', String((m.attachments || []).length) + '개')] }));
     const toggle = h('button', { class: 'mail-head-toggle', onclick: () => { details.hidden = !details.hidden; toggle.classList.toggle('open', !details.hidden); } },
       h('span', null, '머리글'), LM.icon('chevron-down'));
 
     const body = h('div', { class: 'mail-detail' },
-      h('div', { class: 'mail-from' }, ui.avatar(m.from, 40), h('div', { class: 'mail-from-t' }, h('b', null, m.from), h('span', null, m.fromAddr)), h('span', { class: 'mail-from-time' }, m.listTime)),
+      h('div', { class: 'mail-from' }, ui.avatar(m.from, 40), h('div', { class: 'mail-from-t' }, h('b', null, m.from), h('span', null, m.fromAddr)), h('span', { class: 'mail-from-time' }, LM.fmt.date(m.timeFull, 'mdhm'))),
       toggle, details,
       h('h2', { class: 'mail-subject' }, m.subject),
       m.body.map((p) => h('p', { class: 'mail-p' }, p)),
@@ -358,8 +381,9 @@
 
   LM.searchSources.push({
     app: 'mail',
-    items: () => MAILS.filter((m) => !m.online || LM.online()).map((m) => ({
-      title: m.subject, sub: m.from + ' · ' + m.listTime, text: m.from + ' ' + m.subject + ' ' + bodyText(m),
-    })),
+    items: () => MAILS.filter((m) => (!m.online || LM.online()) && !LM.isDeleted('mail', m.id))
+      .concat(runtimeMails('inbox')).map((m) => ({
+        title: m.subject, sub: m.from + ' · ' + m.listTime, text: m.from + ' ' + m.subject + ' ' + bodyText(m),
+      })),
   });
 })();

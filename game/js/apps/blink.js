@@ -10,12 +10,25 @@
   ];
   let extra = [];
   let opened = false;
+  const expired = new Set();
 
+  MSGS.forEach((m, i) => { m.id = 'blink:' + i; m.threadId = 'main'; });
   LM.register({ id: 'blink', render(app) { app.start((nav) => list(nav)); } });
 
-  function visible() { return MSGS.filter((m) => !m.onlineOnly || LM.online()).concat(extra); }
-  function unread() { return visible().filter((m) => m.dir === 'in').length; }
+  function runtime() {
+    return LM.msg.list('blink', 'main').map((rt) => ({
+      id: rt.id, dir: rt.from === 'out' ? 'out' : 'in', body: rt.text,
+      day: LM.fmt.date(rt.at, 'md'), time: LM.fmt.date(rt.at, 'hm'), rt: true,
+    }));
+  }
+  function visible() {
+    return MSGS.filter((m) => (!m.onlineOnly || LM.online()) && !expired.has(m.id))
+      .concat(extra.filter((m) => !expired.has(m.id)), runtime().filter((m) => !expired.has(m.id)));
+  }
+  function unread() { return LM.read.unreadCount('blink'); }
   function last() { const m = visible(); return m.length ? m[m.length - 1] : null; }
+
+  LM.read.register('blink', () => visible().filter((m) => m.dir === 'in').map((m) => ({ id: m.id, threadId: 'main' })));
 
   function list(nav) {
     let filter = '전체';
@@ -33,6 +46,8 @@
       })] }));
     };
     draw();
+    const offRead = LM.on('read', () => { if (holder.isConnected) draw(); else offRead(); });
+    const offMsg = LM.on('msg', () => { if (holder.isConnected) draw(); else offMsg(); });
     const page = ui.page({
       title: '블링크',
       right: h('button', { class: 'nb-btn', 'aria-label': '설정', onclick: () => nav.push(() => settings(nav)) }, LM.icon('gear')),
@@ -46,7 +61,7 @@
     if (opened) return go();
     ui.actionSheet({
       title: '비밀 대화 열기',
-      text: '열면 상대에게 읽음 표시가 갈 수 있습니다.',
+      text: '읽음은 즉시 전송됩니다.',
       actions: [{ label: '열기', onClick: () => { opened = true; go(); } }],
     });
   }
@@ -76,8 +91,9 @@
         { label: '공유', onClick: () => ui.share(m.body) },
         { label: '정보', onClick: () => messageInfo(m) },
       ] }));
+      const remain = m.expiresAt ? Math.max(0, Math.ceil((m.expiresAt - Date.now()) / 1000)) : 60;
       const meta = h('div', { class: 'blink-meta' },
-        out ? h('span', null, m.fail ? '전송 실패' : '보냄') : h('span', { class: 'blink-timer' }, LM.icon('timer'), '60초 뒤 삭제'),
+        out ? h('span', null, '보냄') : h('span', { class: 'blink-timer' }, LM.icon('timer'), remain + '초 뒤 삭제'),
         h('span', null, m.time));
       return h('div', { class: 'blink-line' + (out ? ' out' : '') }, b, meta);
     }
@@ -88,10 +104,8 @@
       const text = inp.value;
       if (!text.trim()) return;
       if (!LM.online()) { ui.toast('오프라인 상태입니다 · 온라인이 필요합니다'); return; }
-      const n = LM.now();
-      extra.push({ dir: 'out', body: text, day: (n.getMonth() + 1) + '/' + n.getDate(), time: LM.fmtTime(n) });
       inp.value = '';
-      draw();
+      LM.msg.add('blink', 'main', { from: 'out', text: text, at: LM.G.gameMs, silent: true });
       setTimeout(() => { if (scroller) scroller.scrollTop = scroller.scrollHeight; }, 20);
       ui.toast('보냈다');
     };
@@ -115,11 +129,30 @@
     scroller = page.scroller;
     draw();
     setTimeout(() => { scroller.scrollTop = scroller.scrollHeight; }, 30);
-    const off = LM.on('state', () => {
-      if (!log.isConnected) { off(); return; }
+    const offState = LM.on('state', () => {
+      if (!log.isConnected) { offState(); return; }
       draw();
       setTimeout(() => { scroller.scrollTop = scroller.scrollHeight; }, 20);
     });
+    const offMsg = LM.on('msg', (e) => {
+      if (!log.isConnected) { offMsg(); return; }
+      if (e.appId !== 'blink' || e.threadId !== 'main') return;
+      if (e.message && e.message.from !== 'out') e.message.expiresAt = Date.now() + 60000;
+      LM.read.markThread('blink', 'main');
+      draw();
+    });
+    // 읽음 이벤트: 이 방의 수신 메시지는 60초 뒤 양쪽에서 사라진다.
+    visible().forEach((m) => {
+      if (m.dir === 'in' && !m.expiresAt) { m.expiresAt = Date.now() + 60000; m.threadId = 'main'; }
+    });
+    LM.read.markThread('blink', 'main');
+    const timer = setInterval(() => {
+      if (!log.isConnected) { clearInterval(timer); return; }
+      let gone = false;
+      visible().forEach((m) => { if (m.dir === 'in' && m.expiresAt && Date.now() >= m.expiresAt) { expired.add(m.id); gone = true; } });
+      if (gone) { LM.emit('read', { appId: 'blink', itemId: '-', expired: true }); draw(); }
+      else draw();
+    }, 1000);
     return page;
   }
 

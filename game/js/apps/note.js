@@ -68,7 +68,7 @@
       ['메모', 'all'],
       ['잠긴 메모', 'locked'],
     ].map(([name, id]) => {
-      const items = id === 'all' ? notes : notes.filter((n) => n.locked);
+      const items = (id === 'all' ? notes : notes.filter((n) => n.locked)).filter((n) => !LM.isDeleted('note', n.id));
       const lockedCount = items.filter((n) => n.locked).length;
       const sub = id === 'locked'
         ? (unlocked ? '암호로 열림' : '암호가 필요한 메모 ' + lockedCount + '개')
@@ -96,6 +96,7 @@
     let q = '';
     const draw = () => {
       const items = notes
+        .filter((n) => !LM.isDeleted('note', n.id))
         .filter((n) => folder === 'all' || (n.locked && folder === 'locked'))
         .filter((n) => !q || ((n.locked && !unlocked ? n.title : n.title + ' ' + n.body).toLowerCase().includes(q.toLowerCase())))
         .sort((a, b) => b.sort - a.sort);
@@ -103,13 +104,17 @@
         items.length
           ? ui.group({
             plain: true,
-            rows: items.map((n) => ui.row({
-              title: n.title,
-              subtitle: preview(n),
-              meta: n.date || '',
-              lead: leadFor(n),
-              onClick: () => openNote(nav, n),
-            })),
+            rows: items.map((n) => {
+              const row = ui.row({
+                title: n.title,
+                subtitle: preview(n),
+                meta: n.date || '',
+                lead: leadFor(n),
+                onClick: () => openNote(nav, n),
+              });
+              row.dataset.del = 'note:' + n.id;
+              return row;
+            }),
           })
           : ui.empty({ icon: 'doc', title: '메모가 없습니다.', text: q ? '다른 낱말로 찾아보세요.' : null })
       );
@@ -209,7 +214,7 @@
       nav,
       right: more,
       class: 'nt-edit',
-      body: h('div', { class: 'nt-editor' },
+      body: h('div', { class: 'nt-editor', data: { del: 'note:' + n.id } },
         meta,
         title,
         area,
@@ -228,7 +233,7 @@
 
   LM.searchSources.push({
     app: 'note',
-    items: () => notes.map((n) => ({
+    items: () => notes.filter((n) => !LM.isDeleted('note', n.id)).map((n) => ({
       title: n.title,
       sub: preview(n),
       text: n.title + ' ' + (n.locked && !unlocked ? '' : n.body),
