@@ -187,7 +187,11 @@
     if (n.eid) LM.C.see(n.eid);
     LM.setEid(n.eid || null);
     const title = h('input', { class: 'nt-title', value: n.title, 'aria-label': '메모 제목', oninput: (e) => { n.title = e.target.value; LM.emit('notechange'); } });
-    const area = h('textarea', { class: 'nt-body', 'aria-label': '메모 본문', oninput: (e) => { n.body = e.target.value; meta.textContent = metaText(n); LM.emit('notechange'); } });
+    const area = h('textarea', { class: 'nt-body', 'aria-label': '메모 본문', oninput: (e) => {
+      n.body = e.target.value; meta.textContent = metaText(n); LM.emit('notechange');
+      if (LM.trace && !(LM.G && LM.G.sync && LM.G.sync.notes === false)) LM.trace('TR-08', { kind: 'memo', title: n.title, text: n.body });
+      if (!(LM.G && LM.G.world && LM.G.world.ev35) && /도현아|아빠/.test(n.body) && !(LM.G && LM.G.sync && LM.G.sync.notes === false)) LM.emit('memo:keyword', { text: n.body });
+    } });
     area.value = n.body;
     const metaText = (x) => (x.locked ? '잠김 · ' : '') + (x.date || '') + ' · ' + String(x.body || '').length + '자';
     const meta = h('div', { class: 'nt-meta' }, metaText(n));
@@ -230,6 +234,7 @@
     const n = { id: 'n-new-' + Date.now(), title: '새 메모', body: '', date: stamp, sort: 999999999999, locked: false };
     notes.unshift(n);
     LM.emit('notechange');
+    if (LM.trace && !(LM.G && LM.G.sync && LM.G.sync.notes === false)) LM.trace('TR-08', { kind: 'memo', title: n.title, text: n.body });
     nav.push(() => noteView(nav, n));
   }
 

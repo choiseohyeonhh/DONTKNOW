@@ -75,21 +75,6 @@
   function messages(t) { return t.messages.concat(t.extra, runtime(t)); }
   function unread(t) { return LM.read.unreadCount('msg', t.id); }
 
-  /* EV-06: 첫 온라인 뒤 게임 36분에 고정 시각으로 도착한다(EV-02 동기화분). */
-  function scheduleEv06() {
-    if (LM.G.events && LM.G.events['msg:ev06']) return;
-    LM.sched.afterOnline('msg:ev06', 36, () => {
-      LM.msg.add('msg', 'cirrus', {
-        id: 'cirrus:ev06', from: 'in', text: EV06, at: LM.G.gameMs,
-        origin: '도현의 슬레이트', slate: true, syncedAt: 'online', eid: 'E-90',
-        notif: { title: '도현의 슬레이트', body: EV06 },
-      });
-    });
-  }
-  if (LM.G.firstOnlineAt != null) scheduleEv06();
-  else LM.on('firstOnline', scheduleEv06);
-  LM.on('gload', scheduleEv06);
-
   LM.read.register('msg', () => {
     const out = [];
     THREADS.forEach((t) => {
@@ -192,7 +177,9 @@
       draw();
       setTimeout(() => { if (scroller) scroller.scrollTop = scroller.scrollHeight; }, 20);
     });
+    const hadUnread = LM.read.unreadCount('msg', t.id) > 0;
     LM.read.markThread('msg', t.id);
+    if (hadUnread && LM.online() && LM.trace) LM.trace('TR-02', { kind: t.id === 'cirrus' ? 'dh' : 'system', npc: t.type === 'cirrus' ? 'DH' : null, thread: t.id });
     messages(t).forEach((m) => LM.C.see(m.eid));
     const lastEidMsg = messages(t).slice().reverse().find((m) => m.eid);
     LM.setEid(lastEidMsg ? lastEidMsg.eid : null);
@@ -231,7 +218,6 @@
     }
     return LM.composer.bar({
       target: { app: 'msg', thread: t.id, npc: 'DH', name: t.name },
-      onSent: () => ui.toast('보냈다'),
     });
   }
 

@@ -68,9 +68,12 @@
         const flash = h('div', { class: 'flash' });
         scr.appendChild(flash);
         setTimeout(() => flash.remove(), 100);
-        const eid = comp === 1 && drawerOpen ? 'E-217b' : comp === 0 ? 'E-217a' : 'SHOT';
+        const eid = comp === 1 && drawerOpen ? 'E-217b' : (comp === 0 || comp === 1) ? 'E-217a' : 'SHOT';
         const title = eid === 'E-217b' ? '서랍 봉투 박미선님 65' : eid === 'E-217a' ? '책상 포스트잇' : '카메라 사진';
         LM.saveShot({ eid: eid, title: title, app: 'cam', key: COMPS[comp] + ' 촬영' });
+        if (LM.trace && !(LM.G && LM.G.sync && LM.G.sync.photos === false)) {
+          LM.trace('TR-07', { source: 'cam', scene: COMPS[comp], drawerOpen: comp === 1 && drawerOpen, room: eid !== 'SHOT', eid: eid });
+        }
         ui.toast('사진에 저장됨');
       },
     }, h('span', { class: 'cam-shutter-in' }));

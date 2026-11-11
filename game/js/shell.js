@@ -488,11 +488,11 @@
           btn('signal', false, 'or', '셀룰러: 서비스 없음', () => ui.toast('서비스 없음')),
           btn('wifi', s.wifi && !s.airplane, 'bl', 'Wi-Fi', () => { if (s.airplane) return; LM.set({ wifi: !s.wifi }); if (LM.state.wifi) ui.toast('seongwon_home에 연결됨'); redraw(); }),
           btn('bluetooth', false, 'bl', '블루투스(장식)', () => {})),
-        h('div', { class: 'cc-tile cc-wide' + '' }, btn('moon', s.dnd, 'pu', '방해 금지', () => { LM.set({ dnd: !s.dnd }); redraw(); }), h('div', null, '집중 모드', h('small', null, s.dnd ? '방해 금지 · 켬' : '끔'))),
+        h('div', { class: 'cc-tile cc-wide' + '' }, btn('moon', s.dnd, 'pu', '방해 금지', () => { const v = !s.dnd; LM.set({ dnd: v }); const shared = !(LM.G && LM.G.device) || LM.G.device.focusShare !== false; if (!v && shared && LM.trace) LM.trace('TR-12'); redraw(); }), h('div', null, '집중 모드', h('small', null, s.dnd ? '방해 금지 · 켬' : '끔'))),
         h('div', { class: 'cc-slider', style: { '--v': '55%' }, 'aria-label': '밝기(장식)' }, LM.icon('sun')),
         h('div', { class: 'cc-slider', style: { '--v': '35%' }, 'aria-label': '음량(장식)' }, LM.icon('bell')),
         h('button', { class: 'cc-tile cc-sq', 'aria-label': '스크린샷', onclick: () => { closeOverlay(); setTimeout(screenshot, 200); } }, h('span', { class: 'cc-btn' }, LM.icon('screenshot')), h('span', { class: 'cc-label' }, '스크린샷')),
-        h('button', { class: 'cc-tile cc-sq' + (s.recording ? ' on' : ''), 'aria-label': '화면 기록', onclick: () => { LM.set({ recording: !s.recording }); ui.toast(LM.state.recording ? '화면 기록 시작' : '화면 기록이 사진에 저장됨'); redraw(); } }, h('span', { class: 'cc-rec' }), h('span', { class: 'cc-label' }, '화면 기록')),
+        h('button', { class: 'cc-tile cc-sq' + (s.recording ? ' on' : ''), 'aria-label': '화면 기록', onclick: () => { const on = !s.recording; LM.set({ recording: on }); if (on && LM.trace && curApp && curApp.id === 'blink' && LM.online()) LM.trace('TR-06', { capture: true, recording: true }); ui.toast(LM.state.recording ? '화면 기록 시작' : '화면 기록이 사진에 저장됨'); redraw(); } }, h('span', { class: 'cc-rec' }), h('span', { class: 'cc-label' }, '화면 기록')),
         h('button', { class: 'cc-tile cc-sq', 'aria-label': '손전등(장식)' }, h('span', { class: 'cc-btn' }, LM.icon('torch')), h('span', { class: 'cc-label' }, '손전등')),
         h('button', { class: 'cc-tile cc-sq', 'aria-label': '잠그기', onclick: lockPhone }, h('span', { class: 'cc-btn' }, LM.icon('lock')), h('span', { class: 'cc-label' }, '잠그기'))));
     return cur;
@@ -507,6 +507,8 @@
     const eid = LM.currentEid || 'SHOT';
     const info = LM.C && LM.C.evInfo ? LM.C.evInfo(eid) : { title: '스크린샷' };
     LM.saveShot && LM.saveShot({ eid: eid, title: eid === 'SHOT' ? '스크린샷' : info.title, app: app });
+    if (LM.trace && !(LM.G && LM.G.sync && LM.G.sync.photos === false)) LM.trace('TR-07', { source: 'screenshot', app: app, eid: eid });
+    if (LM.trace && app === 'blink' && LM.online && LM.online()) LM.trace('TR-06', { capture: true, screenshot: true });
     LM.emit('screenshot', app);
     ui.toast('스크린샷이 사진에 저장됨');
   }

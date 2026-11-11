@@ -336,7 +336,7 @@
       LM.online() ? null : ui.notice('오프라인 상태입니다. 저장은 이 기기에 대기한다.', 'warn'));
     ui.sheet(null, ui.sheetPage({
       title: '예약 수정', cancel: '취소', done: '저장',
-      onDone: () => { m.body = ta.value.split(/\n{2,}/).map((s) => s.trim()).filter(Boolean); ui.toast('예약 메일을 수정했다'); },
+      onDone: () => { m.body = ta.value.split(/\n{2,}/).map((s) => s.trim()).filter(Boolean); LM.flag('MAIL', 'edited'); if (LM.trace) LM.trace('TR-09', { action: 'edit' }); ui.toast('예약 메일을 수정했다'); },
       body: box,
     }), { size: 'large' });
   }
@@ -344,14 +344,14 @@
   function sendNow(nav, m) {
     ui.actionSheet({
       title: '지금 보낼까요?', text: '예약 시각을 기다리지 않고 바로 발송합니다.',
-      actions: [{ label: '지금 보내기', onClick: () => { m.folder = 'sent'; m.scheduledAt = null; LM.emit('state', {}); ui.toast('메일을 보냈다'); nav.pop(); } }],
+      actions: [{ label: '지금 보내기', onClick: () => { m.folder = 'sent'; m.scheduledAt = null; LM.flag('MAIL', 'sent-now'); if (LM.trace) LM.trace('TR-09', { action: 'send-now' }); LM.emit('state', {}); ui.toast('메일을 보냈다'); nav.pop(); } }],
     });
   }
 
   function deleteSchedule(nav, m) {
     ui.actionSheet({
       title: '예약 메일을 삭제할까요?', text: '삭제하면 발송되지 않습니다.',
-      actions: [{ label: '삭제', destructive: true, onClick: () => { m.folder = 'trash'; LM.emit('state', {}); nav.pop(); ui.toast('예약 메일을 삭제했다'); } }],
+      actions: [{ label: '삭제', destructive: true, onClick: () => { m.folder = 'trash'; LM.flag('MAIL', 'deleted'); if (LM.trace) LM.trace('TR-09', { action: 'delete' }); LM.emit('state', {}); nav.pop(); ui.toast('예약 메일을 삭제했다'); } }],
     });
   }
 

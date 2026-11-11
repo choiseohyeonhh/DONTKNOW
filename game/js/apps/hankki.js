@@ -54,7 +54,7 @@
       const kids = [
         ui.search('가게·메뉴 검색', (v) => { q = v.trim(); drawStores(); }),
         ui.group({ rows: [
-          ui.row({ title: '주문 내역', subtitle: LM.online() ? '3/17 12:15 · ' + HAEDAM : '이전 주문 3건', icon: 'receipt', onClick: () => nav.push(() => orders(nav)) }),
+          ui.row({ title: '주문 내역', subtitle: LM.online() ? '3/17 12:15 · ' + ((LM.ev && LM.ev.moved && LM.ev.moved()) ? '성원스파' : HAEDAM) : '이전 주문 3건', icon: 'receipt', onClick: () => nav.push(() => orders(nav)) }),
         ] }),
         ui.section('가게'),
         storeHost,
@@ -90,7 +90,11 @@
     const draw = () => {
       const online = LM.online();
       const showLive = online && LM.now().getTime() >= new Date(2026, 2, 18, 7, 10).getTime();
-      const slate = online ? (showLive ? [LIVE_ORDER].concat(SLATE_ORDERS) : SLATE_ORDERS) : [];
+      const moved = !!(LM.ev && LM.ev.moved && LM.ev.moved());
+      const addrNow = moved ? '성원구청역 1번 출구, 성원스파' : HAEDAM;
+      const slateOrders = SLATE_ORDERS.map((o) => Object.assign({}, o, { addr: addrNow }));
+      const liveOrder = Object.assign({}, LIVE_ORDER, { addr: addrNow });
+      const slate = online ? (showLive ? [liveOrder].concat(slateOrders) : slateOrders) : [];
       const kids = [];
       if (!online) kids.push(ui.notice('오프라인 상태입니다. 이전 주문 캐시만 보인다. 온라인이 되면 최근 주문을 불러온다.', 'warn'));
       if (showLive) kids.push(h('div', { class: 'hk-newline' }, '3/18 07:10 주문 접수 (온라인)'));
@@ -140,7 +144,7 @@
   function reorder(nav, o) {
     ui.sheet(null, ui.sheetPage({
       title: '재주문', cancel: '닫기', done: '이 주소로 갑니다',
-      onDone: () => ui.toast('이 주소로 주문을 접수했다(프로토타입)'),
+      onDone: () => { if (LM.trace) LM.trace('TR-17', { addr: o.addr }); ui.toast('이 주소로 주문을 접수했다'); },
       body: [
         h('div', { class: 'hk-reorder' },
           h('div', { class: 'hk-reorder-k' }, '배송지'),

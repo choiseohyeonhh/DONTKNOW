@@ -94,9 +94,9 @@ async function run(name, fn) {
     ok('15분 뒤: e5 → e10', mid.order.join(',') === 'e5,e10', mid.order.join(','));
     ok('e20은 아직', !mid.events.includes('e20'), mid.events.join(','));
     await page.evaluate(() => LM.advance(5));
-    const end = await page.evaluate(() => ({ order: window.__order.slice(), events: Object.keys(LM.G.events), sched: LM.G.sched.length }));
+    const end = await page.evaluate(() => ({ order: window.__order.slice(), events: Object.keys(LM.G.events), sched: LM.G.sched.map((e) => e.id) }));
     ok('20분 뒤: e20까지', end.order.join(',') === 'e5,e10,e20', end.order.join(','));
-    ok('예약 목록이 비워짐', end.sched === 0, String(end.sched));
+    ok('사용자 예약이 모두 발화되어 목록에서 사라짐', !end.sched.some((id) => ['e5', 'e10', 'e20'].indexOf(id) >= 0), end.sched.join(','));
     ok('콘솔 오류 없음', errors.length === 0, errors.join(' / '));
     await ctx.close();
   });

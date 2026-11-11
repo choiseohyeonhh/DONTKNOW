@@ -219,8 +219,7 @@
     }
 
     const footer = composer(r, () => {
-      ui.toast(LM.online() ? '보냈다' : '오프라인 상태입니다 · 온라인이 필요합니다');
-      if (!LM.online()) return false;
+      if (!LM.online()) { ui.toast('오프라인 상태입니다 · 온라인이 필요합니다'); return false; }
       return true;
     }, (text) => {
       LM.msg.add('talk', r.id, { from: 'out', text: text, at: LM.G.gameMs, silent: true });
@@ -261,7 +260,9 @@
       draw();
       setTimeout(() => { scroller.scrollTop = scroller.scrollHeight; }, 20);
     });
+    const hadUnread = roomUnread(r) > 0;
     LM.read.markThread('talk', r.id);
+    if (hadUnread && LM.online() && LM.trace) LM.trace('TR-02', { kind: r.id === 'dad' ? 'dad' : 'other', npc: r.npc, thread: r.id });
     visible(r).forEach((m) => LM.C.see(m.eid));
     const lastEidMsg = visible(r).slice().reverse().find((m) => m.eid);
     LM.setEid(lastEidMsg ? lastEidMsg.eid : null);
@@ -276,7 +277,6 @@
     return LM.composer.bar({
       target: { app: 'talk', thread: r.id, npc: r.npc, name: r.name },
       placeholder: r.muted ? '알림 꺼짐 · 메시지 입력' : '메시지 입력',
-      onSent: () => ui.toast('보냈다'),
     });
   }
 

@@ -31,7 +31,13 @@
   });
 
   const listName = (l) => (LM.online() ? l.nameOnline : l.nameOffline);
-  const visible = (l) => l.items.filter((i) => !i.online || LM.online());
+  const visible = (l) => {
+    const list = l.items.slice();
+    const w = (LM.G && LM.G.world) || {};
+    if (w.remBackup) { const b = list.find((i) => i.id === 'i2'); if (b) b.checked = true; }
+    if (w.remDepart && !list.some((i) => i.id === 'depart')) list.push({ id: 'depart', text: '출발 9:40', checked: false });
+    return list.filter((i) => !i.online || LM.online());
+  };
   const openCount = (l) => visible(l).filter((i) => !i.checked).length;
 
   function listsPage(nav) {
@@ -97,7 +103,13 @@
       role: 'checkbox',
       'aria-checked': item.checked,
       'aria-label': item.text + (item.checked ? ', 완료' : ', 미완료'),
-      onclick: () => { if (item.eid) LM.C.see(item.eid); item.checked = !item.checked; if (item.checked && !item.checkedAt) item.checkedAt = ''; redraw(); },
+      onclick: () => {
+        if (item.eid) LM.C.see(item.eid);
+        item.checked = !item.checked;
+        if (item.checked && !item.checkedAt) item.checkedAt = '';
+        if (LM.trace && !(LM.G && LM.G.sync && LM.G.sync.reminders === false)) LM.trace('TR-08', { kind: 'reminder', text: item.text });
+        redraw();
+      },
     },
     h('span', { class: 'rem-check' + (item.checked ? ' on' : '') }, item.checked ? LM.icon('check') : null),
     h('span', { class: 'rem-txt' },

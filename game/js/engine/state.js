@@ -42,11 +42,11 @@
       flags: Object.assign({}, DEFAULT_FLAGS),
       npc: Object.assign({}, DEFAULT_NPC),
       seen: {}, read: {},
-      sync: { notes: true, photos: true, voice: false, mail: true },
+      sync: { notes: true, photos: true, reminders: true, voice: false, mail: true },
       events: {}, traces: {}, outbox: [], msgs: {}, deleted: {}, log: [], ending: null,
       /* --- v6.2 엔진 확장 --- */
       net: { wifi: false, airplane: false },
-      device: { dnd: true, preview: { blink: 'off', loopdm: 'off' }, locked: true },
+      device: { dnd: true, preview: { blink: 'off', loopdm: 'off' }, locked: true, focusShare: true, activity: true, receipts: true },
       sched: [], notifs: initialNotifs(), logSeq: 0,
       prologueSeen: false,
       dlg: { revealed: false, seq: 0, used: {}, turns: {}, typing: {}, kt: [] },

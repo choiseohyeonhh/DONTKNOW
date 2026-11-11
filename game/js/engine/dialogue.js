@@ -102,6 +102,9 @@
     if (m.eids.length) {
       const r = rows.find((row) => rowMatches(row, m) && row.match && row.match.type === 'eid');
       if (r) return r;
+      /* 단서 ID가 반응표에 없어도 첨부 자체에 반응하는 행(예: 방이 아닌 사진)이 있으면 쓴다. */
+      const a = rows.find((row) => rowMatches(row, m) && row.match && row.match.type === 'attachment');
+      if (a) return a;
     }
     /* 2. 추천 문장 */
     if (m.suggestion) {
@@ -220,7 +223,7 @@
     if (n.indexOf(norm('강민석')) >= 0) LM.flag('NAME_SENT', true);
     else if (n.indexOf(norm('민석')) >= 0) ensure().ktPartialSeong = true;
     else if (n.indexOf(norm('강실장')) >= 0 || n.indexOf(norm('실장K')) >= 0) ensure().ktPartialName = true;
-    if (eids.indexOf('E-37') >= 0 || (atts && atts.kind === 'recording')) LM.flag('REC_SENT', true);
+    if (eids.indexOf('E-37') >= 0 || (atts && atts.kind === 'recording')) { LM.flag('REC_SENT', true); LM.flag('REC', 'sent'); }
     if (eids.indexOf('E-33') >= 0) LM.flag('PLATE_SENT', true);
     if (hasWord(text, ['해담', '해담고시텔', '207', '성원구청로 31'])) LM.flag('LOC_SENT', true);
   }
@@ -286,6 +289,11 @@
     const text = String(ctx.text == null ? '' : ctx.text);
     const atts = ctx.attachment || null;
     const eids = eidList(atts);
+    /* 도현에게 답하는 순간 DH-2. 이미 확인(3)·열림(4)·단절(X)이면 건드리지 않는다. */
+    if (npc === 'DH' && g.npc.DH !== 'X' && (Number(g.npc.DH) || 0) < 2) {
+      g.npc.DH = 2;
+      LM.emit('npc', { npc: 'DH', state: 2 });
+    }
     const m = {
       npc: npc, text: text, eids: eids, hasAttachment: !!atts,
       suggestion: ctx.suggestionId || null,
@@ -349,7 +357,7 @@
     LM.sched.at('dlg-reply:' + seq, replyAt);
 
     LM.logEvent('dialogue:send', { npc: npc, row: row && row.id, delay: delay });
-    LM.emit('dialogue:sent', { npc: npc, row: row && row.id, delay: delay });
+    LM.emit('dialogue:sent', { npc: npc, row: row && row.id, delay: delay, eids: eids, text: text, app: ctx.app, thread: ctx.thread });
     if (LM._autosave) LM._autosave();
     return { npc: npc, row: row && row.id, delay: delay, reply: lines };
   };

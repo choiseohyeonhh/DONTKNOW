@@ -21,7 +21,11 @@
     {
       id: 'slate', name: '도현의 슬레이트', model: '슬레이트 9(2021) · 셀룰러 없음(Wi-Fi 전용)', icon: 'devices', mine: false,
       last: () => (LM.online() ? '방금 전' : '3월 15일'),
-      where: () => (LM.online() ? '성원구청역 일대 · 반경 300m · 3분 전' : '성원구청역 일대 · 반경 300m'),
+      where: () => {
+        if (LM.ev && LM.ev.moved && LM.ev.moved()) return '성원스파 · 성원구청역 1번 출구';
+        if (LM.ev && LM.ev.locShared && LM.ev.locShared()) return '해담고시텔 · 성원구청로 31';
+        return LM.online() ? '성원구청역 일대 · 반경 300m · 3분 전' : '성원구청역 일대 · 반경 300m';
+      },
       whereNote: () => (LM.online() ? '방금 전' : '3/15 03:58 마지막 확인'),
     },
   ];
@@ -98,7 +102,7 @@
         h('div', { class: 'find-actions' },
           h('button', {
             class: 'btn filled m find-action', disabled: !online,
-            onclick: () => ui.toast(d.id === 'slate' ? '슬레이트에서 소리가 난다(프로토타입)' : '이 기기에서 소리가 난다(프로토타입)'),
+            onclick: () => { if (d.id === 'slate' && LM.trace) LM.trace('TR-11', { device: 'slate' }); ui.toast(d.id === 'slate' ? '슬레이트에서 소리가 난다' : '이 기기에서 소리가 난다'); },
           }, LM.icon('play'), h('span', null, '소리 재생')),
           lostBtn,
           h('button', {
@@ -125,7 +129,7 @@
       text: '사진·메시지·메모가 이 기기에서 삭제됩니다. 되돌릴 수 없습니다.',
       actions: [
         { label: '취소', cancel: true },
-        { label: '원격 지우기', destructive: true, onClick: () => ui.toast('프로토타입: 기기 지우기는 실행되지 않는다') },
+        { label: '원격 지우기', destructive: true, onClick: () => { if (LM.ev) LM.ev.slateWipe(); else ui.toast('슬레이트를 지웠다'); } },
       ],
     });
   }

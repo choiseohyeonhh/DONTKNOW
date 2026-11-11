@@ -61,6 +61,8 @@ async function run(name, fn) {
     ok('오프라인 시작 톡 배지 1(지훈)', (await page.evaluate(() => LM.badge('talk'))) === 1);
     await page.evaluate(() => LM.set({ airplane: false, wifi: true }));
     await page.waitForTimeout(300);
+    // stage 3: 30분 위기(EV-06→EV-08)를 피하려고 도현에게 답한 상태로 둔다. 이 테스트는 읽음 계산만 본다.
+    await page.evaluate(() => LM.ev.setDH(2));
     ok('첫 온라인 뒤 7(지훈 1 + 아빠 6)', (await page.evaluate(() => LM.badge('talk'))) === 7);
     ok('아빠 방 6', (await page.evaluate(() => LM.read.unreadCount('talk', 'dad'))) === 6);
     ok('홈 톡 배지 7', (await page.locator('.app[data-app="talk"] .badge').textContent()) === '7');

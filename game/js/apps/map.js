@@ -107,7 +107,9 @@
     const recentRows = RECENT.map((r) => ui.row({
       title: r.q, meta: LM.fmt.list(r.at), icon: 'clock', onClick: () => { if (r.eid) LM.C.see(r.eid); nav.push(() => place(nav, byId(r.place))); },
     }));
-    const slateRows = LM.online() ? RECENT_SLATE.map((r) => ui.row({
+    const slateList = RECENT_SLATE.slice();
+    if (LM.ev && LM.ev.moved && LM.ev.moved()) slateList.unshift({ q: '성원스파', at: '3/18', place: 'spa' });
+    const slateRows = LM.online() ? slateList.map((r) => ui.row({
       title: r.q, meta: LM.fmt.list(r.at), icon: 'devices', subtitle: '슬레이트에서', onClick: () => { if (r.eid) LM.C.see(r.eid); nav.push(() => place(nav, byId(r.place))); },
     })) : [];
 

@@ -80,6 +80,10 @@
         suggestionId: suggestionId, name: t.name, title: t.name,
       });
     }
+    if (LM.trace) {
+      if (t.app === 'mail') LM.trace('TR-18', { to: t.to || '', npc: npc });
+      if (npc === 'KS' || npc === 'IMP') LM.trace('TR-19', { npc: npc });
+    }
     LM.logEvent('send', { app: t.app, thread: t.thread, npc: npc, text: text, eid: att && att.eid || null });
     if (LM._autosave) LM._autosave();
     return true;
@@ -137,7 +141,7 @@
     if (!first) return null;
     return h('div', { class: 'cmp-clip' },
       h('button', { class: 'cmp-clip-chip', 'aria-label': '붙여넣기', onclick: () => onPick(first.v) },
-        LM.icon('paste'), h('span', null, 'ㅈㅅ → 주소'), h('small', null, first.v)));
+        LM.icon('paste'), h('span', null, '붙여넣기'), h('small', null, first.v)));
   }
 
   function replacementFor(token) {
@@ -203,7 +207,7 @@
       if (!ok) { state.textContent = '전송 실패'; return false; }
       inp.value = '';
       attachHost.set(null);
-      state.textContent = '보냈다';
+      state.textContent = '';
       sync();
       if (o.onSent) o.onSent();
       return true;
@@ -291,7 +295,6 @@
     LM.composer.open({
       target: target,
       attachment: payload.eid ? { eid: payload.eid, eids: payload.eids, title: payload.title, kind: payload.kind, app: payload.app } : null,
-      onSent: () => ui.toast(target.name + '에게 보냈다'),
     });
   }
 

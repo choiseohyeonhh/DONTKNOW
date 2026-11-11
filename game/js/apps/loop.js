@@ -81,6 +81,11 @@
     'minji-1': { author: 'minji.sw', at: '1월', media: '출근길', text: '알바' },
     'kang-ad': { author: 'moneycoach.kang', at: '', media: '추천 부업 카드', text: '추천 부업', eid: 'E-102' },
   };
+  /* 세계 사건(EV-40·42·44·17)이 만드는 스토리. 실제 데이터는 이벤트 플래그를 볼 때만 붙는다. */
+  STORIES['jihoon-new'] = { author: 'jihoon_j', at: '3/17 21:40', black: true, text: '…' };
+  STORIES['seoa-new'] = { author: 'seoa.film', at: '3/18 01:10', media: '새벽 거리', text: '잠이 안 온다' };
+  STORIES['kang-new'] = { author: 'moneycoach.kang', at: '3/17 23:30', media: '야근', text: '야근 🌃', eid: 'E-223' };
+  STORIES['imp-leak'] = { author: 'jh_lee_99', at: '3/18', media: '성원구청역 2번 출구', text: '' };
   const HIGHLIGHTS = {
     'seoa.film': [{ title: '2월', key: 'seoa-2' }, { title: '3/12', key: 'seoa-4' }, { title: '3월', key: 'seoa-3' }],
     'moneycoach.kang': [{ title: '추천 부업', key: 'kang-ad' }],
@@ -172,6 +177,8 @@
   }
 
   function toggleLike(p, btn, lbl) {
+    if (LM.trace && LM.online()) LM.trace('TR-14', { action: p.liked ? 'unlike' : 'like', author: p.author, post: p.id });
+    if (p.author === 'moneycoach.kang' && LM.ev && LM.ev.kangSeen) LM.ev.kangSeen();
     p.liked = !p.liked;
     p.likes = (p.likes || 0) + (p.liked ? 1 : -1);
     if (btn) {
@@ -206,7 +213,7 @@
 
   function textCard(nav, p) {
     const likeBtn = h('button', { class: 'lp-act', 'aria-label': '좋아요', 'aria-pressed': !!p.liked, onclick: () => toggleLike(p, likeBtn, null) }, LM.icon(p.liked ? 'heart-fill' : 'heart', 'lp-ic'), h('span', null, fmt(p.likes || 0)));
-    const reBtn = h('button', { class: 'lp-act', 'aria-label': '리포스트', 'aria-pressed': !!p.reposted, onclick: () => { p.reposted = !p.reposted; reBtn.classList.toggle('on', p.reposted); reBtn.setAttribute('aria-pressed', p.reposted); ui.toast(p.reposted ? '리포스트했습니다' : '리포스트를 취소했습니다'); } }, LM.icon('repost', 'lp-ic'), h('span', null, fmt((p.repostCount || 0) + (p.reposted ? 1 : 0))));
+    const reBtn = h('button', { class: 'lp-act', 'aria-label': '리포스트', 'aria-pressed': !!p.reposted, onclick: () => { p.reposted = !p.reposted; if (LM.trace && LM.online()) LM.trace('TR-14', { action: p.reposted ? 'repost' : 'unrepost', author: p.author, post: p.id }); reBtn.classList.toggle('on', p.reposted); reBtn.setAttribute('aria-pressed', p.reposted); ui.toast(p.reposted ? '리포스트했습니다' : '리포스트를 취소했습니다'); } }, LM.icon('repost', 'lp-ic'), h('span', null, fmt((p.repostCount || 0) + (p.reposted ? 1 : 0))));
     const art = h('article', { class: 'lp-card lp-textcard', 'aria-label': p.author + ' 글 게시물' },
       headRow(p, nav),
       h('div', { class: 'lp-body', onpointerdown: (e) => { if (p.eid) LM.longPress(e.currentTarget, () => ui.share({ eid: p.eid, title: p.body || '글 게시물', kind: 'post', app: 'loop' })); } }, p.body),
@@ -226,10 +233,14 @@
   let feedMode = '팔로잉';
 
   function feed(nav) {
+    const w = (LM.G && LM.G.world) || {};
+    if (LM.online() && LM.trace && !(LM.G && LM.G.device && LM.G.device.activity === false)) LM.trace('TR-03');
     const storyRow = h('div', { class: 'lp-stories' },
       storyBtn(nav, 'dohyun.lee', '내 스토리', 'own'),
-      storyBtn(nav, 'seoa.film', 'seoa.film', 'seoa-3'),
-      storyBtn(nav, 'jihoon_j', 'jihoon_j', 'jihoon-arch', 'seen'));
+      storyBtn(nav, 'seoa.film', 'seoa.film', w.storySeoa ? 'seoa-new' : 'seoa-3'),
+      storyBtn(nav, 'jihoon_j', 'jihoon_j', w.storyJihoon ? 'jihoon-new' : 'jihoon-arch', 'seen'),
+      w.storyKang && !isBlocked('moneycoach.kang') ? storyBtn(nav, 'moneycoach.kang', 'moneycoach.kang', 'kang-new') : null,
+      w.leakStory ? storyBtn(nav, 'jh_lee_99', 'jh_lee_99', 'imp-leak') : null);
     const slot = h('div', { class: 'lp-feed' });
     const noticeSlot = h('div', { class: 'lp-noticeslot' });
     const seg = ui.segmented(['팔로잉', '추천'], feedMode, (m) => { feedMode = m; draw(); });
@@ -341,6 +352,7 @@
   function sendComment(p, inp, render) {
     const text = inp.value.trim();
     if (!text) return;
+    if (LM.trace && LM.online()) LM.trace('TR-14', { action: 'comment', author: p.author, post: p.id });
     p.comments = p.comments || [];
     p.comments.push({ author: S.account, at: '지금', body: text, pending: !LM.online() });
     p.commentCount = (p.commentCount || 0) + 1;
@@ -376,6 +388,8 @@
     const st = STORIES[key];
     if (!st) return;
     if (!LM.online()) { ui.toast('스토리는 온라인이 필요합니다'); return; }
+    if (!st.own && LM.trace) LM.trace('TR-05', { handle: st.author, key: key });
+    if (key === 'kang-new' && LM.ev && LM.ev.kangSeen) LM.ev.kangSeen();
     if (st.eid) LM.C.see(st.eid);
     LM.setEid(st.eid || null);
     const wrap = h('div', { class: 'lp-storyview', role: 'dialog', 'aria-modal': 'true' });
@@ -478,7 +492,8 @@
     }
 
     if (handle === 'moneycoach.kang') out.push(h('div', { class: 'lp-faceoff' }, LM.icon('eye-off'), '얼굴 없음 · 손·시계·차·사무실만'));
-    if (HIGHLIGHTS[handle]) out.push(highlightRow(nav, handle));
+    const ww = (LM.G && LM.G.world) || {};
+    if (HIGHLIGHTS[handle] && !(handle === 'moneycoach.kang' && ww.kangHighlightsGone)) out.push(highlightRow(nav, handle));
     if (handle === 'dohyun.lee' && !blocked) {
       const pin = POSTS.find((p) => p.pinned);
       out.push(h('button', { class: 'lp-pin', onclick: () => nav.push(() => postDetail(nav, pin)) },
@@ -519,15 +534,19 @@
     if (handle === 'side.money.kr') {
       return Array.from({ length: 6 }, (_, i) => ({ id: 'side-' + i, kind: 'photo', author: 'side.money.kr', at: '2025.09', caption: '부업 추천', media: ['부업 추천 카드 ' + (i + 1)], watermark: 'side.money.kr', likes: 0, comments: [] }));
     }
-    if (handle === 'dontknow__') return DK_POSTS.filter(postVisible);
+    if (handle === 'dontknow__') { const w = (LM.G && LM.G.world) || {}; if (w.subArchived && S.account !== 'dontknow__') return []; return DK_POSTS.filter(postVisible); }
     return POSTS.filter((p) => p.author === handle && postVisible(p));
   }
 
   function selfMenu(nav, redraw) {
+    const act = !(LM.G && LM.G.device && LM.G.device.activity === false);
+    const rec = !(LM.G && LM.G.device && LM.G.device.receipts === false);
     ui.actionSheet({
       actions: [
         { label: '계정 전환', onClick: () => accountSwitch(nav, redraw) },
         { label: '차단 목록', onClick: () => nav.push(() => blockedPage(nav, redraw)) },
+        { label: act ? '활동 상태 끄기' : '활동 상태 켜기', onClick: () => { LM.gset('device.activity', !act); ui.toast(!act ? '활동 상태를 켰다' : '활동 상태를 껐다'); } },
+        { label: rec ? '읽음 확인 끄기' : '읽음 확인 켜기', onClick: () => { LM.gset('device.receipts', !rec); ui.toast(!rec ? '읽음 확인을 켰다' : '읽음 확인을 껐다'); } },
         { label: '이 계정 정보', onClick: () => accountInfo(nav, S.account) },
       ],
     });
@@ -550,7 +569,7 @@
         if (!LM.online()) { ui.toast('계정 전환은 온라인에서만 할 수 있습니다'); return; }
         const w = e.target.closest('.sheet-wrap'); if (w) w.close();
         ui.actionSheet({ title: '@dontknow__ 로그인', text: '인증 코드가 dk.nowhere@mailbox.kr로 전송됩니다.', actions: [
-          { label: '코드 보내기', onClick: () => { S.account = 'dontknow__'; ui.toast('로그인했습니다 · 새 기기 로그인 알림이 슬레이트에도 갔습니다'); if (selfProfileDraw) selfProfileDraw(); if (redraw) redraw(); } },
+          { label: '코드 보내기', onClick: () => { S.account = 'dontknow__'; if (LM.G) { LM.G.world = LM.G.world || {}; LM.G.world.subLoggedIn = true; } if (LM.trace) LM.trace('TR-10'); ui.toast('로그인했습니다 · 새 기기 로그인 알림이 슬레이트에도 갔습니다'); if (selfProfileDraw) selfProfileDraw(); if (redraw) redraw(); } },
         ] });
       } }),
     ] });
@@ -585,6 +604,13 @@
     const input = ui.search('검색', (q) => draw(q));
     const draw = (q) => {
       const query = (q || '').trim().toLowerCase();
+      if (query && LM.online() && /minji|민지/.test(query)) {
+        if (!LM.G.world) LM.G.world = {};
+        if (!LM.G.world.ev32) {
+          LM.G.world.ev32 = true;
+          LM.notify({ app: 'loop', title: '루프', body: '알 수도 있는 사람: minji.sw' });
+        }
+      }
       const out = [];
       out.push(LM.online() ? null : ui.notice('오프라인 저장본 · 계정·태그·장소를 캐시에서만 찾습니다.', 'warn'));
       if (!query) {
@@ -624,7 +650,7 @@
           ? h('div', { class: 'lp-picker' }, Array.from({ length: 6 }, (_, i) => h('button', { class: 'lp-pick', 'aria-label': '사진 선택', onclick: () => ui.toast('사진 선택(프로토타입)') }, ui.photo('새 게시물 사진 ' + i, { ratio: '1 / 1', alt: '사진', caption: false }))))
           : null,
         h('textarea', { class: 'lp-captionfield', placeholder: kind === '사진' ? '문구를 입력하세요' : '무슨 일이 있었나요?', maxlength: '300', 'aria-label': '본문' }),
-        h('div', { class: 'lp-createfoot' }, h('span', null, '300자'), ui.button({ label: '게시', kind: LM.online() ? 'filled' : 'gray', size: 's', onClick: () => ui.toast(LM.online() ? '게시했습니다(프로토타입)' : '온라인이 필요합니다') })));
+        h('div', { class: 'lp-createfoot' }, h('span', null, '300자'), ui.button({ label: '게시', kind: LM.online() ? 'filled' : 'gray', size: 's', onClick: () => { if (!LM.online()) { ui.toast('온라인이 필요합니다'); return; } if (LM.trace) LM.trace('TR-14', { action: 'post' }); ui.toast('게시했습니다(프로토타입)'); } })));
     };
     draw();
     return ui.page({ title: '만들기', large: false, nav, body: area });
@@ -755,7 +781,9 @@
       onSent: () => { DRAFTS[t.id] = ''; bubbles.scrollTop = bubbles.scrollHeight; },
     });
     const page = ui.page({ title: t.name, back: '메시지', nav, large: false, body: bubbles, footer });
+    const hadUnread = LM.read.unreadCount('loop', t.id) > 0;
     LM.read.markThread('loop', t.id);
+    if (hadUnread && (LM.G.device ? LM.G.device.receipts !== false : true) && LM.trace) LM.trace('TR-04', { thread: t.id });
     if (t.eid) LM.C.see(t.eid);
     LM.setEid(t.eid || null);
     const offRead = LM.on('read', (e) => { if (!bubbles.isConnected) { offRead(); return; } if (!e || !e.appId || e.appId === 'loop') draw(); });

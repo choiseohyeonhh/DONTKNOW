@@ -472,7 +472,7 @@ button.row:active { background: var(--lm-fill-2); }
 .cmp-modal { padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); }
 .cmp-to { display: flex; gap: 10px; align-items: baseline; padding: 8px 0 12px; font-size: 14px; color: var(--lm-label-2); }
 .cmp-to b { color: var(--lm-label); font-size: 16px; }
-.cmp-bar { display: block; padding: 6px 10px calc(6px + env(safe-area-inset-bottom)); background: var(--lm-material-thick); border-top: var(--lm-separator-w) solid var(--lm-separator); }
+.cmp-bar { display: block; padding: 6px 10px calc(6px + var(--lm-safe-bottom) + var(--lm-tabbar-safe-h)); background: var(--lm-material-thick); border-top: var(--lm-separator-w) solid var(--lm-separator); }
 .cmp-main { display: flex; align-items: center; gap: 6px; }
 .cmp-input { flex: 1; min-width: 0; min-height: 36px; max-height: 120px; padding: 8px 14px; border: 0; border-radius: 18px; background: var(--lm-fill-2); color: var(--lm-label); font: inherit; font-size: 15px; resize: none; }
 .cmp-plus, .cmp-send { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--lm-fill-2); color: var(--lm-label); }
@@ -503,3 +503,18 @@ button.row:active { background: var(--lm-fill-2); }
 .typing-dot i:nth-child(2) { animation-delay: .15s; }
 .typing-dot i:nth-child(3) { animation-delay: .3s; }
 @keyframes typingb { 0%, 60%, 100% { opacity: .35; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-2px); } }
+
+/* ---------- 원격 지우기(EV-08): 초기 설정 화면 ---------- */
+.wipe-setup {
+  position: absolute; inset: 0; z-index: 4000;
+  display: flex; flex-direction: column; justify-content: space-between;
+  background: #fff; color: #111; font-family: inherit;
+  padding: calc(var(--lm-statusbar-h) + 64px) 34px calc(40px + var(--lm-safe-bottom));
+}
+.wipe-lang { display: flex; flex-direction: column; gap: 10px; }
+.wipe-hello { font-size: 40px; font-weight: 700; letter-spacing: -.02em; }
+.wipe-sub { font-size: 15px; color: #8a8a8e; margin-bottom: 28px; }
+.wipe-pick { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-top: 1px solid #e5e5ea; border-bottom: 1px solid #e5e5ea; font-size: 18px; }
+.wipe-chev { color: #8a8a8e; font-size: 22px; }
+.wipe-note { margin-top: 22px; color: #8a8a8e; font-size: 13px; line-height: 1.5; }
+.wipe-foot { display: flex; justify-content: flex-end; color: #0a84ff; font-size: 17px; font-weight: 600; }

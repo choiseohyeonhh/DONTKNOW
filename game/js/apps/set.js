@@ -82,21 +82,41 @@
     const last = typeof d.last === 'function' ? d.last() : d.last;
     return sub(nav, d.name, [
       ui.group({ rows: [kv('모델', d.model), kv('마지막 활동', last)] }),
-      d.model === '이 기기' ? null : ui.group({ rows: [ui.row({ title: '이 기기에서 제거', destructive: true, onClick: () => ui.actionSheet({ title: d.name + '을(를) 계정에서 제거할까요?', text: '이 기기는 시러스 ID에서 로그아웃됩니다.', actions: [{ label: '제거', destructive: true, onClick: () => ui.toast('프로토타입: 제거는 실제로 일어나지 않는다') }] }) })] }),
+      d.model === '이 기기' ? null : ui.group({ rows: [ui.row({ title: '이 기기에서 제거', destructive: true, onClick: () => ui.actionSheet({ title: d.name + '을(를) 계정에서 제거할까요?', text: '이 기기는 시러스 ID에서 로그아웃됩니다.', actions: [{ label: '제거', destructive: true, onClick: () => { LM.ev.removeDevice(); ui.toast('기기를 제거했다'); } }] }) })] }),
     ], '시러스 ID');
   }
 
+  const DECO_SYNC = { talk: true, keyboard: true, maps: true, screen: true };
+  const syncOn = (key) => {
+    const g = LM.G && LM.G.sync ? LM.G.sync : {};
+    if (['photos', 'notes', 'reminders', 'voice'].indexOf(key) >= 0) return g[key] !== false && (key === 'voice' ? g.voice === true : true);
+    return DECO_SYNC[key] !== false;
+  };
+  function setSync(key, v) {
+    if (['photos', 'notes', 'reminders', 'voice'].indexOf(key) >= 0) {
+      const before = syncOn(key);
+      LM.gset('sync.' + key, v);
+      if (key === 'voice' && v && !before && LM.trace) LM.trace('TR-13');
+    } else DECO_SYNC[key] = v;
+  }
   function sync(nav) {
+    const rows = [
+      ['photos', '사진'], ['notes', '메모'], ['reminders', '미리 알림'], ['mail', '메일'],
+      ['talk', '톡 백업'], ['voice', '음성 메모'], ['keyboard', '키보드 사전'],
+      ['maps', '지도·웨이브·날씨'], ['screen', '스크린 타임(기기 간 공유)'],
+    ].map(([key, label]) => {
+      if (key === 'mail') return ui.row({ title: label, value: '켬', onClick: () => ui.toast('메일 계정은 메일 앱에서 관리') });
+      return ui.row({ title: label, toggle: { on: syncOn(key), onChange: (v) => setSync(key, v) } });
+    });
     return sub(nav, '동기화', [
-      ui.group({ header: '시러스를 사용하는 앱', footer: '끄면 이 폰과 다른 기기 사이의 변경이 더 이상 오가지 않는다.', rows: D.sync.map(([n, on, lockMsg]) => lockMsg
-        ? ui.row({ title: n, value: '켬', onClick: () => ui.toast(lockMsg) })
-        : ui.row({ title: n, toggle: { on, onChange: (v) => { if (!v && (n === '사진' || n === '메모')) ui.actionSheet({ title: n + ' 동기화 끄기', actions: [{ label: '이 폰에 사본 유지' }, { label: '이 폰에서 삭제', destructive: true }] }); } } })) }),
+      ui.group({ header: '시러스를 사용하는 앱', footer: '끄면 이 폰과 다른 기기 사이의 변경이 더 이상 오가지 않는다.', rows }),
     ], '시러스 ID');
   }
+
 
   function security(nav) {
     return sub(nav, '암호 및 보안', [
-      ui.group({ rows: [ui.row({ title: '암호 변경', action: true, onClick: () => ui.alert({ title: '암호를 변경할까요?', text: '다른 기기는 모두 로그아웃됩니다.', actions: [{ label: '취소', cancel: true }, { label: '변경', destructive: true, onClick: () => ui.toast('프로토타입: 암호 변경은 실제로 일어나지 않는다') }] }) })] }),
+      ui.group({ rows: [ui.row({ title: '암호 변경', action: true, onClick: () => ui.alert({ title: '암호를 변경할까요?', text: '다른 기기는 모두 로그아웃됩니다.', actions: [{ label: '취소', cancel: true }, { label: '변경', destructive: true, onClick: () => { LM.ev.changeCirrusPassword(); ui.toast('암호를 변경했다'); } }] }) })] }),
       ui.group({ header: '2단계 인증', rows: [kv('신뢰하는 번호', '010-XXXX-0921 · 정지됨'), kv('신뢰 기기', '도현의 폰, 도현의 슬레이트')] }),
     ], '시러스 ID');
   }
@@ -104,7 +124,7 @@
   function family(nav) {
     return sub(nav, '가족', [
       ui.group({ rows: [ui.row({ title: '이상철', subtitle: '아빠 · 관리자', avatar: '이상철' }), ui.row({ title: '이도현', subtitle: '나', avatar: '이도현' })] }),
-      ui.group({ header: '위치 공유', rows: [kv('아빠와 위치 공유', '중지 · 2026년 1월 9일'), ui.row({ title: '위치 공유 요청 보내기', action: true, onClick: () => ui.toast(LM.online() ? '도현의 슬레이트로 요청을 보냈다' : '오프라인 상태라 보낼 수 없다') })] }),
+      ui.group({ header: '위치 공유', rows: [kv('아빠와 위치 공유', '중지 · 2026년 1월 9일'), ui.row({ title: '위치 공유 요청 보내기', action: true, onClick: () => { if (!LM.online()) { ui.toast('오프라인 상태라 보낼 수 없다'); return; } if (LM.G && LM.G.npc && Number(LM.G.npc.DH) === 4) { LM.G.world = LM.G.world || {}; LM.G.world.locShared = true; LM.emit('locShared', {}); } if (LM.trace) LM.trace('TR-16'); ui.toast('도현의 슬레이트로 요청을 보냈다'); } })] }),
     ], '시러스 ID');
   }
 
@@ -150,11 +170,12 @@
     return sub(nav, LM.APPS[id], body, '알림');
   }
 
+  const focusShared = () => (LM.G && LM.G.device ? LM.G.device.focusShare !== false : true);
   function focus(nav) {
     const body = h('div');
     const draw = () => body.replaceChildren(
-      ui.group({ rows: [ui.row({ title: '방해 금지', icon: 'moon', iconBg: '#6A5ACD', toggle: { on: LM.state.dnd, onChange: (v) => LM.set({ dnd: v }) } })], footer: '다른 기기에서 켬 · 도현의 슬레이트 · 3/15 00:21' }),
-      ui.group({ rows: [ui.row({ title: '기기 간 공유', toggle: { on: true } })], footer: '한 기기에서 집중 모드를 켜거나 끄면 다른 기기에도 적용된다.' }));
+      ui.group({ rows: [ui.row({ title: '방해 금지', icon: 'moon', iconBg: '#6A5ACD', toggle: { on: LM.state.dnd, onChange: (v) => { LM.set({ dnd: v }); if (!v && focusShared() && LM.trace) LM.trace('TR-12'); } } })], footer: '다른 기기에서 켬 · 도현의 슬레이트 · 3/15 00:21' }),
+      ui.group({ rows: [ui.row({ title: '기기 간 공유', toggle: { on: focusShared(), onChange: (v) => { LM.gset('device.focusShare', v); draw(); } } })], footer: '한 기기에서 집중 모드를 켜거나 끄면 다른 기기에도 적용된다.' }));
     draw();
     return sub(nav, '집중 모드', body);
   }
@@ -173,7 +194,9 @@
           ui.group({ header: '3/14', rows: [ui.row({ title: '18:00~19:00', value: '웨이브·미리 알림·블링크' }), ui.row({ title: '20:09~20:51', value: '화면 꺼짐' }), ui.row({ title: '20:52', value: '지도 1분' }), ui.row({ title: '21:05~21:22', value: '루프 4분' })] }),
           ui.group({ header: '웹사이트', rows: [['side.money.kr', '3/11'], ['cheongun-gosiwon.kr', '2/24'], ['police.go', '3/13']].map(([a, b]) => ui.row({ title: a, value: b })) })]
         : (LM.online()
-          ? ui.group({ header: '기기 간 공유', rows: [ui.row({ title: '3/15 01:00', value: '루프 6분' }), ui.row({ title: '3/15 08:40~09:40', value: '웨이브·지도·메일·바로택시' }), ui.row({ title: '3/15 13:00', value: '한끼 3분' }), ui.row({ title: '3/16 22:30~23:20', value: '한서 포털·웨이브·메일' }), ui.row({ title: '3/17 02:00~03:00', value: '웨이브 40분' })] })
+          ? ui.group({ header: '기기 간 공유', rows: [ui.row({ title: '3/15 01:00', value: '루프 6분' }), ui.row({ title: '3/15 08:40~09:40', value: '웨이브·지도·메일·바로택시' }), ui.row({ title: '3/15 13:00', value: '한끼 3분' }), ui.row({ title: '3/16 22:30~23:20', value: '한서 포털·웨이브·메일' }), ui.row({ title: '3/17 02:00~03:00', value: '웨이브 40분' })]
+            .concat(LM.G && LM.G.world && LM.G.world.slateWave ? [ui.row({ title: '3/18 00:40', value: '웨이브' })] : [])
+            .concat(LM.ev && LM.ev.moved && LM.ev.moved() ? [ui.row({ title: '3/18', value: '성원스파 · 지도' })] : []) })
           : ui.empty({ icon: 'devices', title: '다른 기기 데이터 없음', text: '온라인이 되면 기기 간 공유 데이터를 불러온다.' })));
     draw();
     return sub(nav, '스크린 타임', body);

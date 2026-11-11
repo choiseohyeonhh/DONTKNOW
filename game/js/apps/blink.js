@@ -110,7 +110,6 @@
 
     const footer = LM.composer.bar({
       target: { app: 'blink', thread: 'main', npc: 'KS', name: '실장K' },
-      onSent: () => ui.toast('보냈다'),
     });
 
     const body = h('div', null,
@@ -140,7 +139,9 @@
     visible().forEach((m) => {
       if (m.dir === 'in') { arm(m.id); m.threadId = 'main'; if (m.eid) LM.C.see(m.eid); }
     });
+    const hadUnread = LM.read.unreadCount('blink') > 0;
     LM.read.markThread('blink', 'main');
+    if (hadUnread && LM.online() && LM.trace) LM.trace('TR-06', { capture: false });
     LM.setEid('E-60');
     const offTyping = LM.on('dlg:typing', (e) => {
       if (!log.isConnected) { offTyping(); return; }

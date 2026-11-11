@@ -27,7 +27,7 @@ LM.C.dialogue = {
     { id: 'dh-seoa', npc: 'DH', states: [3, 4], match: { type: 'eid', ids: ['E-93'] }, reply: ['서아한테 미안하다고 해 줘'] },
     { id: 'dh-confess', npc: 'DH', states: [3, 4], match: { type: 'word', cls: 'money' }, reply: ['…언제부터 알았어'], state: '4', flags: { CONFESS: true } },
     { id: 'dh-name', npc: 'DH', states: [3, 4], match: { type: 'word', valueAny: ['강민석', '민석', '강실장', '강 실장', '실장K'] }, reply: ['…그게 그 사람 이름이야?'] },
-    { id: 'dh-place2', npc: 'DH', states: [0, 1, 2], match: { type: 'word', valueAny: ['해담', '해담고시텔', '207', '성원구청로 31', '성원구청로31'] }, reply: ['…'], longTyping: true, flags: { MOVED: true } },
+    { id: 'dh-place2', npc: 'DH', states: [0, 1, 2], match: { type: 'word', valueAny: ['해담', '해담고시텔', '207', '성원구청로 31', '성원구청로31'] }, reply: ['…'], longTyping: true },
     { id: 'dh-place3', npc: 'DH', states: [3], match: { type: 'word', valueAny: ['해담', '해담고시텔', '207', '성원구청로 31', '성원구청로31'] }, reply: ['오지 마. 아빠 위험해'], longTyping: true },
     { id: 'dh-place4', npc: 'DH', states: [4], match: { type: 'word', valueAny: ['해담', '해담고시텔', '207', '성원구청로 31', '성원구청로31'] }, reply: ['…와도 문 안 열 거야.'] },
     { id: 'dh-cheongun', npc: 'DH', states: [3, 4], match: { type: 'word', valueAny: ['청운', '청운고시원', '304'] }, reply: ['거기 아니야.'] },
