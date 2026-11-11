@@ -9,11 +9,11 @@
    * 그 밖의 날짜·시각은 "1/9 이후 화·금 리버뷰역 반복"을 보여 주기 위한 자리표시다. */
   const RIDES = [
     { date: '3/14', time: '19:31', station: '성원구청역', type: '승차', repeat: false },
-    { date: '3/14', time: '19:52', station: '리버뷰역', type: '하차', repeat: true },
+    { date: '3/14', time: '19:52', station: '리버뷰역', type: '하차', repeat: false },
     { date: '3/13', time: '08:12', station: '성원구청역', type: '승차', repeat: false },
-    { date: '3/13', time: '18:40', station: '리버뷰역', type: '하차', repeat: true },
+    { date: '3/13', time: '18:40', station: '리버뷰역', type: '하차', repeat: false },
     { date: '3/10', time: '08:05', station: '성원구청역', type: '승차', repeat: false },
-    { date: '3/10', time: '18:31', station: '리버뷰역', type: '하차', repeat: true },
+    { date: '3/10', time: '18:31', station: '리버뷰역', type: '하차', repeat: false },
     { date: '3/6', time: '08:20', station: '성원구청역', type: '승차', repeat: false },
     { date: '3/6', time: '18:22', station: '리버뷰역', type: '하차', repeat: true },
   ];

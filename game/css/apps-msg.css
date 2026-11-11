@@ -141,3 +141,7 @@
   [data-app="blink"] .blink-banner { font-size: var(--lm-text-caption-2-size); }
   [data-app="blink"] .blink-photo { width: 200px; }
 }
+
+/* 방을 여는 순간 각 "1"은 160ms 페이드로 사라진다. */
+[data-app="talk"] .talk-unread { transition: opacity 160ms ease; }
+[data-app="talk"] .talk-unread.fading { opacity: 0; }

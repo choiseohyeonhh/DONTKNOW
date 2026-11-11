@@ -301,7 +301,7 @@
     const body = h('div', { class: 'mail-sched' },
       h('div', { class: 'mail-sched-card' },
         h('span', { class: 'mail-sched-label' }, '발송 예정'),
-        h('div', { class: 'mail-sched-time' }, m.scheduledAt)),
+        h('div', { class: 'mail-sched-time' }, LM.fmt.date(m.scheduledAt))),
       ui.group({ rows: [kv('받는 사람', m.to), kv('제목', m.subject), kv('첨부', (m.attachments || []).length + '장'), kv('작성', m.timeFull)] }),
       ui.notice('오프라인에서도 내용은 캐시로 보인다. 발송 동작은 온라인이 필요하다.'),
       h('h2', { class: 'mail-subject' }, m.subject),
@@ -318,7 +318,7 @@
   function editSchedule(nav, m) {
     const ta = h('textarea', { class: 'mail-body-input', rows: '8' }, m.body.join('\n\n'));
     const box = h('div', { class: 'mail-compose', data: { app: 'mail' } },
-      ui.group({ rows: [kv('받는 사람', m.to), kv('발송', m.scheduledAt + ' (고정)')] }),
+      ui.group({ rows: [kv('받는 사람', m.to), kv('발송', LM.fmt.date(m.scheduledAt) + ' (고정)')] }),
       h('div', { class: 'mail-field' }, h('label', null, '제목'), h('input', { value: m.subject })),
       ta,
       LM.online() ? null : ui.notice('오프라인 상태입니다. 저장은 이 기기에 대기한다.', 'warn'));

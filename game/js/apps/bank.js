@@ -180,7 +180,7 @@
     });
   }
 
-  LM.searchSources.push({ app: 'bank', items: () => [
+  LM.searchSources.push({ app: 'bank', items: () => !LM.online() ? [] : [
     { title: '누리은행 계좌', sub: ACCOUNT + ' · ' + BALANCE, text: ACCOUNT },
     ...TX.map((t) => ({ title: '누리은행 · ' + t.name, sub: t.date + ' ' + (t.type === 'in' ? '입금' : '출금') + ' ' + amt(t.amount), text: t.name + ' ' + t.memo })),
   ] });

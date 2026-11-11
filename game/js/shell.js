@@ -64,9 +64,10 @@
       notifList().forEach((n) => { (groups[n.app] = groups[n.app] || []).push(n); });
       Object.keys(groups).forEach((app) => {
         const list = groups[app];
+        const unread = groupUnread(app, list);
         const g = h('div', { class: 'ngroup collapsed' + (list.length === 1 ? ' single' : '') });
         list.forEach((n, i) => {
-          const card = notifCard(n, i === 0 && list.length > 1 ? list.length - 1 : 0);
+          const card = notifCard(n, i === 0 && list.length > 1 ? Math.max(0, unread - 1) : 0);
           card.addEventListener('click', () => {
             if (g.classList.contains('collapsed') && list.length > 1) { g.classList.remove('collapsed'); return; }
             showPasscode(() => openApp(n.app, n.thread ? { open: n.thread, thread: n.thread } : undefined));
@@ -114,6 +115,11 @@
   function notifHidden(n) {
     if (LM.notifHidden) return LM.notifHidden(n);
     return !!n.hidden;
+  }
+
+  function groupUnread(appId, list) {
+    if (LM.read && LM.read.hasProvider && LM.read.hasProvider(appId)) return LM.read.unreadCount(appId);
+    return list.length;
   }
 
   function notifCard(n, more) {
@@ -204,15 +210,28 @@
 
   /* ---------- 홈 ---------- */
   function appButton(id) {
-    const b = h('button', { class: 'app', 'aria-label': LM.APPS[id] + (LM.BADGES[id] ? ', 안 읽음 ' + LM.BADGES[id] : ''), onclick: (e) => openApp(id, { from: e.currentTarget.querySelector('.appicon') }) },
-      LM.appIcon(id), h('span', { class: 'app-name' }, LM.APPS[id]), LM.BADGES[id] ? ui.badge(LM.BADGES[id]) : null);
+    const badge = h('span', { class: 'badge' });
+    const b = h('button', { class: 'app', data: { app: id }, onclick: (e) => openApp(id, { from: e.currentTarget.querySelector('.appicon') }) },
+      LM.appIcon(id), h('span', { class: 'app-name' }, LM.APPS[id]), badge);
+    b._syncBadge = () => {
+      const n = (LM.badge && LM.badge(id)) || 0;
+      badge.textContent = n ? String(n) : '';
+      badge.hidden = !n;
+      b.setAttribute('aria-label', LM.APPS[id] + (n ? ', 안 읽은 메시지 ' + n + '개' : ''));
+    };
+    b._syncBadge();
     return b;
   }
   function folderButton(f) {
-    const b = h('button', { class: 'app', 'aria-label': f.folder + ' 폴더', onclick: () => openFolder(f) },
-      h('span', { class: 'folder-icon', style: { clipPath: `path('${LM.SQUIRCLE}')` } }, f.apps.map((id) => LM.appIcon(id, 13))), h('span', { class: 'app-name' }, f.folder));
-    const n = f.apps.reduce((s, id) => s + (LM.BADGES[id] || 0), 0);
-    if (n) b.appendChild(ui.badge(n));
+    const badge = h('span', { class: 'badge' });
+    const b = h('button', { class: 'app', data: { folder: f.folder }, onclick: () => openFolder(f) },
+      h('span', { class: 'folder-icon', style: { clipPath: `path('${LM.SQUIRCLE}')` } }, f.apps.map((id) => LM.appIcon(id, 13))), h('span', { class: 'app-name' }, f.folder), badge);
+    b._syncFolder = () => {
+      const n = f.apps.reduce((sum, id) => sum + ((LM.badge && LM.badge(id)) || 0), 0);
+      badge.textContent = n ? String(n) : '';
+      badge.hidden = !n;
+    };
+    b._syncFolder();
     return b;
   }
   function openFolder(f) {
@@ -240,6 +259,13 @@
       h('button', { class: 'search-pill', onclick: openSearch }, LM.icon('search'), '검색'),
       dots,
       h('div', { class: 'dock' }, LM.HOME.dock.map(appButton)));
+    const syncBadges = () => {
+      if (!el.isConnected) return;
+      el.querySelectorAll('.app[data-app]').forEach((b) => { if (b._syncBadge) b._syncBadge(); });
+      el.querySelectorAll('.app[data-folder]').forEach((b) => { if (b._syncFolder) b._syncFolder(); });
+    };
+    LM.on('read', syncBadges);
+    LM.on('msg', syncBadges);
 
     // 제스처: 아래로 = 알림 센터(오른쪽 위에서 시작하면 제어 센터), 위로 = 검색
     let sx = 0, sy = 0, tracking = false;
@@ -424,9 +450,21 @@
     const d = LM.now();
     const list = notifList();
     const el = h('div', { class: 'overlay nc', role: 'dialog', 'aria-label': '알림 센터' },
-      h('div', { class: 'nc-date' }, LM.fmtDate(d)), h('div', { class: 'nc-clock' }, LM.fmtTime(d)),
+      h('div', { class: 'nc-date' }, LM.fmtDate(d) + ' · ' + list.length + '개'), h('div', { class: 'nc-clock' }, LM.fmtTime(d)),
       h('div', { class: 'n-head' }, h('b', null, '알림'), h('button', { onclick: closeOverlay }, '닫기')),
-      h('div', { class: 'nstack' }, list.map((n) => { const c = notifCard(n); c.addEventListener('click', () => openNotif(n)); return c; })),
+      h('div', { class: 'nstack' }, (() => {
+        const groups = {};
+        list.forEach((n) => { (groups[n.app] = groups[n.app] || []).push(n); });
+        return Object.keys(groups).map((app) => {
+          const arr = groups[app];
+          const unread = groupUnread(app, arr);
+          return h('div', { class: 'ngroup single' }, arr.map((n, i) => {
+            const c = notifCard(n, i === 0 && arr.length > 1 ? Math.max(0, unread - 1) : 0);
+            c.addEventListener('click', () => openNotif(n));
+            return c;
+          }));
+        });
+      })()),
       h('div', { class: 'ov-grab', 'aria-hidden': true }));
     return el;
   }
@@ -472,7 +510,7 @@
   LM.searchSources = [];
   function openSearch() {
     const res = h('div', { class: 'gs-res' });
-    const norm = (s) => String(s).toLowerCase().replace(/[\s\-]/g, '');
+    const norm = (s) => String(s).toLowerCase().replace(/[\s\-–—_.]/g, '');
     const run = (q) => {
       res.replaceChildren();
       if (!q) {
@@ -562,6 +600,7 @@
     }));
     // 알림이 새로 오면 잠금화면 목록도 다시 그린다(알림 센터는 열 때마다 최신).
     LM.on('notifs', () => { if (lockEl && lockEl._refreshNotifs) lockEl._refreshNotifs(); });
+    LM.on('read', () => { if (lockEl && lockEl._refreshNotifs) lockEl._refreshNotifs(); });
     if (LM._onlineCheck) LM._onlineCheck();
     if (LM.sched) LM.sched._flush();
     if (LM.pauseUI) LM.pauseUI.init();

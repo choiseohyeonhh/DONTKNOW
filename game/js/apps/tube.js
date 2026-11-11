@@ -98,7 +98,7 @@
       h('div', { class: 'tb-meta' },
         h('b', null, v.title),
         h('span', null, CHANNEL.name + ' · 조회수 ' + v.views + '회'),
-        h('small', null, v.at)));
+        h('small', null, LM.fmt.date(v.at, 'abs')));
   }
 
   function channelRow(nav) {
@@ -141,6 +141,9 @@
   }
 
   function search(nav) {
+    if (!LM.online()) {
+      return ui.page({ title: '검색', back: '뒤로', nav, large: false, body: ui.empty({ icon: 'wifi', title: '온라인이 필요합니다', text: '오프라인에서는 캐시된 제목과 썸네일만 볼 수 있습니다.' }) });
+    }
     const res = h('div');
     const draw = (q) => {
       const query = (q || '').trim().toLowerCase();
@@ -168,6 +171,7 @@
     const playBtn = h('button', { class: 'tb-play', 'aria-label': '재생' }, LM.icon('play'));
     let playing = false;
     const toggle = () => {
+      if (!LM.online()) { ui.toast('온라인이 필요합니다'); return; }
       playing = !playing;
       player.classList.toggle('playing', playing);
       playBtn.replaceChildren(LM.icon(playing ? 'pause' : 'play'));
@@ -197,18 +201,18 @@
     return ui.page({
       title: v.title, back: '뒤로', nav, large: false,
       body: [
-        LM.online() ? null : ui.notice('오프라인 저장본 · 재생은 시뮬레이션입니다.', 'warn'),
+        LM.online() ? null : ui.notice('오프라인 저장본 · 제목·채널만 보입니다. 재생·자막 검색·댓글은 온라인이 필요합니다.', 'warn'),
         player, sub,
-        h('div', { class: 'tb-titles' }, h('b', null, v.title), h('small', null, '조회수 ' + v.views + '회 · ' + v.at)),
+        h('div', { class: 'tb-titles' }, h('b', null, v.title), h('small', null, '조회수 ' + v.views + '회 · ' + LM.fmt.date(v.at, 'abs'))),
         h('button', { class: 'tb-wchan', onclick: () => nav.push(() => channel(nav)) }, ui.avatar('머니코치 강', 36), h('span', null, CHANNEL.name), h('small', null, '얼굴 없음'), LM.icon('chevron-right', 'tb-chev')),
-        h('div', { class: 'tb-sec' }, '자막'),
-        ui.search('자막 검색', drawCaps),
-        capList,
+        LM.online() ? h('div', { class: 'tb-sec' }, '자막') : null,
+        LM.online() ? ui.search('자막 검색', drawCaps) : null,
+        LM.online() ? capList : null,
         h('div', { class: 'tb-sec' }, '설명'),
         h('div', { class: 'tb-desc' }, v.description,
           v.id === 'V2' ? h('div', { class: 'tb-link', onclick: () => ui.toast('루프 계정 @side.money.kr') }, '→ 루프 @side.money.kr') : null),
-        h('div', { class: 'tb-sec' }, '댓글 ' + v.commentCount),
-        comments,
+        LM.online() ? h('div', { class: 'tb-sec' }, '댓글 ' + v.commentCount) : null,
+        LM.online() ? comments : ui.notice('댓글은 온라인이 필요합니다.', 'warn'),
       ],
     });
   }
@@ -231,7 +235,7 @@
 
   LM.searchSources.push({
     app: 'tube',
-    items: () => [
+    items: () => !LM.online() ? [] : [
       { title: CHANNEL.name, sub: '튜브 채널 · 구독자 ' + CHANNEL.subscribers, text: '머니코치 강 moneycoach' },
       ...VIDEOS.map((v) => ({ title: v.title, sub: '튜브 영상 · ' + v.at, text: v.title + ' ' + v.description + ' ' + v.captions.map((c) => c.text).join(' ') })),
     ],

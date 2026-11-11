@@ -459,3 +459,6 @@ button.row:active { background: var(--lm-fill-2); }
 .dk-dbg-btns button { font: inherit; padding: 4px 7px; border-radius: 6px; background: rgba(120,150,220,.16); color: #cfe0ff; }
 .dk-dbg-btns button:active { background: rgba(120,150,220,.35); }
 @media (max-width: 700px) { .dk-debug { top: 52px; bottom: auto; right: 8px; width: 224px; } }
+
+/* 읽음 상태에서 계산되는 배지는 0이면 숨긴다. */
+.badge[hidden], .tab-badge[hidden] { display: none; }

@@ -7,8 +7,7 @@
   const SEGMENTS = [
     { sec: 190, time: '03:10', speaker: '실장', text: '그 돈 어디 있어. 그치? 너 아직 몰라서 그래.' },
     { sec: 702, time: '11:42', speaker: '실장', text: '니 아빠 이상철. 한빛물류 배차. 한결에 8천. 내가 모를 것 같아?' },
-    { sec: 1625, time: '27:05', speaker: '남자', text: '강 대표님, 차 빼 드릴까요?' },
-    { sec: 1627, time: '27:05', speaker: '실장', text: '어, B2.' },
+    { sec: 1625, time: '27:05', speaker: '남자·실장', text: '강 대표님, 차 빼 드릴까요? / 어, B2.' },
     { sec: 2510, time: '41:50', speaker: '도현', text: '다 녹음했어요.' },
   ];
 

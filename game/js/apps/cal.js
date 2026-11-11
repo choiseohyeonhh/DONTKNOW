@@ -5,7 +5,7 @@
   'use strict';
   const LM = window.LM, h = LM.h, ui = LM.ui;
   const WD = ['일', '월', '화', '수', '목', '금', '토'];
-  const TODAY = { y: 2026, m: 3, d: 17 };
+  function today() { const d = LM.now(); return { y: d.getFullYear(), m: d.getMonth() + 1, d: d.getDate() }; }
 
   /* 고정 일정. GJ 반복은 1/9~3/6 화·금(3/10 이후 삭제). */
   const EVENTS = [
@@ -34,11 +34,11 @@
 
   LM.register({
     id: 'cal',
-    render(app) { root = app.root; view = { y: 2026, m: 3 }; app.start((nav) => monthPage(nav)); },
+    render(app) { root = app.root; const t = today(); view = { y: t.y, m: t.m }; app.start((nav) => monthPage(nav)); },
   });
 
   const eventsOn = (y, m, d) => EVENTS.filter((e) => e.y === y && e.m === m && e.d === d);
-  const isPast = (e) => e.y < TODAY.y || (e.y === TODAY.y && (e.m < TODAY.m || (e.m === TODAY.m && e.d < TODAY.d)));
+  const isPast = (e) => { const t = today(); return e.y < t.y || (e.y === t.y && (e.m < t.m || (e.m === t.m && e.d < t.d))); };
   const pad = (n) => String(n).padStart(2, '0');
   const dayLabel = (e) => {
     const dt = new Date(e.y, e.m - 1, e.d);
@@ -51,28 +51,29 @@
     const page = ui.page({
       title: '캘린더',
       large: false,
-      left: h('button', { class: 'nb-btn cal-today', onclick: () => { view = { y: 2026, m: 3 }; draw(); } }, '오늘'),
+      left: h('button', { class: 'nb-btn cal-today', onclick: () => { const t = today(); view = { y: t.y, m: t.m }; draw(); } }, '오늘'),
       right: h('button', { class: 'nb-btn cal-cals', 'aria-label': '캘린더 목록', onclick: () => calendarsSheet() }, LM.icon('list')),
       body: wrap,
     });
     const draw = () => {
+      const t = today();
       const first = new Date(view.y, view.m - 1, 1).getDay();
       const days = new Date(view.y, view.m, 0).getDate();
       const cells = [];
       for (let i = 0; i < first; i++) cells.push(h('span', { class: 'cal-cell blank' }));
       for (let d = 1; d <= days; d++) {
         const evs = eventsOn(view.y, view.m, d);
-        const today = view.y === TODAY.y && view.m === TODAY.m && d === TODAY.d;
+        const isToday = view.y === t.y && view.m === t.m && d === t.d;
         const label = view.m + '월 ' + d + '일 ' + WD[new Date(view.y, view.m - 1, d).getDay()] + '요일' + (evs.length ? ', 일정 ' + evs.length + '개' : '') + (isPast({ y: view.y, m: view.m, d }) ? ', 지남' : '');
         cells.push(h('button', {
-          class: 'cal-cell' + (today ? ' today' : '') + (evs.length ? ' has' : '') + (isPast({ y: view.y, m: view.m, d }) ? ' past' : ''),
+          class: 'cal-cell' + (isToday ? ' today' : '') + (evs.length ? ' has' : '') + (isPast({ y: view.y, m: view.m, d }) ? ' past' : ''),
           'aria-label': label,
           onclick: () => nav.push(() => dayPage(nav, view.y, view.m, d)),
         },
         h('span', { class: 'cal-num' }, d),
         h('span', { class: 'cal-dots' }, evs.slice(0, 3).map((e) => h('i', { class: e.calendar === '생일' ? 'bday' : '' })))));
       }
-      const todayEvs = eventsOn(TODAY.y, TODAY.m, TODAY.d);
+      const todayEvs = eventsOn(t.y, t.m, t.d);
       wrap.replaceChildren(
         h('div', { class: 'cal-head' },
           h('button', { class: 'cal-nav', 'aria-label': '이전 달', onclick: () => { view.m--; if (view.m < 1) { view.m = 12; view.y--; } draw(); } }, LM.icon('chevron-left')),
