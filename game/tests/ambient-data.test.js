@@ -143,11 +143,13 @@ run('rooms: 그룹 5 + 1:1 13, 멤버·과거 대화', () => {
   assert.strictEqual(dms.length, 13);
   const byName = Object.fromEntries(groups.map((r) => [r.name, r]));
   assert.strictEqual(byName['경영 26 새내기'].count, 52);
+  assert.strictEqual(byName['경영 26 새내기'].memberCount, 52);
   assert.strictEqual(byName['성원고 3-2'].count, 31);
   assert.strictEqual(byName['경영원론 3조'].count, 5);
   assert.strictEqual(byName['성원 풋살'].count, 14);
   assert.strictEqual(byName['편의점 알바(2024)'].count, 6);
   assert.strictEqual(byName['편의점 알바(2024)'].muted, true);
+  for (const r of groups) assert.ok(r.count >= r.members.length, 'count < members');
   const pids = new Set(A.people.map((p) => p.id));
   for (const r of A.rooms) {
     assert.ok(r.id && r.name && Array.isArray(r.members) && r.members.length > 0);

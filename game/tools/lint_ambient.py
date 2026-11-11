@@ -179,6 +179,8 @@ def main():
                 errors.append((f"L21 rooms[{r.get('id')}].members", f"unknown member={mid}", ""))
         if r.get("circle") not in CONTACT_CIRCLES:
             errors.append((f"L21 rooms[{r.get('id')}].circle", f"invalid circle={r.get('circle')}", ""))
+        if r.get("count") is not None and r.get("count") < len(r.get("members", [])):
+            errors.append((f"L21 rooms[{r.get('id')}].count", "count < named members", ""))
 
     # ---- L22 미래 시각 ----
     for p in posts + live:
