@@ -1,0 +1,149 @@
+/* 전화·메시지·톡·연락처·블링크 */
+
+[data-app="phone"]:has(.stack > .scr:nth-child(2)) .tabbar,
+[data-app="talk"]:has(.stack > .scr:nth-child(2)) .tabbar { display: none; }
+[data-app="phone"]:has(.stack > .scr:nth-child(2)) .sc,
+[data-app="talk"]:has(.stack > .scr:nth-child(2)) .sc { padding-bottom: 12px; }
+
+/* ---------- 전화 ---------- */
+[data-app="phone"] .phone-dir { width: 30px; height: 30px; flex: none; display: grid; place-items: center; color: var(--lm-label-2); }
+[data-app="phone"] .phone-dir .ic { width: 20px; height: 20px; }
+[data-app="phone"] .phone-dir.flip .ic { transform: scaleX(-1); }
+[data-app="phone"] .phone-dir.miss { color: var(--lm-destructive-ink); }
+[data-app="phone"] .row.phone-missed .row-title,
+[data-app="phone"] .row.phone-missed .row-2 { color: var(--lm-destructive-ink); }
+[data-app="phone"] .phone-hero { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 0 22px; }
+[data-app="phone"] .phone-hero-name { font-size: var(--lm-text-title-3-size); font-weight: 600; }
+[data-app="phone"] .phone-hero-sub { font-size: var(--lm-text-subhead-size); color: var(--lm-label-2); }
+[data-app="phone"] .phone-detail-actions { display: flex; justify-content: center; padding: 14px 0 8px; }
+[data-app="phone"] .phone-numrow { position: relative; width: 100%; min-height: 58px; display: flex; align-items: center; justify-content: center; padding: 0 44px; }
+[data-app="phone"] .phone-num { font-family: var(--lm-font-num); font-size: 34px; font-weight: 400; letter-spacing: 1px; line-height: 1.2; text-align: center; word-break: keep-all; overflow-wrap: anywhere; min-height: 42px; }
+[data-app="phone"] .phone-num.empty { min-height: 42px; }
+[data-app="phone"] .phone-del { position: absolute; right: 0; bottom: 6px; width: 44px; height: 44px; display: grid; place-items: center; color: var(--lm-label-2); }
+[data-app="phone"] .phone-del .ic { width: 24px; height: 24px; }
+[data-app="phone"] .phone-padwrap { display: flex; flex-direction: column; align-items: center; padding: 14px 24px 24px; }
+[data-app="phone"] .phone-pad { display: grid; grid-template-columns: repeat(3, 72px); gap: 14px 26px; margin: 12px 0 18px; }
+[data-app="phone"] .phone-key { width: 72px; height: 72px; border-radius: 50%; background: var(--lm-fill-2); color: var(--lm-label); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+[data-app="phone"] .phone-key:active { background: var(--lm-fill); }
+[data-app="phone"] .phone-key b { font-family: var(--lm-font-num); font-size: 34px; font-weight: 400; line-height: 1; }
+[data-app="phone"] .phone-key small { font-size: 10px; font-weight: 650; letter-spacing: 1.6px; color: var(--lm-label-2); margin-top: 2px; }
+[data-app="phone"] .phone-callwrap { display: flex; justify-content: center; margin-top: 4px; }
+[data-app="phone"] .phone-big-call { width: 72px; height: 72px; border-radius: 50%; background: var(--lm-success); color: var(--lm-on-status); display: grid; place-items: center; }
+[data-app="phone"] .phone-big-call .ic { width: 30px; height: 30px; }
+[data-app="phone"] .phone-big-call:active { filter: brightness(.9); }
+[data-app="phone"] .phone-nosvc { text-align: center; padding: 8px 20px 26px; color: var(--lm-label-2); }
+[data-app="phone"] .phone-nosvc b { display: block; color: var(--lm-label); font-size: var(--lm-text-title-3-size); margin-bottom: 6px; }
+
+/* ---------- 메시지 ---------- */
+[data-app="msg"] .msg-titlewrap { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+[data-app="msg"] .msg-name { overflow: hidden; text-overflow: ellipsis; }
+[data-app="msg"] .msg-chip { flex: none; font-size: 11px; font-weight: 600; color: var(--lm-label-2); background: var(--lm-fill-2); border-radius: 999px; padding: 1px 7px; }
+[data-app="msg"] .msg-chip.cirrus { color: var(--lm-tint); background: color-mix(in srgb, var(--lm-tint) 16%, transparent); }
+[data-app="msg"] .msg-sysav { width: 40px; height: 40px; border-radius: 12px; flex: none; display: grid; place-items: center; background: var(--lm-fill-2); color: var(--lm-label-2); }
+[data-app="msg"] .row:has(.msg-sysav)::after { --sep-l: 58px; }
+[data-app="msg"] .msg-addr { padding: 4px var(--lm-side) 10px; font-size: var(--lm-text-caption-1-size); color: var(--lm-label-2); text-align: center; }
+[data-app="msg"] .msg-room { display: flex; flex-direction: column; padding: 2px var(--lm-side) 14px; }
+[data-app="msg"] .msg-day { align-self: center; padding: 12px 0 10px; font-size: var(--lm-text-caption-1-size); color: var(--lm-label-2); }
+[data-app="msg"] .msg-line { display: flex; flex-direction: column; align-items: flex-start; max-width: 100%; margin: 2px 0; }
+[data-app="msg"] .msg-line.out { align-items: flex-end; }
+[data-app="msg"] .msg-sender { font-size: var(--lm-text-caption-2-size); color: var(--lm-label-2); margin: 6px 0 2px 2px; }
+[data-app="msg"] .msg-bubble { max-width: 280px; padding: 8px 12px; border-radius: var(--lm-radius-bubble); background: var(--lm-bg-tertiary); color: var(--lm-label); font-size: var(--lm-text-body-size); line-height: 1.35; word-break: keep-all; overflow-wrap: anywhere; }
+[data-app="msg"] .msg-line.out .msg-bubble { background: var(--lm-tint); color: var(--lm-on-tint); }
+[data-app="msg"] .msg-line.failed .msg-bubble { border: 1px solid var(--lm-destructive); }
+[data-app="msg"] .msg-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin-top: 3px; font-size: var(--lm-text-caption-2-size); color: var(--lm-label-2); }
+[data-app="msg"] .msg-fail { width: 15px; height: 15px; border-radius: 50%; background: var(--lm-destructive-fill); color: var(--lm-bg); font-size: 10px; font-weight: 700; display: inline-grid; place-items: center; }
+[data-app="msg"] .msg-retry { color: var(--lm-destructive-ink); font-size: var(--lm-text-caption-2-size); font-weight: 600; }
+[data-app="msg"] .msg-composer,
+[data-app="talk"] .talk-composer,
+[data-app="blink"] .blink-composer { flex: none; display: flex; align-items: center; gap: 6px; padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); background: var(--lm-material-thick); backdrop-filter: blur(var(--lm-material-blur-thick)) saturate(var(--lm-material-saturate)); -webkit-backdrop-filter: blur(var(--lm-material-blur-thick)) saturate(var(--lm-material-saturate)); border-top: var(--lm-separator-w) solid var(--lm-separator); }
+[data-app="msg"] .msg-plus,
+[data-app="talk"] .talk-plus,
+[data-app="blink"] .blink-plus { width: 40px; height: 40px; flex: none; display: grid; place-items: center; color: var(--lm-label-2); }
+[data-app="msg"] .msg-inp,
+[data-app="talk"] .talk-inp,
+[data-app="blink"] .blink-inp { flex: 1; min-width: 0; height: 38px; border-radius: 19px; border: var(--lm-separator-w) solid var(--lm-separator); background: var(--lm-bg); color: var(--lm-label); padding: 0 14px; font-size: var(--lm-text-callout-size); outline: none; }
+[data-app="msg"] .msg-send,
+[data-app="blink"] .blink-send { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--lm-tint); color: var(--lm-on-tint); }
+[data-app="msg"] .msg-send .ic,
+[data-app="blink"] .blink-send .ic { width: 20px; height: 20px; }
+[data-app="msg"] .msg-send:active,
+[data-app="blink"] .blink-send:active { filter: brightness(.92); }
+
+/* ---------- 톡 ---------- */
+[data-app="talk"] .talk-me { display: flex; align-items: center; gap: 12px; padding: 10px var(--lm-side) 14px; }
+[data-app="talk"] .talk-me-name { font-size: var(--lm-text-title-3-size); font-weight: 600; }
+[data-app="talk"] .talk-me-sub { font-size: var(--lm-text-subhead-size); color: var(--lm-label-2); }
+[data-app="talk"] .talk-bday { padding: 2px var(--lm-side) 4px; font-size: var(--lm-text-footnote-size); color: var(--lm-label-2); }
+[data-app="talk"] .talk-meprofile .row-title { font-size: 20px; font-weight: 600; }
+[data-app="talk"] .talk-room { display: flex; flex-direction: column; padding: 6px 14px 16px; }
+[data-app="talk"] .talk-day { align-self: center; margin: 14px 0 10px; padding: 3px 10px; border-radius: 999px; background: var(--lm-fill-2); font-size: var(--lm-text-caption-1-size); color: var(--lm-label-2); }
+[data-app="talk"] .talk-line { display: flex; align-items: flex-start; gap: 6px; width: 100%; margin: 2px 0; }
+[data-app="talk"] .talk-line.out { justify-content: flex-end; }
+[data-app="talk"] .talk-av { width: 32px; flex: none; align-self: flex-start; }
+[data-app="talk"] .talk-av.ghost { visibility: hidden; }
+[data-app="talk"] .talk-line.out .talk-av { display: none; }
+[data-app="talk"] .talk-body { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; max-width: 280px; }
+[data-app="talk"] .talk-line.out .talk-body { align-items: flex-end; }
+[data-app="talk"] .talk-name { margin: 0 0 3px 2px; font-size: var(--lm-text-caption-1-size); color: var(--lm-label-2); }
+[data-app="talk"] .talk-row { display: flex; align-items: flex-end; gap: 5px; max-width: 100%; }
+[data-app="talk"] .talk-bubble { max-width: 250px; padding: 8px 12px; border-radius: 16px; border-top-left-radius: 5px; background: var(--lm-bg-tertiary); color: var(--lm-label); font-size: var(--lm-text-callout-size); line-height: 1.35; word-break: keep-all; overflow-wrap: anywhere; }
+[data-app="talk"] .talk-line.out .talk-bubble { background: var(--lm-tint); color: var(--lm-on-tint); border-radius: 16px; border-top-right-radius: 5px; }
+[data-app="talk"] .talk-side { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; flex: none; padding-bottom: 1px; font-size: var(--lm-text-caption-2-size); color: var(--lm-label-2); white-space: nowrap; }
+[data-app="talk"] .talk-line.out .talk-side { align-items: flex-end; }
+[data-app="talk"] .talk-unread { color: var(--lm-tint); font-weight: 700; font-size: var(--lm-text-caption-2-size); }
+[data-app="talk"] .talk-slate { color: var(--lm-label-3); font-size: 10px; }
+[data-app="talk"] .talk-pending { align-self: center; margin-top: 14px; font-size: var(--lm-text-caption-1-size); color: var(--lm-label-2); }
+[data-app="talk"] .talk-chatrow .badge,
+[data-app="blink"] .row .badge { background: var(--lm-tint-fill); color: var(--lm-on-tint); }
+[data-app="talk"] .talk-send { flex: none; height: 38px; padding: 0 12px; color: var(--lm-tint); font-size: var(--lm-text-callout-size); font-weight: 600; }
+[data-app="talk"] .talk-composer { padding-right: 4px; }
+[data-app="talk"] .talk-name-input { width: 100%; height: 44px; border: 0; border-radius: 10px; background: var(--lm-fill-2); color: var(--lm-label); padding: 0 12px; font-size: var(--lm-text-body-size); outline: none; }
+[data-app="talk"] .talk-namewrap { padding: 6px 10px; }
+[data-app="talk"] .talk-sheetscope .grp { margin: 0 16px; }
+
+/* ---------- 연락처 ---------- */
+[data-app="cont"] .cont-hero { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 0 22px; }
+[data-app="cont"] .cont-hero-name { font-size: var(--lm-text-title-1-size); font-weight: var(--lm-text-title-1-weight); line-height: var(--lm-text-title-1-line); letter-spacing: var(--lm-text-title-1-tracking); margin-top: 6px; text-align: center; }
+[data-app="cont"] .cont-hero-sub { font-size: var(--lm-text-callout-size); color: var(--lm-label-2); }
+[data-app="cont"] .cont-sec { margin: 18px var(--lm-side) 8px; font-size: var(--lm-text-footnote-size); font-weight: 600; color: var(--lm-label-2); }
+
+/* ---------- 블링크 ---------- */
+[data-app="blink"] .blink-filter { padding-top: 2px; }
+[data-app="blink"] .blink-titlewrap { display: inline-flex; align-items: center; gap: 6px; }
+[data-app="blink"] .blink-lockic { width: 15px; height: 15px; color: var(--lm-label-2); }
+[data-app="blink"] .blink-navtitle { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 6px; font-size: var(--lm-text-headline-size); font-weight: var(--lm-text-headline-weight); color: var(--lm-label); }
+[data-app="blink"] .blink-banner { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px var(--lm-side); background: var(--lm-fill-2); color: var(--lm-label-2); font-size: var(--lm-text-caption-1-size); }
+[data-app="blink"] .blink-banner-ic { width: 14px; height: 14px; flex: none; }
+[data-app="blink"] .blink-room { display: flex; flex-direction: column; padding: 6px var(--lm-side) 16px; }
+[data-app="blink"] .blink-day { align-self: center; padding: 12px 0 10px; font-size: var(--lm-text-caption-1-size); color: var(--lm-label-2); }
+[data-app="blink"] .blink-line { display: flex; flex-direction: column; align-items: flex-start; max-width: 100%; margin: 2px 0; }
+[data-app="blink"] .blink-line.out { align-items: flex-end; }
+[data-app="blink"] .blink-bubble { max-width: 280px; padding: 8px 12px; border-radius: 16px; border-top-left-radius: 5px; background: var(--lm-bg-tertiary); color: var(--lm-label); font-size: var(--lm-text-callout-size); line-height: 1.35; word-break: keep-all; overflow-wrap: anywhere; }
+[data-app="blink"] .blink-line.out .blink-bubble { background: var(--lm-fill); border-radius: 16px; border-top-right-radius: 5px; }
+[data-app="blink"] .blink-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: var(--lm-text-caption-2-size); color: var(--lm-label-2); }
+[data-app="blink"] .blink-timer { display: inline-flex; align-items: center; gap: 3px; color: var(--lm-warning-ink); }
+[data-app="blink"] .blink-timer .ic { width: 12px; height: 12px; }
+[data-app="blink"] .blink-profile { padding: 0 0 8px; }
+[data-app="blink"] .blink-photo { width: 240px; max-width: calc(100% - 32px); margin: 4px auto 14px; border-radius: 14px; overflow: hidden; }
+[data-app="blink"] .blink-prof-name { text-align: center; font-size: var(--lm-text-title-2-size); font-weight: 700; }
+[data-app="blink"] .blink-prof-sub { text-align: center; margin: 3px 0 16px; font-size: var(--lm-text-footnote-size); color: var(--lm-label-2); }
+[data-app="blink"] .blink-profile .grp { margin: 0 16px; }
+[data-app="blink"] .blink-note { padding: 12px 16px; font-size: var(--lm-text-subhead-size); line-height: 1.4; color: var(--lm-label-2); }
+
+@media (max-width: 360px) {
+  [data-app="phone"] .phone-pad { grid-template-columns: repeat(3, 64px); gap: 10px 20px; }
+  [data-app="phone"] .phone-key { width: 64px; height: 64px; }
+  [data-app="phone"] .phone-key b { font-size: 30px; }
+  [data-app="msg"] .msg-bubble { max-width: 232px; }
+  [data-app="talk"] .talk-bubble { max-width: 200px; }
+  [data-app="talk"] .talk-body { max-width: 230px; }
+  [data-app="blink"] .blink-bubble { max-width: 232px; }
+  [data-app="blink"] .blink-banner { font-size: var(--lm-text-caption-2-size); }
+  [data-app="blink"] .blink-photo { width: 200px; }
+}
+
+/* 방을 여는 순간 각 "1"은 160ms 페이드로 사라진다. */
+[data-app="talk"] .talk-unread { transition: opacity 160ms ease; }
+[data-app="talk"] .talk-unread.fading { opacity: 0; }
+
+[data-app="talk"] .talk-mutedot { display: inline-block; width: 8px; height: 8px; margin: 0 4px; border-radius: 50%; background: var(--lm-tint); }

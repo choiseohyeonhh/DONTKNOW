@@ -1,0 +1,962 @@
+/* 루프 — 사진 게시물(시각 중심) + 글 게시물(공개 확산) 결합.
+ * 설계: design/03-features/SNS_SPECIFICATION.md, SCREEN_SPECIFICATIONS_SNS_SETTINGS.md SCR-LOOP-*
+ * 캐논: NARRATIVE_CANON 3~4절, CHARACTERS 3·5절, EVIDENCE E-40·41·44·46·47·48·49·55·57·59·101·103·222 */
+(function () {
+  'use strict';
+  const LM = window.LM, h = LM.h, ui = LM.ui;
+
+  const S = {
+    account: 'dohyun.lee',
+    blocked: new Set(['moneycoach.kang', 'side.money.kr']),
+  };
+  const FOLLOWING = ['jihoon_j', 'harin.daily', 'seoa.film', 'campus.bowl', 'library.seat'];
+
+  const AC = {
+    'dohyun.lee': { handle: 'dohyun.lee', name: '이도현', bio: '한서대 경영 26', followers: 384, following: 200, posts: 2, self: true },
+    'dontknow__': { handle: 'dontknow__', name: '도현', bio: '', followers: 7, following: 9, posts: 23, private: true },
+    'jihoon_j': { handle: 'jihoon_j', name: '정지훈', bio: '', followers: 210, following: 188, posts: 3 },
+    'seoa.film': { handle: 'seoa.film', name: '한서아', bio: '영상과', followers: 612, following: 240, posts: 4 },
+    'harin.daily': { handle: 'harin.daily', name: '박하린', bio: '', followers: 890, following: 95, posts: 2 },
+    'minji.sw': { handle: 'minji.sw', name: '윤민지', bio: '', followers: 164, following: 171, posts: 2 },
+    'moneycoach.kang': { handle: 'moneycoach.kang', name: '머니코치 강', bio: '재테크·고액 알바 예방 콘텐츠', followers: '4.3만', following: 12, posts: 3, faceOn: false },
+    'side.money.kr': { handle: 'side.money.kr', name: '부업 추천', bio: '하루 30 가능 · 문의 블링크', followers: '3,100', following: 4, posts: 41, joined: '2025.09', prev: [['kang.side', '2025.09~11'], ['sidejob.pro', '2025.11~2026.01']] },
+    'jh_lee_99': { handle: 'jh_lee_99', name: '', bio: '', followers: 0, following: 3, posts: 0, joined: '2026.03.15', t2: true },
+    'campus.bowl': { handle: 'campus.bowl', name: '한서 학식', bio: '', followers: 1400, following: 70, posts: 2 },
+    'library.seat': { handle: 'library.seat', name: '도서관 자리', bio: '', followers: 320, following: 110, posts: 1 },
+    'night.bus': { handle: 'night.bus', name: '야간 버스', bio: '', followers: 780, following: 55, posts: 1 },
+  };
+  /* 계정 팔로워·팔로잉·소개 중 캐논에 없는 값은 자리표시(캐논 없음)다. */
+
+  const POSTS = [
+    { id: 'dh-100', kind: 'photo', author: 'dohyun.lee', at: '2025.10.03', pinned: true, caption: '우리 100일 🤍', media: ['100일 · 서아와'], tags: ['seoa.film'], likes: 212, comments: [{ author: 'seoa.film', at: '2025.10.03', body: '🤍' }], eid: 'E-59' },
+    { id: 'dh-last', kind: 'photo', author: 'dohyun.lee', at: '3/8', caption: '캠퍼스.', media: ['캠퍼스 오후'], likes: 96, comments: [{ author: 'jh_lee_99', at: '3/15 13:20', body: '도현아 연락 좀 해 ㅠㅠ 걱정돼', t2: true }] },
+    { id: 'jh-0105', kind: 'photo', author: 'jihoon_j', at: '1/5', location: '리버뷰타워', caption: '용돈 벌이 성공 ㅋ', media: ['현금 사진'], likes: 48, comments: [], eid: 'E-55' },
+    { id: 'harin-0308', kind: 'text', author: 'harin.daily', at: '3/8 22:40', eid: 'E-47', body: '할머니가 3월 6일에 2,800만 원을 당하셨어요. 경찰은 아직 아무 말도 없고요. 상대 계좌는 "누리 352-****-7731 이*현"이라고만 나옵니다. 같은 피해 보신 분 계시면 꼭 알려 주세요. 제발요.', likes: 1204, commentCount: 112,
+      likesList: [{ handle: 'dohyun.lee', at: '3/9 03:12' }, { handle: 'campus.bowl', at: '3/9 01:10' }, { handle: 'library.seat', at: '3/9 00:52' }],
+      comments: [{ author: 'campus.bowl', at: '3/9 00:41', body: '힘내세요…' }, { author: 'library.seat', at: '3/9 01:02', body: '같은 계좌 저도 봤어요' }] }, // 댓글 2건 자리표시(캐논 없음)
+    { id: 'kang-0305', kind: 'photo', author: 'moneycoach.kang', at: '3/5', caption: '새 사무실 🔑', media: ['창밖 성원대교', '화이트보드'], likes: 3021, comments: [], edited: true, editHistory: [{ at: '3/15 03:00', from: '리버뷰타워', to: '위치 태그 없음', t2: true }], eid: 'E-48' },
+    { id: 'kang-0220', kind: 'text', author: 'moneycoach.kang', at: '2/20', body: '고액 알바 조심하세요 여러분 그치?', likes: 842, commentCount: 57, comments: [], eid: 'E-57' },
+    { id: 'kang-0202', kind: 'photo', author: 'moneycoach.kang', at: '2/2', caption: '새 차 🖤', media: ['검은 SUV', '녹색 문자판 시계'], likes: 5100, comments: [], eid: 'E-49' },
+    { id: 'minji-0120', kind: 'photo', author: 'minji.sw', at: '1/20', location: '리버뷰타워', caption: '교육 끝 🍰', media: ['케이크', 'SUV 스마트키', '손목의 초록 시계', '창밖 성원대교'], likes: 76, comments: [], layer: 'T2', eid: 'E-104' },
+    { id: 'minji-0313', kind: 'text', author: 'minji.sw', at: '3/13', body: '계좌 정지… 다들 고액알바 조심해', likes: 22, commentCount: 8, comments: [], layer: 'T2', eid: 'E-105' },
+    { id: 'noise-1', kind: 'photo', author: 'campus.bowl', at: '3/13', caption: '오늘 학식', media: ['학식'], likes: 61, comments: [] },
+    { id: 'noise-2', kind: 'text', author: 'library.seat', at: '3/12', body: '3층 창가 자리 비었어요', likes: 9, commentCount: 2, comments: [] },
+    { id: 'noise-3', kind: 'photo', author: 'night.bus', at: '3/11', caption: '막차', media: ['야간 버스'], likes: 33, comments: [] },
+  ];
+  /* dh-last의 시각·문구, 단역 3개, 좋아요·팔로워 수는 자리표시(캐논 없음). */
+
+  const DK_POSTS = [
+    { id: 'dk-1', kind: 'text', author: 'dontknow__', at: '2024.08', body: '시작 7,420', eid: 'E-56' },
+    { id: 'dk-2', kind: 'text', author: 'dontknow__', at: '2025.12', body: '합격. 남은 거 5,620' },
+    { id: 'dk-3', kind: 'text', author: 'dontknow__', at: '1/9', body: '새 알바 하루 30' },
+    { id: 'dk-4', kind: 'photo', author: 'dontknow__', at: '1/20', caption: '알바 동기들', media: ['교육 단체사진 · 오른쪽이 잘림'], edited: true },
+    { id: 'dk-5', kind: 'text', author: 'dontknow__', at: '1/27', body: '300 보냄' },
+    { id: 'dk-6', kind: 'text', author: 'dontknow__', at: '2/14', body: '끝' },
+    { id: 'dk-7', kind: 'text', author: 'dontknow__', at: '2/26', body: '남은 거 4,820' },
+    { id: 'dk-8', kind: 'text', author: 'dontknow__', at: '3/9 04:02', body: '나 뭐 한 거냐' },
+    { id: 'dk-9', kind: 'text', author: 'dontknow__', at: '3/12', body: '정지됐다 다행이다' },
+    { id: 'dk-10', kind: 'text', author: 'dontknow__', at: '2024.10', body: '6,800' },
+    { id: 'dk-11', kind: 'text', author: 'dontknow__', at: '2024.12', body: '오늘 30' }, // 자리표시(캐논 없음) — CHARACTERS의 예시 문구
+    { id: 'dk-12', kind: 'text', author: 'dontknow__', at: '2025.02', body: '3,200' },
+    { id: 'dk-13', kind: 'text', author: 'dontknow__', at: '2025.04', body: '월요일' },
+    { id: 'dk-14', kind: 'text', author: 'dontknow__', at: '2025.06', body: '1,400' },
+    { id: 'dk-15', kind: 'text', author: 'dontknow__', at: '2025.08', body: '내일' },
+    { id: 'dk-16', kind: 'text', author: 'dontknow__', at: '2025.10', body: '4,900' },
+    { id: 'dk-17', kind: 'text', author: 'dontknow__', at: '2025.11', body: '30' },
+    { id: 'dk-18', kind: 'text', author: 'dontknow__', at: '2025.12', body: '12월' },
+    { id: 'dk-19', kind: 'text', author: 'dontknow__', at: '1/2', body: '2,100' },
+    { id: 'dk-20', kind: 'text', author: 'dontknow__', at: '1/15', body: '밤' },
+    { id: 'dk-21', kind: 'text', author: 'dontknow__', at: '2/3', body: '5,100' },
+    { id: 'dk-22', kind: 'text', author: 'dontknow__', at: '2/20', body: '내일' },
+    { id: 'dk-23', kind: 'text', author: 'dontknow__', at: '3/2', body: '4,820' },
+  ];
+  /* DK_POSTS 10~23: Q-OPEN-136 문구·시각 미확정 → 숫자·짧은 문장 자리표시(캐논 없음). */
+
+  const STORIES = {
+    own: { author: 'dohyun.lee', at: '3/14 19:40', black: true, text: '.', own: true, eid: 'E-41', viewers: [{ handle: 'moneycoach.kang', at: '3/14 19:44' }, { handle: 'jihoon_j', at: '3/14 19:47' }, { handle: 'seoa.film', at: '3/14 19:52' }], viewerMore: 31 },
+    'seoa-3': { author: 'seoa.film', at: '3/14 21:40', media: '홍대입구역 밤', location: '홍대입구역', text: '', archived: true, eid: 'E-42' },
+    'seoa-4': { author: 'seoa.film', at: '3/12 00:10', media: '새벽 거리', text: '', archived: true },
+    'seoa-2': { author: 'seoa.film', at: '2/14', media: '혼자', text: '혼자 🙃', archived: true, eid: 'E-58' },
+    'jihoon-arch': { author: 'jihoon_j', at: '3/15', black: true, text: '…', archived: true },
+    'minji-1': { author: 'minji.sw', at: '1월', media: '출근길', text: '알바' },
+    'kang-ad': { author: 'moneycoach.kang', at: '', media: '추천 부업 카드', text: '추천 부업', eid: 'E-102' },
+  };
+  /* 세계 사건(EV-40·42·44·17)이 만드는 스토리. 실제 데이터는 이벤트 플래그를 볼 때만 붙는다. */
+  STORIES['jihoon-new'] = { author: 'jihoon_j', at: '3/17 21:40', black: true, text: '…' };
+  STORIES['seoa-new'] = { author: 'seoa.film', at: '3/18 01:10', media: '새벽 거리', text: '잠이 안 온다' };
+  STORIES['kang-new'] = { author: 'moneycoach.kang', at: '3/17 23:30', media: '야근', text: '야근 🌃', eid: 'E-223' };
+  STORIES['imp-leak'] = { author: 'jh_lee_99', at: '3/18', media: '성원구청역 2번 출구', text: '' };
+  const HIGHLIGHTS = {
+    'seoa.film': [{ title: '2월', key: 'seoa-2' }, { title: '3/12', key: 'seoa-4' }, { title: '3월', key: 'seoa-3' }],
+    'moneycoach.kang': [{ title: '추천 부업', key: 'kang-ad' }],
+    'minji.sw': [{ title: '알바', key: 'minji-1' }],
+  };
+
+  const ACTIVITY = [
+    { icon: 'heart', text: 'harin.daily 글에 좋아요를 눌렀습니다', meta: '3/9 03:12', target: 'harin-0308', eid: 'E-43' },
+    { icon: 'bookmark', text: 'harin.daily 글을 저장했습니다', meta: '3/9 03:15', target: 'harin-0308', eid: 'E-43' },
+    { icon: 'user', text: 'moneycoach.kang을 팔로우했습니다', meta: '1/6', eid: 'E-44' },
+    { icon: 'user', text: 'moneycoach.kang 팔로우를 취소했습니다', meta: '3/12 00:10', eid: 'E-44' },
+    { icon: 'search', text: '검색: side.money.kr', meta: '3/11 23:40' },
+    { icon: 'search', text: '검색: kang.side · 결과 없음', meta: '3/11 23:52' },
+    { icon: 'search', text: '검색: 머니코치 강 실장', meta: '3/11 23:58' },
+    { icon: 'shield', text: 'moneycoach.kang·side.money.kr을 차단했습니다', meta: '3/15 01:02 · 슬레이트에서', t2: true, eid: 'E-222' },
+  ];
+
+  const PLACES = {
+    '리버뷰타워': { address: '성원대교 전망', count: 9 },
+    '청운고시원': { address: '성원구청로 18', count: 0 },
+    '해담고시텔': { address: '성원구청로 31, 2층', count: 0 },
+    '홍대입구역': { address: '서울 마포구', count: 0 },
+  };
+
+  LM.register({
+    id: 'loop',
+    render(app) {
+      app.setTabs([
+        { label: '홈', icon: 'home', build: (nav) => feed(nav) },
+        { label: '검색', icon: 'search', build: (nav) => searchTab(nav) },
+        { label: '만들기', icon: 'plus', build: (nav) => createTab(nav) },
+        { label: '활동', icon: 'heart', build: (nav) => activityTab(nav) },
+        { label: '프로필', icon: 'user', build: (nav) => selfProfile(nav) },
+      ], 0);
+    },
+  });
+
+  const isBlocked = (handle) => S.blocked.has(handle);
+  const byId = (id) => POSTS.find((p) => p.id === id) || DK_POSTS.find((p) => p.id === id);
+  function ambientAcct(handle) {
+    const a = LM.ambient && LM.ambient.account(handle);
+    if (!a) return null;
+    return {
+      handle: a.handle, name: a.displayName || a.name, bio: a.bio || '',
+      followers: a.followers, following: '—', posts: ambientFeed().filter((p) => p.author === a.handle).length,
+      ambient: true, circle: a.circle, followsDohyun: a.followsDohyun,
+    };
+  }
+  const avName = (handle) => (AC[handle] && AC[handle].name) || (LM.ambient && LM.ambient.account(handle) && (LM.ambient.account(handle).displayName || LM.ambient.account(handle).name)) || handle;
+  const acct = (handle) => AC[handle] || ambientAcct(handle);
+  const navBtn = (icon, label, onClick) => h('button', { class: 'nb-btn', 'aria-label': label, onclick: onClick }, LM.icon(icon));
+  const fmt = (n) => (typeof n === 'number' ? n.toLocaleString('ko-KR') : n);
+  function dateAbs(v) {
+    if (v == null || v === '') return '';
+    const withTime = /\d{1,2}:\d{2}/.test(String(v));
+    return LM.fmt.date(v, 'abs') + (withTime ? ' ' + LM.fmt.date(v, 'hm') : '');
+  }
+  function postVisible(p) { return LM.visible(p) && !LM.isDeleted('loop', p.id); }
+
+  function headRow(p, nav) {
+    const acc = AC[p.author] || (LM.ambient && LM.ambient.account(p.author)) || { handle: p.author };
+    return h('div', { class: 'lp-head' },
+      h('button', { class: 'lp-avbtn', 'aria-label': acc.handle + ' 프로필', onclick: () => openProfile(nav, p.author) }, ui.avatar(avName(p.author), 32)),
+      h('button', { class: 'lp-who', onclick: () => openProfile(nav, p.author) },
+        h('span', { class: 'lp-handle' }, acc.handle),
+        p.location ? h('span', { class: 'lp-sub' }, p.location) : null),
+      p.edited ? h('button', { class: 'lp-edited', onclick: () => editHistory(nav, p) }, '편집됨') : null,
+      h('span', { class: 'lp-flex' }),
+      h('button', { class: 'lp-more', 'aria-label': '더보기', onclick: (e) => { e.stopPropagation(); postMenu(nav, p); } }, LM.icon('more')));
+  }
+
+  function mediaEl(media, opts) {
+    if (media && typeof media === 'object' && media.scene) return LM.ambient.illustration(media, opts || {});
+    return ui.photo(media, opts);
+  }
+
+  function photoMedia(nav, p, onDouble, onOpen) {
+    const wrap = h('div', { class: 'lp-media' });
+    let i = 0;
+    const draw = () => {
+      wrap.replaceChildren(mediaEl(p.media[i], { ratio: '4 / 5', alt: p.media[i] && (p.media[i].alt || p.caption || p.media[i].scene) || p.caption, caption: false }));
+      if (p.media.length > 1) {
+        wrap.appendChild(h('span', { class: 'lp-count' }, (i + 1) + '/' + p.media.length));
+        wrap.appendChild(h('button', { class: 'lp-nav prev', 'aria-label': '이전 사진', onclick: (e) => { e.stopPropagation(); i = (i + p.media.length - 1) % p.media.length; draw(); } }, LM.icon('chevron-left')));
+        wrap.appendChild(h('button', { class: 'lp-nav next', 'aria-label': '다음 사진', onclick: (e) => { e.stopPropagation(); i = (i + 1) % p.media.length; draw(); } }, LM.icon('chevron-right')));
+        wrap.appendChild(h('div', { class: 'lp-dots' }, p.media.map((_, j) => h('i', { class: j === i ? 'on' : '' }))));
+      }
+    };
+    draw();
+    if (p.eid) LM.longPress(wrap, () => ui.share({ eid: p.eid, title: p.caption || p.body || p.media[0], kind: 'post', app: 'loop' }));
+    let last = 0;
+    let tapTimer = null;
+    wrap.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      const now = Date.now();
+      if (now - last < 320) {
+        if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; }
+        onDouble && onDouble();
+        const burst = LM.svg('<svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10A4.5 4.5 0 0 1 12 7.2 4.5 4.5 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/></svg>', 'lp-burst');
+        wrap.appendChild(burst);
+        setTimeout(() => burst.remove(), 650);
+      } else if (onOpen) {
+        if (tapTimer) clearTimeout(tapTimer);
+        tapTimer = setTimeout(() => { tapTimer = null; onOpen(); }, 300);
+      }
+      last = now;
+    });
+    return wrap;
+  }
+
+  function toggleLike(p, btn, lbl) {
+    if (!p.noise && LM.trace && LM.online()) LM.trace('TR-14', { action: p.liked ? 'unlike' : 'like', author: p.author, post: p.id });
+    if (p.author === 'moneycoach.kang' && LM.ev && LM.ev.kangSeen) LM.ev.kangSeen();
+    p.liked = !p.liked;
+    p.likes = (p.likes || 0) + (p.liked ? 1 : -1);
+    if (btn) {
+      btn.classList.toggle('on', p.liked);
+      btn.setAttribute('aria-pressed', p.liked);
+      btn.replaceChildren(LM.icon(p.liked ? 'heart-fill' : 'heart', 'lp-ic'), p.kind === 'text' ? h('span', null, fmt(p.likes)) : null);
+    }
+    if (lbl) lbl.textContent = '좋아요 ' + fmt(p.likes) + '개';
+  }
+
+  function hashtagRow(nav, p) {
+    if (!p.hashtags || !p.hashtags.length) return null;
+    return h('div', { class: 'lp-tags' }, p.hashtags.map((t) => h('button', { class: 'lp-tag', onclick: () => nav.push(() => tagPage(nav, t)) }, t)));
+  }
+
+  function photoCard(nav, p) {
+    const likeLabel = h('button', { class: 'lp-likes', onclick: () => likesSheet(nav, p) }, '좋아요 ' + fmt(p.likes || 0) + '개');
+    const likeBtn = h('button', { class: 'lp-act', 'aria-label': '좋아요', 'aria-pressed': !!p.liked, onclick: () => toggleLike(p, likeBtn, likeLabel) }, LM.icon(p.liked ? 'heart-fill' : 'heart', 'lp-ic'));
+    const saveBtn = h('button', { class: 'lp-act', 'aria-label': '저장', 'aria-pressed': !!p.saved, onclick: () => { p.saved = !p.saved; saveBtn.classList.toggle('on', !!p.saved); saveBtn.setAttribute('aria-pressed', !!p.saved); ui.toast(p.saved ? '저장했습니다' : '저장을 취소했습니다'); } }, LM.icon('bookmark', 'lp-ic'));
+    const art = h('article', { class: 'lp-card', 'aria-label': p.author + ' 사진 게시물' },
+      headRow(p, nav),
+      photoMedia(nav, p, () => { if (!p.liked) toggleLike(p, likeBtn, likeLabel); }, () => nav.push(() => postDetail(nav, p))),
+      h('div', { class: 'lp-acts' },
+        likeBtn,
+        h('button', { class: 'lp-act', 'aria-label': '댓글', onclick: () => nav.push(() => postDetail(nav, p)) }, LM.icon('comment', 'lp-ic')),
+        h('button', { class: 'lp-act', 'aria-label': '공유', onclick: () => ui.share({ eid: p.eid, title: p.caption || p.body || '사진 게시물', kind: 'post', app: 'loop' }) }, LM.icon('share', 'lp-ic')),
+        h('span', { class: 'lp-flex' }),
+        saveBtn),
+      likeLabel,
+      h('div', { class: 'lp-cap' }, h('button', { class: 'lp-handle', onclick: () => openProfile(nav, p.author) }, p.author), ' ', p.caption),
+      p.location ? h('button', { class: 'lp-loc', onclick: () => nav.push(() => placePage(nav, p.location)) }, LM.icon('pin'), p.location) : null,
+      p.tags && p.tags.length ? h('div', { class: 'lp-tags' }, p.tags.map((t) => h('button', { class: 'lp-tag', onclick: () => openProfile(nav, t) }, '@' + t))) : null,
+      hashtagRow(nav, p),
+      h('button', { class: 'lp-allc', onclick: () => nav.push(() => postDetail(nav, p)) }, '댓글 ' + ((p.comments && p.comments.length) || 0) + '개 모두 보기'));
+    art.dataset.del = 'loop:' + p.id;
+    return art;
+  }
+
+  function textCard(nav, p) {
+    const likeBtn = h('button', { class: 'lp-act', 'aria-label': '좋아요', 'aria-pressed': !!p.liked, onclick: () => toggleLike(p, likeBtn, null) }, LM.icon(p.liked ? 'heart-fill' : 'heart', 'lp-ic'), h('span', null, fmt(p.likes || 0)));
+    const reBtn = h('button', { class: 'lp-act', 'aria-label': '리포스트', 'aria-pressed': !!p.reposted, onclick: () => { p.reposted = !p.reposted; if (LM.trace && LM.online()) LM.trace('TR-14', { action: p.reposted ? 'repost' : 'unrepost', author: p.author, post: p.id }); reBtn.classList.toggle('on', p.reposted); reBtn.setAttribute('aria-pressed', p.reposted); ui.toast(p.reposted ? '리포스트했습니다' : '리포스트를 취소했습니다'); } }, LM.icon('repost', 'lp-ic'), h('span', null, fmt((p.repostCount || 0) + (p.reposted ? 1 : 0))));
+    const art = h('article', { class: 'lp-card lp-textcard', 'aria-label': p.author + ' 글 게시물' },
+      headRow(p, nav),
+      h('div', { class: 'lp-body', onpointerdown: (e) => { if (p.eid) LM.longPress(e.currentTarget, () => ui.share({ eid: p.eid, title: p.body || '글 게시물', kind: 'post', app: 'loop' })); } }, p.body),
+      p.media && p.media.length ? h('div', { class: 'lp-tmedia' }, p.media.map((m) => mediaEl(m, { ratio: '1 / 1', alt: p.caption || p.body, caption: false, square: true }))) : null,
+      h('div', { class: 'lp-acts' },
+        h('button', { class: 'lp-act', 'aria-label': '댓글', onclick: () => nav.push(() => postDetail(nav, p)) }, LM.icon('comment', 'lp-ic'), h('span', null, fmt(p.commentCount || (p.comments && p.comments.length) || 0))),
+        reBtn,
+        likeBtn,
+        h('span', { class: 'lp-flex' }),
+        h('button', { class: 'lp-act', 'aria-label': '저장', onclick: () => { p.saved = !p.saved; ui.toast(p.saved ? '저장했습니다' : '저장을 취소했습니다'); } }, LM.icon('bookmark', 'lp-ic'))),
+      h('div', { class: 'lp-meta' }, dateAbs(p.at)),
+      hashtagRow(nav, p));
+    art.dataset.del = 'loop:' + p.id;
+    return art;
+  }
+
+  let feedDraw = null;
+  let feedMode = '팔로잉';
+
+  function postTime(p) {
+    if (p.createdAt) { const t = new Date(p.createdAt).getTime(); return Number.isFinite(t) ? t : 0; }
+    const d = LM.fmt.toDate(p.at, 2026);
+    return d ? d.getTime() : 0;
+  }
+  function adaptAmbient(p) {
+    if (p._card) return p._card;
+    const comments = (p.comments || []).map((c) => ({ author: c.author, at: LM.fmt.list(c.createdAt), body: c.body }));
+    const c = Object.assign({}, p, {
+      at: p.createdAt, tags: null, location: p.place || null,
+      commentCount: (p.comments || []).length, comments: comments,
+      noise: true, ambientPost: true, likes: p.likes || 0,
+    });
+    p._card = c;
+    return c;
+  }
+  function ambientFeed() { return LM.ambient.posts().map(adaptAmbient); }
+  function isKeyPost(p) { return !!p.eid || !!p.pinned || p.author === 'dohyun.lee' || p.author === 'dontknow__'; }
+  function mergeFeed() {
+    const list = [];
+    POSTS.forEach((p) => { if (FOLLOWING.includes(p.author) && !isBlocked(p.author) && postVisible(p)) list.push(p); });
+    ambientFeed().forEach((p) => { if (!isBlocked(p.author)) list.push(p); });
+    return list.sort((a, b) => postTime(b) - postTime(a) || String(b.id).localeCompare(String(a.id)));
+  }
+  function exploreList() {
+    const list = ambientFeed().filter((p) => !isBlocked(p.author));
+    POSTS.forEach((p) => { if (!FOLLOWING.includes(p.author) && p.author !== 'dohyun.lee' && !p.eid && !p.pinned && !isBlocked(p.author) && postVisible(p)) list.push(p); });
+    return list.sort((a, b) => postTime(b) - postTime(a) || String(b.id).localeCompare(String(a.id)));
+  }
+
+  function feed(nav) {
+    const w = (LM.G && LM.G.world) || {};
+    if (LM.online() && LM.trace && !(LM.G && LM.G.device && LM.G.device.activity === false)) LM.trace('TR-03');
+    const storyRow = h('div', { class: 'lp-stories' },
+      storyBtn(nav, 'dohyun.lee', '내 스토리', 'own'),
+      storyBtn(nav, 'seoa.film', 'seoa.film', w.storySeoa ? 'seoa-new' : 'seoa-3'),
+      storyBtn(nav, 'jihoon_j', 'jihoon_j', w.storyJihoon ? 'jihoon-new' : 'jihoon-arch', 'seen'),
+      w.storyKang && !isBlocked('moneycoach.kang') ? storyBtn(nav, 'moneycoach.kang', 'moneycoach.kang', 'kang-new') : null,
+      w.leakStory ? storyBtn(nav, 'jh_lee_99', 'jh_lee_99', 'imp-leak') : null);
+    const slot = h('div', { class: 'lp-feed' });
+    const noticeSlot = h('div', { class: 'lp-noticeslot' });
+    const pill = h('button', { class: 'lp-newpill', hidden: true, onclick: () => {
+      LM.ambient.liveDue().forEach((p) => shownLive.add(p.id));
+      pill.hidden = true;
+      draw();
+      if (scroller) scroller.scrollTop = 0;
+    } }, '새 게시물');
+    const seg = ui.segmented(['팔로잉', '추천'], feedMode, (m) => { feedMode = m; draw(); });
+    let shownLive = new Set(LM.ambient.liveDue().map((p) => p.id));
+    let limit = 80;
+    let scroller = null;
+
+    const draw = () => {
+      noticeSlot.replaceChildren();
+      if (!LM.online()) noticeSlot.appendChild(ui.notice('오프라인 저장본 · 3/15 03:58 기준. 피드는 캐시만 보입니다.', 'warn'));
+      const list = feedMode === '팔로잉' ? mergeFeed() : exploreList();
+      const cards = list.slice(0, limit).map((p) => (p.kind === 'photo' ? photoCard(nav, p) : textCard(nav, p)));
+      if (feedMode === '추천') cards.unshift(adCard());
+      if (!cards.length) cards.push(ui.empty({ icon: 'grid', title: '게시물이 없습니다' }));
+      if (list.length > limit) cards.push(h('button', { class: 'lp-morebtn', onclick: () => { limit += 80; draw(); } }, '게시물 더 보기'));
+      slot.replaceChildren(...cards);
+      if (feedMode === '추천') LM.ambient.posts().forEach((p) => shownLive.add(p.id));
+    };
+    draw();
+    feedDraw = draw;
+
+    const refresh = navBtn('refresh', '새로 고침', () => {
+      if (!LM.online()) { noticeSlot.replaceChildren(ui.notice('오프라인 상태입니다. Wi-Fi에 연결하면 새로 고침할 수 있습니다.', 'warn')); ui.toast('오프라인'); }
+      else {
+        LM.ambient.liveDue().forEach((p) => shownLive.add(p.id));
+        pill.hidden = true;
+        noticeSlot.replaceChildren();
+        draw();
+        if (scroller) scroller.scrollTop = 0;
+      }
+    });
+
+    const dmBadge = h('span', { class: 'lp-badge' }, String(LM.read.unreadCount('loop') || ''));
+    dmBadge.hidden = !LM.read.unreadCount('loop');
+    const offRead = LM.on('read', () => {
+      if (!dmBadge.isConnected) { offRead(); return; }
+      const n = LM.read.unreadCount('loop');
+      dmBadge.textContent = n ? String(n) : '';
+      dmBadge.hidden = !n;
+    });
+    const offTick = LM.on('tick', () => {
+      if (!slot.isConnected) { offTick(); return; }
+      if (!LM.online()) return;
+      const due = LM.ambient.liveDue();
+      const fresh = due.filter((p) => !shownLive.has(p.id));
+      if (fresh.length) { pill.textContent = '새 게시물 ' + fresh.length + '개'; pill.hidden = false; }
+    });
+    const page = ui.page({
+      title: '루프', large: false, nav,
+      right: [refresh, navBtn('search', '검색', () => nav.select(1)), h('button', { class: 'nb-btn lp-dmbtn', 'aria-label': '메시지', onclick: () => nav.push(() => dmList(nav)) }, LM.icon('send'), dmBadge)],
+      body: [storyRow, seg, noticeSlot, pill, slot],
+    });
+    scroller = page.scroller;
+    return page;
+  }
+
+  function storyBtn(nav, handle, label, key, ring) {
+    return h('button', { class: 'lp-story', 'aria-label': label + ' 스토리', onclick: () => openStory(nav, key) },
+      ui.avatar(avName(handle), 60, { ring: ring || true }),
+      h('span', { class: 'lp-storyname' }, label));
+  }
+
+  function adCard() {
+    return h('div', { class: 'lp-card lp-ad' },
+      h('div', { class: 'lp-adbadge' }, '광고'),
+      h('div', { class: 'lp-adbody' }, '추천 부업', h('small', null, '관심 있을 만한 콘텐츠')),
+      h('button', { class: 'lp-adlink', onclick: () => ui.toast('광고입니다') }, '자세히'));
+  }
+
+  /* ---------- 게시물 상세 ---------- */
+  function postDetail(nav, p) {
+    if (p.eid) LM.C.see(p.eid);
+    LM.setEid(p.eid || null);
+    const isPhoto = p.kind === 'photo';
+    const commentsEl = h('div', { class: 'lp-comments' });
+    const countEl = h('div', { class: 'lp-cmore' });
+    const likeLabel = h('button', { class: 'lp-likes', onclick: () => likesSheet(nav, p) }, '좋아요 ' + fmt(p.likes || 0) + '개');
+    const likeBtn = h('button', { class: 'lp-act', 'aria-label': '좋아요', 'aria-pressed': !!p.liked, onclick: () => toggleLike(p, likeBtn, likeLabel) }, LM.icon(p.liked ? 'heart-fill' : 'heart', 'lp-ic'));
+    const renderComments = () => {
+      const list = (p.comments || []).filter((c) => LM.visible(c));
+      countEl.textContent = '댓글 ' + fmt(p.commentCount || list.length) + '개';
+      commentsEl.replaceChildren(...(list.length ? list.map((c) => h('div', { class: 'lp-comment' + (c.deleted ? ' deleted' : '') },
+        ui.avatar(avName(c.author), 32),
+        h('div', { class: 'lp-ctext' },
+          h('div', { class: 'lp-cmeta' }, h('button', { class: 'lp-chandle', onclick: () => openProfile(nav, c.author) }, AC[c.author] ? AC[c.author].handle : c.author), h('span', null, c.at)),
+          h('div', { class: 'lp-cbody' }, c.deleted ? '삭제된 댓글입니다 · ' + c.at : c.body),
+          c.pending ? h('div', { class: 'lp-pending' }, '전송 대기') : null))) : [h('div', { class: 'lp-nocomment' }, '댓글이 없습니다')]));
+    };
+    renderComments();
+
+    const body = [headRow(p, nav)];
+    if (isPhoto) {
+      body.push(photoMedia(nav, p, () => { if (!p.liked) toggleLike(p, likeBtn, likeLabel); }));
+      body.push(h('div', { class: 'lp-acts' },
+        likeBtn,
+        h('button', { class: 'lp-act', 'aria-label': '댓글', onclick: () => { const i = nav.root.querySelector('.lp-composer input'); if (i) i.focus(); } }, LM.icon('comment', 'lp-ic')),
+        h('button', { class: 'lp-act', 'aria-label': '공유', onclick: () => ui.share({ eid: p.eid, title: p.caption || p.body || '사진 게시물', kind: 'post', app: 'loop' }) }, LM.icon('share', 'lp-ic')),
+        h('span', { class: 'lp-flex' }),
+        h('button', { class: 'lp-act', 'aria-label': '저장', onclick: () => { p.saved = !p.saved; ui.toast(p.saved ? '저장했습니다' : '저장을 취소했습니다'); } }, LM.icon('bookmark', 'lp-ic'))));
+      body.push(likeLabel);
+      body.push(h('div', { class: 'lp-cap' }, h('button', { class: 'lp-handle', onclick: () => openProfile(nav, p.author) }, p.author), ' ', p.caption));
+      if (p.location) body.push(h('button', { class: 'lp-loc', onclick: () => nav.push(() => placePage(nav, p.location)) }, LM.icon('pin'), p.location));
+      if (p.tags && p.tags.length) body.push(h('div', { class: 'lp-tags' }, p.tags.map((t) => h('button', { class: 'lp-tag', onclick: () => openProfile(nav, t) }, '@' + t))));
+      body.push(hashtagRow(nav, p));
+      body.push(h('div', { class: 'lp-meta' }, dateAbs(p.at)));
+    } else {
+      body.push(h('div', { class: 'lp-body lp-detailbody' }, p.body));
+      if (p.media && p.media.length) body.push(h('div', { class: 'lp-tmedia' }, p.media.map((m) => mediaEl(m, { ratio: '1 / 1', alt: p.caption || p.body, caption: false, square: true }))));
+      const reBtn = h('button', { class: 'lp-act', 'aria-label': '리포스트', 'aria-pressed': !!p.reposted, onclick: () => { p.reposted = !p.reposted; reBtn.classList.toggle('on', p.reposted); ui.toast(p.reposted ? '리포스트했습니다' : '리포스트를 취소했습니다'); } }, LM.icon('repost', 'lp-ic'), h('span', null, fmt(p.repostCount || 0)));
+      body.push(h('div', { class: 'lp-acts' },
+        h('button', { class: 'lp-act', 'aria-label': '댓글', onclick: () => { const i = nav.root.querySelector('.lp-composer input'); if (i) i.focus(); } }, LM.icon('comment', 'lp-ic'), h('span', null, fmt(p.commentCount || 0))),
+        reBtn, likeBtn,
+        h('button', { class: 'lp-act', 'aria-label': '인용', onclick: () => ui.toast('글 게시물만 인용할 수 있다') }, LM.icon('edit', 'lp-ic')),
+        h('span', { class: 'lp-flex' }),
+        h('button', { class: 'lp-act', 'aria-label': '저장', onclick: () => { p.saved = !p.saved; ui.toast(p.saved ? '저장했습니다' : '저장을 취소했습니다'); } }, LM.icon('bookmark', 'lp-ic'))));
+      body.push(hashtagRow(nav, p));
+      body.push(h('div', { class: 'lp-meta' }, dateAbs(p.at) + (p.edited ? ' · 편집됨' : '')));
+    }
+    body.push(h('div', { class: 'lp-cmore-wrap' }, countEl));
+    body.push(commentsEl);
+
+    const inp = h('input', { type: 'text', placeholder: '답글 달기…', 'aria-label': '답글' });
+    const send = h('button', { class: 'lp-send', onclick: () => sendComment(p, inp, renderComments) }, '게시');
+    const footer = h('div', { class: 'lp-composer' }, inp, send);
+    const page = ui.page({ title: '게시물', back: '뒤로', nav, large: false, body: [h('div', { data: { del: 'loop:' + p.id } }, body)], footer });
+    return page;
+  }
+
+  function sendComment(p, inp, render) {
+    const text = inp.value.trim();
+    if (!text) return;
+    if (!p.noise && LM.trace && LM.online()) LM.trace('TR-14', { action: 'comment', author: p.author, post: p.id });
+    p.comments = p.comments || [];
+    p.comments.push({ author: S.account, at: '지금', body: text, pending: !LM.online() });
+    p.commentCount = (p.commentCount || 0) + 1;
+    inp.value = '';
+    render();
+    ui.toast(LM.online() ? '댓글을 남겼습니다' : '오프라인 · 연결되면 전송됩니다');
+  }
+
+  function likesSheet(nav, p) {
+    const list = p.likesList || [{ handle: 'campus.bowl', at: p.at }, { handle: 'library.seat', at: p.at }, { handle: 'night.bus', at: p.at }];
+    const rows = list.map((l) => ui.row({ title: AC[l.handle] ? AC[l.handle].handle : l.handle, meta: LM.fmt.list(l.at), avatar: avName(l.handle), avatarSize: 44, onClick: (e) => { const w = e.target.closest('.sheet-wrap'); if (w) w.close(); openProfile(nav, l.handle); } }));
+    ui.sheet(nav.root, ui.sheetPage({ title: '좋아요 ' + fmt(p.likes || 0) + '개', body: ui.group({ plain: true, rows }) }), { size: 'medium' });
+  }
+
+  function editHistory(nav, p) {
+    LM.C.see('E-103');
+    if (!p.editHistory) { ui.toast('편집 기록이 없습니다'); return; }
+    const rows = p.editHistory.filter((e) => LM.visible(e)).map((e) => h('div', { class: 'lp-editrow' }, h('b', null, e.from), h('span', null, '→ ' + e.to), h('small', null, e.at)));
+    ui.sheet(nav.root, ui.sheetPage({ title: '편집 기록', body: h('div', { class: 'lp-editbox' }, rows) }), { size: 'medium' });
+  }
+
+  function postMenu(nav, p) {
+    const actions = [];
+    if (p.kind === 'text') actions.push({ label: '인용하기', onClick: () => ui.toast('글 게시물만 인용할 수 있다') });
+    if (p.kind === 'photo' || p.kind === 'text') actions.push({ label: '공유', onClick: () => ui.share({ eid: p.eid, title: p.caption || p.body || '게시물', kind: 'post', app: 'loop' }) });
+    actions.push({ label: p.saved ? '저장 취소' : '저장', onClick: () => { p.saved = !p.saved; ui.toast(p.saved ? '저장했습니다' : '저장을 취소했습니다'); } });
+    if (p.edited) actions.push({ label: '편집 기록 보기', onClick: () => editHistory(nav, p) });
+    actions.push({ label: '이 게시물 정보', onClick: () => ui.info('게시물 정보', [['작성자', p.author], ['시각', p.at], ['종류', p.kind === 'photo' ? '사진 게시물' : '글 게시물']]) });
+    ui.actionSheet({ actions });
+  }
+
+  /* ---------- 스토리 ---------- */
+  function openStory(nav, key) {
+    const st = STORIES[key];
+    if (!st) return;
+    if (!LM.online()) { ui.toast('스토리는 온라인이 필요합니다'); return; }
+    if (!st.own && LM.trace) LM.trace('TR-05', { handle: st.author, key: key });
+    if (key === 'kang-new' && LM.ev && LM.ev.kangSeen) LM.ev.kangSeen();
+    if (st.eid) LM.C.see(st.eid);
+    LM.setEid(st.eid || null);
+    const wrap = h('div', { class: 'lp-storyview', role: 'dialog', 'aria-modal': 'true' });
+    const close = () => wrap.remove();
+    const head = h('div', { class: 'lp-storyhead' },
+      ui.avatar(avName(st.author), 32),
+      h('div', { class: 'lp-storywho' }, h('b', null, AC[st.author] ? AC[st.author].handle : st.author), h('small', null, st.at + (st.own ? ' · 보관된 스토리' : st.archived ? ' · 지난 스토리' : ''))),
+      st.eid ? h('button', { class: 'lp-storyclose', 'aria-label': '공유', onclick: () => ui.share({ eid: st.eid, title: (AC[st.author] ? AC[st.author].handle : st.author) + ' 스토리', kind: 'story', app: 'loop' }) }, LM.icon('share')) : null,
+      h('button', { class: 'lp-storyclose', 'aria-label': '닫기', onclick: close }, LM.icon('close')));
+    const media = st.black
+      ? h('div', { class: 'lp-story-black' }, h('span', null, st.text))
+      : h('div', { class: 'lp-story-media' }, ui.photo(st.media, { ratio: '9 / 16', alt: st.media, caption: false }), st.text ? h('div', { class: 'lp-story-cap' }, st.text) : null);
+    if (st.location) media.appendChild(h('button', { class: 'lp-story-loc', onclick: () => { close(); nav.push(() => placePage(nav, st.location)); } }, LM.icon('pin'), st.location));
+    const foot = st.own
+      ? h('div', { class: 'lp-storyfoot' }, h('button', { class: 'lp-viewers', onclick: () => openViewers(nav, st) }, LM.icon('eye'), '조회자 ' + (st.viewers.length + (st.viewerMore || 0))))
+      : h('div', { class: 'lp-storyfoot' }, h('input', { placeholder: '답장…', 'aria-label': '스토리 답장' }), h('button', { class: 'lp-send', onclick: () => ui.toast(LM.online() ? '답장을 보냈습니다' : '온라인이 필요합니다') }, '보내기'));
+    wrap.append(h('div', { class: 'lp-prog' }, h('i')), head, media, foot);
+    nav.root.appendChild(wrap);
+  }
+
+  function openViewers(nav, st) {
+    const rows = st.viewers.map((v) => ui.row({ title: AC[v.handle] ? AC[v.handle].handle : v.handle, meta: LM.fmt.list(v.at), avatar: avName(v.handle), avatarSize: 56, onClick: (e) => {
+      const w = e.target.closest('.sheet-wrap'); if (w) w.close();
+      nav.root.querySelectorAll('.lp-storyview').forEach((el) => el.remove());
+      openProfile(nav, v.handle);
+    } }));
+    if (st.viewerMore) rows.push(ui.row({ title: '외 ' + st.viewerMore + '명', dim: true, avatar: '?', avatarSize: 56 }));
+    ui.sheet(nav.root, ui.sheetPage({ title: '조회자 ' + (st.viewers.length + (st.viewerMore || 0)) + '명', body: ui.group({ plain: true, rows }) }), { size: 'medium' });
+  }
+
+  /* ---------- 장소·태그 ---------- */
+  function placePosts(name) {
+    const out = [];
+    POSTS.forEach((p) => { if (p.location === name && !isBlocked(p.author) && postVisible(p)) out.push(p); });
+    ambientFeed().forEach((p) => { if (p.location === name && !isBlocked(p.author)) out.push(p); });
+    return out.sort((a, b) => postTime(b) - postTime(a));
+  }
+  function ambientPlaces() {
+    const m = Object.create(null);
+    ambientFeed().forEach((p) => {
+      if (!p.location) return;
+      if (!m[p.location]) m[p.location] = { name: p.location, address: '', count: 0 };
+      m[p.location].count++;
+    });
+    return m;
+  }
+  function placePage(nav, name) {
+    const place = PLACES[name] || ambientPlaces()[name] || { address: '', count: 0 };
+    const posts = placePosts(name);
+    place.count = Math.max(place.count || 0, posts.length);
+    const cells = posts.map((p) => h('button', { class: 'lp-cell', 'aria-label': p.caption, onclick: () => nav.push(() => postDetail(nav, p)) }, mediaEl(p.media && p.media[0], { ratio: '1 / 1', alt: p.caption || p.body, caption: false, square: true })));
+    if (name === '리버뷰타워') {
+      for (let i = cells.length; i < place.count; i++) cells.push(h('button', { class: 'lp-cell', onclick: () => ui.toast('게시물입니다') }, ui.photo('리버뷰타워 입주민 ' + i, { ratio: '1 / 1', alt: '입주민 게시물', caption: false }))); // 입주민 게시물 자리표시
+    }
+    return ui.page({
+      title: name, back: '뒤로', nav, large: false,
+      body: [h('div', { class: 'lp-placehead' }, h('b', null, name), h('span', null, place.address || ''), h('small', null, '게시물 ' + place.count + '개')),
+        cells.length ? h('div', { class: 'lp-grid3' }, cells) : ui.empty({ icon: 'pin', title: '게시물이 없습니다', text: '이 장소를 태그한 공개 게시물이 없습니다.' })],
+    });
+  }
+
+  function tagPage(nav, tag) {
+    const q = String(tag || '').replace(/^#/, '');
+    const list = ambientFeed().filter((p) => (p.hashtags || []).some((t) => String(t).replace(/^#/, '') === q));
+    return ui.page({
+      title: '#' + q, back: '뒤로', nav, large: false,
+      body: list.length
+        ? h('div', { class: 'lp-grid3' }, list.map((p) => h('button', { class: 'lp-cell', onclick: () => nav.push(() => postDetail(nav, p)) }, mediaEl(p.media && p.media[0], { ratio: '1 / 1', alt: p.caption || p.body, caption: false, square: true }))))
+        : ui.empty({ icon: 'search', title: '게시물이 없습니다', text: '이 태그를 단 배경 게시물이 없다.' }),
+    });
+  }
+
+  /* ---------- 프로필 ---------- */
+  let selfProfileDraw = null;
+
+  function openProfile(nav, handle) {
+    if (AC[handle] && AC[handle].t2 && !LM.online()) { ui.toast('온라인이 필요합니다'); return; }
+    if (!AC[handle] && !LM.ambient.account(handle) && !POSTS.some((p) => p.author === handle)) { ui.toast('계정을 찾을 수 없습니다'); return; }
+    nav.push(() => otherProfile(nav, handle));
+  }
+
+  function selfProfile(nav) {
+    const box = h('div', { class: 'lp-prof' });
+    const draw = () => { box.replaceChildren(...profileContent(nav, S.account, () => draw())); };
+    draw();
+    selfProfileDraw = draw;
+    const more = h('button', { class: 'nb-btn', 'aria-label': '더보기', onclick: () => selfMenu(nav, () => draw()) }, LM.icon('more'));
+    return ui.page({ title: '프로필', large: false, nav, right: more, body: box });
+  }
+
+  function otherProfile(nav, handle) {
+    const box = h('div', { class: 'lp-prof' });
+    const draw = () => { box.replaceChildren(...profileContent(nav, handle, () => draw())); };
+    draw();
+    const more = h('button', { class: 'nb-btn', 'aria-label': '더보기', onclick: () => profileMenu(nav, handle, () => draw()) }, LM.icon('more'));
+    return ui.page({ title: '@' + handle, back: '뒤로', nav, large: false, right: more, body: box });
+  }
+
+  function profileContent(nav, handle, redraw) {
+    const ac = acct(handle) || { handle, name: handle, followers: 0, following: 0, posts: 0 };
+    const me = S.account === handle;
+    const locked = (ac.private && !me) || (handle === 'dontknow__' && !me);
+    const blocked = isBlocked(handle) && !me;
+    const out = [];
+
+    out.push(h('div', { class: 'lp-phead' },
+      ui.avatar(avName(handle), 86, (HIGHLIGHTS[handle] && HIGHLIGHTS[handle].length) ? { ring: true } : null),
+      h('div', { class: 'lp-pinfo' },
+        h('button', { class: 'lp-pname', onclick: () => { if (me) accountSwitch(nav, redraw); } }, ac.handle, ac.private ? h('span', { class: 'lp-lockico' }, LM.icon('lock')) : null),
+        ac.name && ac.name !== ac.handle ? h('div', { class: 'lp-psubname' }, ac.name) : null,
+        ac.bio ? h('div', { class: 'lp-pbio' }, ac.bio) : null,
+        me ? h('button', { class: 'lp-switch', onclick: () => accountSwitch(nav, redraw) }, '계정 전환') : null)));
+    out.push(h('div', { class: 'lp-stats' },
+      stat(fmt(ac.posts), '게시물'), stat(fmt(ac.followers), '팔로워'), stat(fmt(ac.following), '팔로잉')));
+    if (handle === 'jh_lee_99') out.push(h('div', { class: 'lp-mutual' }, '함께 아는 계정 3명'));
+
+    if (blocked) {
+      out.push(ui.notice('차단한 계정입니다. 게시물·스토리·하이라이트가 숨겨집니다.', 'warn'));
+      out.push(ui.button({ label: '차단 해제', kind: 'tinted', size: 's', onClick: () => { S.blocked.delete(handle); ui.toast('차단을 해제했습니다'); if (feedDraw) feedDraw(); redraw(); } }));
+      return out;
+    }
+    if (locked) {
+      out.push(h('div', { class: 'lp-locked' }, LM.icon('lock'), h('b', null, '비공개 계정'), h('span', null, '팔로우한 사람만 게시물을 볼 수 있습니다.')));
+      out.push(h('div', { class: 'lp-lockstats' }, stat(fmt(ac.posts), '게시물'), stat(fmt(ac.followers), '팔로워'), stat(fmt(ac.following), '팔로잉')));
+      if (!me) out.push(ui.button({ label: LM.online() ? '계정 전환으로 로그인' : '로그인은 온라인에서', kind: 'gray', size: 's', onClick: () => { if (LM.online()) accountSwitch(nav, redraw); else ui.toast('온라인이 필요합니다'); } }));
+      return out;
+    }
+
+    if (handle === 'moneycoach.kang') out.push(h('div', { class: 'lp-faceoff' }, LM.icon('eye-off'), '얼굴 없음 · 손·시계·차·사무실만'));
+    const ww = (LM.G && LM.G.world) || {};
+    if (HIGHLIGHTS[handle] && !(handle === 'moneycoach.kang' && ww.kangHighlightsGone)) out.push(highlightRow(nav, handle));
+    if (handle === 'dohyun.lee' && !blocked) {
+      const pin = POSTS.find((p) => p.pinned);
+      out.push(h('button', { class: 'lp-pin', onclick: () => nav.push(() => postDetail(nav, pin)) },
+        mediaEl(pin.media[0], { ratio: '1 / 1', alt: pin.caption, caption: false, square: true }),
+        h('div', { class: 'lp-pintext' }, h('span', { class: 'lp-pinbadge' }, LM.icon('pin'), '고정 게시물'), h('b', null, pin.caption), h('small', null, 'seoa.film 태그됨'))));
+    }
+
+    const posts = accountPosts(handle);
+    if (locked) return out;
+    const tabs = ui.segmented(['격자', '글'], '격자', (m) => { ac._tab = m; redraw(); });
+    /* segmented는 지역 상태를 다시 그리므로 content를 다시 만들 때 선택이 유지되도록 저장 */
+    if (ac._tab) {
+      tabs.querySelectorAll('.seg-i').forEach((b) => { const on = b.textContent === ac._tab; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+    }
+    out.push(tabs);
+    const tab = ac._tab || '격자';
+    if (tab === '격자') {
+      const photos = posts.filter((p) => p.kind === 'photo');
+      out.push(photos.length ? h('div', { class: 'lp-grid3' }, photos.map((p) => { const b = h('button', { class: 'lp-cell', 'aria-label': p.caption || p.body, onclick: () => nav.push(() => postDetail(nav, p)) }, mediaEl(p.media[0], { ratio: '1 / 1', alt: p.caption || p.body, caption: false, square: true })); b.dataset.del = 'loop:' + p.id; return b; })) : ui.empty({ icon: 'grid', title: '사진이 없습니다' }));
+    } else {
+      const texts = posts.filter((p) => p.kind === 'text');
+      out.push(texts.length ? h('div', { class: 'lp-plist' }, texts.map((p) => h('button', { class: 'lp-plist-row', onclick: () => nav.push(() => postDetail(nav, p)) }, h('span', null, p.body), h('small', null, p.at)))) : ui.empty({ icon: 'edit', title: '게시물이 없습니다' }));
+    }
+    return out;
+  }
+
+  const stat = (n, l) => h('div', { class: 'lp-stat' }, h('b', null, n), h('span', null, l));
+  function fmtMeta(m) {
+    const parts = String(m).split(' · ');
+    return LM.fmt.list(parts[0]) + (parts.length > 1 ? ' · ' + parts.slice(1).join(' · ') : '');
+  }
+
+  function highlightRow(nav, handle) {
+    return h('div', { class: 'lp-highlights' }, HIGHLIGHTS[handle].map((hl) => h('button', { class: 'lp-hl', onclick: () => openStory(nav, hl.key) }, ui.avatar(avName(handle), 64, { ring: true }), h('span', null, hl.title))));
+  }
+
+  function accountPosts(handle) {
+    if (handle === 'side.money.kr') {
+      return Array.from({ length: 6 }, (_, i) => ({ id: 'side-' + i, kind: 'photo', author: 'side.money.kr', at: i === 0 ? '1/8' : '2025.09', caption: i === 0 ? '부업 추천 · 통장 하나면 OK' : '부업 추천', media: ['부업 추천 카드 ' + (i + 1)], watermark: 'side.money.kr', likes: 0, comments: [], eid: i === 0 ? 'E-100' : null }));
+    }
+    if (handle === 'dontknow__') { const w = (LM.G && LM.G.world) || {}; if (w.subArchived && S.account !== 'dontknow__') return []; return DK_POSTS.filter(postVisible); }
+    if (LM.ambient.account(handle)) return ambientFeed().filter((p) => p.author === handle);
+    return POSTS.filter((p) => p.author === handle && postVisible(p));
+  }
+
+  function selfMenu(nav, redraw) {
+    const act = !(LM.G && LM.G.device && LM.G.device.activity === false);
+    const rec = !(LM.G && LM.G.device && LM.G.device.receipts === false);
+    ui.actionSheet({
+      actions: [
+        { label: '계정 전환', onClick: () => accountSwitch(nav, redraw) },
+        { label: '차단 목록', onClick: () => nav.push(() => blockedPage(nav, redraw)) },
+        { label: act ? '활동 상태 끄기' : '활동 상태 켜기', onClick: () => { LM.gset('device.activity', !act); ui.toast(!act ? '활동 상태를 켰다' : '활동 상태를 껐다'); } },
+        { label: rec ? '읽음 확인 끄기' : '읽음 확인 켜기', onClick: () => { LM.gset('device.receipts', !rec); ui.toast(!rec ? '읽음 확인을 켰다' : '읽음 확인을 껐다'); } },
+        { label: '이 계정 정보', onClick: () => accountInfo(nav, S.account) },
+      ],
+    });
+  }
+
+  function profileMenu(nav, handle, redraw) {
+    const actions = [{ label: '이 계정 정보', onClick: () => accountInfo(nav, handle) }];
+    if (S.account !== handle) {
+      if (isBlocked(handle)) actions.push({ label: '차단 해제', onClick: () => { S.blocked.delete(handle); ui.toast('차단을 해제했습니다'); if (feedDraw) feedDraw(); redraw(); } });
+      else actions.push({ label: '차단', destructive: true, onClick: () => { S.blocked.add(handle); ui.toast('차단했습니다'); if (feedDraw) feedDraw(); redraw(); } });
+    }
+    ui.actionSheet({ actions });
+  }
+
+  function accountSwitch(nav, redraw) {
+    const body = ui.group({ plain: true, rows: [
+      ui.row({ title: 'dohyun.lee', subtitle: '현재 로그인', avatar: '이도현', avatarSize: 56, accessory: LM.icon('check', 'row-check'), onClick: () => { const w = nav.root.querySelector('.sheet-wrap'); if (w) w.close(); } }),
+      ui.row({ title: 'dontknow__', subtitle: '최근 로그인한 계정 · 비공개 · 게시물 23 · 팔로워 7', avatar: '도현', avatarSize: 56, icon: 'lock', onClick: (e) => {
+        if (S.account === 'dontknow__') { S.account = 'dohyun.lee'; ui.toast('dohyun.lee로 돌아왔습니다'); if (selfProfileDraw) selfProfileDraw(); const w = e.target.closest('.sheet-wrap'); if (w) w.close(); return; }
+        if (!LM.online()) { ui.toast('계정 전환은 온라인에서만 할 수 있습니다'); return; }
+        const w = e.target.closest('.sheet-wrap'); if (w) w.close();
+        ui.actionSheet({ title: '@dontknow__ 로그인', text: '인증 코드가 dk.nowhere@mailbox.kr로 전송됩니다.', actions: [
+          { label: '코드 보내기', onClick: () => sendLoginCode(nav, redraw) },
+        ] });
+      } }),
+    ] });
+    ui.sheet(nav.root, ui.sheetPage({ title: '계정 전환', cancel: '취소', body }), { size: 'medium' });
+  }
+
+  function sendLoginCode(nav, redraw) {
+    if (!LM.online()) { ui.toast('온라인이 필요합니다'); return; }
+    const g = LM.G; if (!g) return;
+    g.world = g.world || {};
+    let code = String(g.world.subCode || '');
+    if (!code) {
+      code = String(100000 + Math.floor(Math.random() * 900000));
+      g.world.subCode = code;
+      g.world.subCodeAt = g.gameMs;
+    }
+    const mailId = 'loop-code:' + code;
+    LM.msg.add('mail', 'inbox', {
+      id: mailId, account: 'mailbox', from: 'in', title: '루프', fromAddr: 'no-reply@loop.kr',
+      subject: '루프 로그인 코드', text: '요청한 로그인 인증 코드는 ' + code + ' 입니다.\n본인이 요청하지 않았다면 무시하세요.',
+      at: g.gameMs, silent: true,
+    });
+    const inp = h('input', { class: 'ph-lock-input', type: 'text', inputmode: 'numeric', maxlength: '6', 'aria-label': '로그인 코드', placeholder: '6자리 코드' });
+    const body = h('div', { class: 'lp-logincode' },
+      ui.notice('dk.nowhere@mailbox.kr로 코드를 보냈습니다. 메일의 두 번째 계정에서 확인한다.'),
+      inp);
+    ui.sheet(nav.root, ui.sheetPage({ title: '인증 코드', cancel: '취소', done: '로그인', body,
+      onDone: () => {
+        const v = inp.value.trim();
+        if (v !== String(LM.G.world.subCode || '')) { ui.toast('코드가 맞지 않습니다'); return; }
+        S.account = 'dontknow__';
+        LM.G.world.subLoggedIn = true;
+        if (LM.trace) LM.trace('TR-10');
+        ui.toast('로그인했습니다 · 새 기기 로그인 알림이 슬레이트에도 갔습니다');
+        if (selfProfileDraw) selfProfileDraw();
+        if (redraw) redraw();
+      } }), { size: 'medium' });
+    setTimeout(() => inp.focus(), 250);
+  }
+
+  function accountInfo(nav, handle) {
+    const ac = AC[handle] || { handle };
+    if (handle === 'side.money.kr') LM.C.see('E-101');
+    if (handle === 'jh_lee_99') LM.C.see('E-54');
+    const rows = [h('div', { class: 'kv' }, h('span', { class: 'kv-k' }, '가입일'), h('span', { class: 'kv-v' }, ac.joined || '없음'))];
+    (ac.prev || []).forEach(([n, period]) => rows.push(h('div', { class: 'kv' }, h('span', { class: 'kv-k' }, '이전 사용자 이름'), h('span', { class: 'kv-v' }, n + ' · ' + period))));
+    ui.sheet(nav.root, ui.sheetPage({ title: '계정 정보', body: ui.group({ rows }) }), { size: 'medium' });
+  }
+
+  function blockedPage(nav, redraw) {
+    const box = h('div');
+    const draw = () => {
+      const list = Array.from(S.blocked);
+      box.replaceChildren(list.length ? ui.group({ plain: true, rows: list.map((handle) => h('div', { class: 'lp-blockrow' },
+        h('button', { class: 'lp-blockwho', onclick: () => nav.push(() => otherProfile(nav, handle)) }, ui.avatar(avName(handle), 56), h('span', null, handle)),
+        h('button', { class: 'lp-unblock', onclick: () => { S.blocked.delete(handle); ui.toast('차단을 해제했습니다'); draw(); if (feedDraw) feedDraw(); if (redraw) redraw(); } }, '차단 해제'))) }) : ui.empty({ icon: 'shield', title: '차단한 계정이 없습니다' }));
+    };
+    draw();
+    return ui.page({ title: '차단 목록', back: '프로필', nav, large: false, body: box });
+  }
+
+  /* ---------- 검색 ---------- */
+  function searchTab(nav) {
+    if (!LM.online()) {
+      return ui.page({ title: '검색', nav, body: ui.empty({ icon: 'wifi', title: '온라인이 필요합니다', text: '오프라인에서는 피드·프로필·활동 기록만 볼 수 있습니다.' }) });
+    }
+    const results = h('div', { class: 'lp-searchres' });
+    const input = ui.search('검색', (q) => draw(q));
+    const draw = (q) => {
+      const query = (q || '').trim().toLowerCase();
+      if (query && LM.online() && /minji|민지/.test(query)) {
+        if (!LM.G.world) LM.G.world = {};
+        if (!LM.G.world.ev32) {
+          LM.G.world.ev32 = true;
+          LM.notify({ app: 'loop', title: '루프', body: '알 수도 있는 사람: minji.sw' });
+        }
+      }
+      const out = [];
+      out.push(LM.online() ? null : ui.notice('오프라인 저장본 · 계정·태그·장소를 캐시에서만 찾습니다.', 'warn'));
+      if (!query) {
+        out.push(h('div', { class: 'lp-trendhead' }, '지금 성원에서'));
+        out.push(ui.group({ plain: true, rows: [
+          ['1', '성원대교', '성원구'], ['2', '해담', '성원구청'], ['3', '성원구청역', '성원구'], ['4', '한서대', '성원구'], ['5', '리버뷰타워', '성원구'],
+        ].map(([n, name, area]) => ui.row({ title: n + '  ' + name, subtitle: area, onClick: () => name === '리버뷰타워' ? nav.push(() => placePage(nav, name)) : ui.toast('이 장소는 아직 등록되지 않았다') })) }));
+        out.push(h('div', { class: 'lp-trendhead' }, '사진'));
+        const photos = POSTS.filter((p) => p.kind === 'photo' && !isBlocked(p.author) && postVisible(p)).concat(ambientFeed().filter((p) => p.kind === 'photo' && !isBlocked(p.author))).slice(0, 12);
+        out.push(h('div', { class: 'lp-grid3' }, photos.map((p) => h('button', { class: 'lp-cell', onclick: () => nav.push(() => postDetail(nav, p)) }, mediaEl(p.media[0], { ratio: '1 / 1', alt: p.caption, caption: false, square: true })))));
+      } else {
+        const ambAccts = LM.ambient.accounts
+          .filter((a) => a.handle.toLowerCase().includes(query) || String(a.name || a.displayName).toLowerCase().includes(query))
+          .map((a) => ({ handle: a.handle, name: a.displayName || a.name, ambient: true }));
+        const accts = Object.values(AC).filter((a) => !isBlocked(a.handle) && !a.t2 && (a.private ? false : (a.handle.toLowerCase().includes(query) || String(a.name).toLowerCase().includes(query)))).concat(ambAccts);
+        if (accts.length) out.push(ui.group({ header: '계정', plain: true, rows: accts.map((a) => ui.row({ title: a.handle, subtitle: a.name, avatar: avName(a.handle), avatarSize: 44, onClick: () => openProfile(nav, a.handle) })) }));
+        const ambPlaces = ambientPlaces();
+        const placeNames = Object.keys(PLACES).concat(Object.keys(ambPlaces).filter((n) => !PLACES[n]));
+        const places = placeNames.filter((n) => n.includes(query));
+        if (places.length) out.push(ui.group({ header: '장소', plain: true, rows: places.map((n) => { const pl = PLACES[n] || ambPlaces[n]; return ui.row({ title: n, subtitle: (pl.address ? pl.address + ' · ' : '') + '게시물 ' + (pl.count || placePosts(n).length), icon: 'pin', onClick: () => nav.push(() => placePage(nav, n)) }); }) }));
+        const tagSet = new Set(['성원', '고액알바', '리버뷰타워', '자취']);
+        ambientFeed().forEach((p) => (p.hashtags || []).forEach((t) => tagSet.add(String(t).replace(/^#/, ''))));
+        const tags = Array.from(tagSet).filter((t) => t.toLowerCase().includes(query)).slice(0, 12);
+        if (tags.length) out.push(ui.group({ header: '태그', plain: true, rows: tags.map((t) => ui.row({ title: '#' + t, subtitle: '게시물', onClick: () => nav.push(() => tagPage(nav, t)) })) }));
+        const allPosts = POSTS.filter((p) => !isBlocked(p.author) && postVisible(p)).concat(ambientFeed().filter((p) => !isBlocked(p.author)));
+        const posts = allPosts.filter((p) => ((p.body || '') + ' ' + (p.caption || '') + ' ' + (p.place || '') + ' ' + (p.hashtags || []).join(' ')).toLowerCase().includes(query));
+        if (posts.length) out.push(ui.group({ header: '게시물', plain: true, rows: posts.slice(0, 40).map((p) => ui.row({ title: p.caption || p.body, subtitle: p.author, meta: LM.fmt.list(p.at || p.createdAt), onClick: () => nav.push(() => postDetail(nav, p)) })) }));
+        if (accts.length + places.length + tags.length + posts.length === 0) out.push(ui.empty({ icon: 'search', title: '결과 없음', text: '이전 사용자 이름으로는 검색되지 않습니다.' }));
+      }
+      results.replaceChildren(...out.filter(Boolean));
+    };
+    draw('');
+    return ui.page({ title: '검색', nav, body: [input, results] });
+  }
+
+  /* ---------- 만들기 ---------- */
+  function createTab(nav) {
+    let kind = '사진';
+    const area = h('div');
+    const draw = () => {
+      area.replaceChildren(
+        LM.online() ? null : ui.notice('오프라인에서는 게시할 수 없습니다. 입력은 초안으로 남습니다.', 'warn'),
+        ui.segmented(['사진', '글'], kind, (m) => { kind = m; draw(); }),
+        kind === '사진'
+          ? h('div', { class: 'lp-picker' }, Array.from({ length: 6 }, (_, i) => h('button', { class: 'lp-pick', 'aria-label': '사진 선택', onclick: () => ui.toast('사진은 기기 사진첩에서 고른다') }, ui.photo('새 게시물 사진 ' + i, { ratio: '1 / 1', alt: '사진', caption: false }))))
+          : null,
+        h('textarea', { class: 'lp-captionfield', placeholder: kind === '사진' ? '문구를 입력하세요' : '무슨 일이 있었나요?', maxlength: '300', 'aria-label': '본문' }),
+        h('div', { class: 'lp-createfoot' }, h('span', null, '300자'), ui.button({ label: '게시', kind: LM.online() ? 'filled' : 'gray', size: 's', onClick: () => { if (!LM.online()) { ui.toast('온라인이 필요합니다'); return; } if (LM.trace) LM.trace('TR-14', { action: 'post' }); ui.toast('게시했습니다'); } })));
+    };
+    draw();
+    return ui.page({ title: '만들기', large: false, nav, body: area });
+  }
+
+  /* ---------- 활동 ---------- */
+  function activityTab(nav) {
+    let mode = '내 활동';
+    const body = h('div');
+    const draw = () => {
+      if (mode === '활동') {
+        body.replaceChildren(ui.empty({ icon: 'heart', title: '활동이 없습니다', text: '새 좋아요·댓글·팔로우 알림이 여기에 표시됩니다.' }));
+      } else {
+        body.replaceChildren(h('div', { class: 'lp-actlist' }, ACTIVITY.filter((a) => LM.visible(a)).map((a) => h('button', {
+          class: 'lp-actrow',
+          onclick: () => { if (a.eid) LM.C.see(a.eid); if (a.target) nav.push(() => postDetail(nav, byId(a.target))); },
+        },
+          h('span', { class: 'lp-activicon' }, LM.icon(a.icon)),
+          h('span', { class: 'lp-actrowtext' }, a.text, h('small', null, fmtMeta(a.meta)))))));
+      }
+    };
+    draw();
+    return ui.page({ title: '활동', large: false, nav, body: [ui.segmented(['활동', '내 활동'], mode, (m) => { mode = m; draw(); }), body] });
+  }
+
+  /* ---------- DM ---------- */
+  const THREADS = [
+    { id: 'jihoon', name: '지훈', handle: 'jihoon_j', last: '게시물을 공유했습니다', at: '1/8 21:14', unread: 1, eid: 'E-40' },
+    { id: 'seoa', name: '서아', handle: 'seoa.film', last: '그날 얘기 조금만 더 할 수 있어?', at: '3/14 20:44', unread: 0 },
+    { id: 'harin', name: '박하린', handle: 'harin.daily', last: '초안: 죄송합니다. 그 계좌 제 계…', at: '3/11 02:40', unread: 0, eid: 'E-45' },
+    { id: 'minji', name: '윤민지', handle: 'minji.sw', last: '교육 끝 🍰', at: '1/20', unread: 0, eid: 'E-104' },
+    { id: 'imp', name: '@jh_lee_99', handle: 'jh_lee_99', last: '도현아 연락 좀 해', at: '3/15 13:20', unread: 1, eid: 'E-46' },
+  ];
+  const DRAFTS = { harin: '죄송합니다. 그 계좌 제 계좌예요. 돈은 제가 어떻게든…' };
+  THREADS.forEach((t) => { t.threadId = t.id; t.itemId = 'loopdm:' + t.id; });
+  LM.read.register('loop', () => {
+    const out = [];
+    THREADS.forEach((t) => {
+      if (t.unread > 0) out.push({ id: t.itemId, threadId: t.id });
+      LM.msg.list('loop', t.id).forEach((m) => { if (m.from !== 'out') out.push({ id: m.id, threadId: t.id }); });
+    });
+    return out;
+  });
+  function threadLast(t) {
+    const rt = LM.msg.list('loop', t.id);
+    if (rt.length) {
+      const m = rt[rt.length - 1];
+      return { text: m.text || (m.attach && m.attach.title) || '첨부', at: LM.fmt.list(m.at) };
+    }
+    return { text: t.last, at: LM.fmt.list(t.at) };
+  }
+  function threadAtMs(t) {
+    const rt = LM.msg.list('loop', t.id);
+    if (rt.length) return rt[rt.length - 1].at;
+    const d = LM.fmt.toDate(t.at);
+    return d ? d.getTime() : 0;
+  }
+
+  function dmList(nav) {
+    if (!LM.online()) {
+      return ui.page({ title: '메시지', back: '루프', nav, large: false, body: ui.empty({ icon: 'wifi', title: '온라인이 필요합니다', text: '오프라인에서는 DM을 열 수 없습니다.' }) });
+    }
+    const host = h('div');
+    const draw = () => {
+      const list = THREADS.slice().sort((a, b) => threadAtMs(b) - threadAtMs(a));
+      host.replaceChildren(ui.group({ plain: true, rows: list.map((t) => {
+        const last = threadLast(t);
+        const n = LM.read.unreadCount('loop', t.id);
+        return ui.row({
+          title: t.name, subtitle: last.text, meta: last.at, avatar: avName(t.handle), avatarSize: 56,
+          badge: n || null,
+          onClick: () => nav.push(() => dmRoom(nav, t)),
+        });
+      }) }));
+    };
+    draw();
+    const offRead = LM.on('read', () => { if (host.isConnected) draw(); else offRead(); });
+    const offMsg = LM.on('msg', () => { if (host.isConnected) draw(); else offMsg(); });
+    return ui.page({
+      title: '메시지', back: '루프', nav, large: false,
+      right: h('button', { class: 'nb-btn', 'aria-label': '새 메시지', onclick: () => ui.toast('받은 대화에서만 답장할 수 있다') }, LM.icon('compose')),
+      body: host,
+    });
+  }
+
+  function dmRoom(nav, t) {
+    if (!LM.online()) {
+      return ui.page({ title: t.name, back: '메시지', nav, large: false, body: ui.empty({ icon: 'wifi', title: '온라인이 필요합니다' }) });
+    }
+    const bubbles = h('div', { class: 'lp-bubbles' });
+    const addBubble = (who, text, at, shared) => {
+      bubbles.appendChild(h('div', { class: 'lp-brow ' + (who === 'me' ? 'me' : '') },
+        who === 'me' ? null : ui.avatar(avName(t.handle), 28),
+        h('div', { class: 'lp-bcol' },
+          shared && shared.media ? h('button', { class: 'lp-sharecard', onclick: () => ui.share({ eid: t.eid, title: shared.title || '부업 추천', kind: 'post', app: 'loop' }) },
+            ui.photo(shared.media, { ratio: '16 / 9', alt: '부업 추천 카드', caption: false }),
+            h('span', null, shared.title), h('small', null, 'side.money.kr')) :
+            h('div', { class: 'lp-bubble' }, text, shared && shared.attach ? h('div', { class: 'att-card' }, LM.icon('doc'), h('div', null, h('b', null, shared.attach.title || '첨부'), h('small', null, shared.attach.kind || ''))) : null),
+          h('small', { class: 'lp-btime' }, at))));
+    };
+    const draw = () => {
+      bubbles.replaceChildren();
+      if (t.id === 'jihoon') {
+        bubbles.appendChild(h('div', { class: 'lp-datediv' }, '1/8'));
+        addBubble('them', '', '21:14', { media: '부업 추천 카드', title: '부업 추천' });
+      } else if (t.id === 'seoa') {
+        bubbles.appendChild(h('div', { class: 'lp-datediv' }, '3/14'));
+        addBubble('them', '그날 얘기 조금만 더 할 수 있어?', '20:44');
+      } else {
+        bubbles.appendChild(h('div', { class: 'lp-datediv' }, '3/11'));
+        bubbles.appendChild(h('div', { class: 'lp-draftnote' }, '보내지 못한 초안'));
+      }
+      LM.msg.list('loop', t.id).forEach((m) => {
+        if (m.eid) LM.C.see(m.eid);
+        addBubble(m.from === 'out' ? 'me' : 'them', m.text, LM.fmt.date(m.at, 'hm'), { attach: m.attach });
+      });
+      if (LM.dialogue && LM.dialogue.typing('loop', t.id)) {
+        bubbles.appendChild(h('div', { class: 'lp-brow' },
+          ui.avatar(avName(t.handle), 28),
+          h('div', { class: 'lp-bcol' }, h('div', { class: 'lp-bubble' }, h('span', { class: 'typing-dot' }, h('i'), h('i'), h('i'))))));
+      }
+    };
+    draw();
+    const NPC = { jihoon: 'JH', seoa: 'SA', harin: 'HR', minji: 'MJ', imp: 'IMP' };
+    const footer = LM.composer.bar({
+      target: { app: 'loop', thread: t.id, npc: NPC[t.id] || null, name: t.name },
+      placeholder: '메시지…',
+      onSent: () => { DRAFTS[t.id] = ''; bubbles.scrollTop = bubbles.scrollHeight; },
+    });
+    const page = ui.page({ title: t.name, back: '메시지', nav, large: false, body: bubbles, footer });
+    const hadUnread = LM.read.unreadCount('loop', t.id) > 0;
+    LM.read.markThread('loop', t.id);
+    if (hadUnread && (LM.G.device ? LM.G.device.receipts !== false : true) && LM.trace) LM.trace('TR-04', { thread: t.id });
+    if (t.eid) LM.C.see(t.eid);
+    LM.setEid(t.eid || null);
+    const offRead = LM.on('read', (e) => { if (!bubbles.isConnected) { offRead(); return; } if (!e || !e.appId || e.appId === 'loop') draw(); });
+    const offMsg = LM.on('msg', (e) => { if (!bubbles.isConnected) { offMsg(); return; } if (e.appId === 'loop' && e.threadId === t.id) { LM.read.mark('loop', t.itemId); draw(); } });
+    const offTyping = LM.on('dlg:typing', (e) => { if (!bubbles.isConnected) { offTyping(); return; } if (e && e.app === 'loop' && e.thread === t.id) draw(); });
+    setTimeout(() => { const s = page.scroller; if (s) s.scrollTop = s.scrollHeight; }, 0);
+    return page;
+  }
+
+  LM.searchSources.push({
+    app: 'loop',
+    items: () => LM.online() ? [
+      ...Object.values(AC).filter((a) => !isBlocked(a.handle) && !a.t2).map((a) => ({ title: a.handle, sub: '루프 계정', text: a.handle + ' ' + a.name })),
+      ...LM.ambient.accounts.map((a) => ({ title: a.handle, sub: '루프 계정', text: a.handle + ' ' + (a.displayName || a.name) + ' ' + (a.bio || '') })),
+      ...Object.keys(PLACES).concat(Object.keys(ambientPlaces())).map((n) => ({ title: n, sub: '루프 장소', text: n })),
+      ...POSTS.filter((p) => !isBlocked(p.author) && postVisible(p)).map((p) => ({ title: p.caption || p.body, sub: '루프 게시물', text: (p.caption || '') + ' ' + (p.body || '') })),
+      ...ambientFeed().map((p) => ({ title: p.caption || p.body, sub: '루프 게시물', text: (p.caption || '') + ' ' + (p.body || '') + ' ' + (p.hashtags || []).join(' ') })),
+    ] : [],
+  });
+})();

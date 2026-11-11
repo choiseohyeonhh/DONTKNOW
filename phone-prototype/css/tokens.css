@@ -1,0 +1,297 @@
+/* 생성: design/02-design/DESIGN_TOKENS.md 9절 + 앱 tint 표. 직접 고치지 말고 문서를 고친 뒤 tools/gen_tokens.py 재실행 */
+
+/* 다크가 기본. :root = 폰 기본 테마 */
+:root {
+  color-scheme: dark;
+
+  /* 배경 */
+  --lm-bg: #000000;
+  --lm-bg-elevated: #1C1C1F;
+  --lm-bg-grouped: #000000;
+  --lm-bg-grouped-cell: #1C1C1F;
+  --lm-bg-tertiary: #2A2A2E;
+
+  /* 글자 */
+  --lm-label: #F5F5F7;
+  --lm-label-2: rgba(235, 235, 245, 0.62);
+  --lm-label-3: rgba(235, 235, 245, 0.32);
+
+  /* 선·채움 */
+  --lm-separator: rgba(84, 84, 88, 0.6);
+  --lm-fill: rgba(120, 120, 128, 0.32);
+  --lm-fill-2: rgba(120, 120, 128, 0.24);
+
+  /* 의미색 */
+  --lm-tint: #5C8BFF;
+  --lm-tint-ink: #5C8BFF;
+  --lm-tint-fill: #5C8BFF;
+  --lm-on-tint: #111114;
+  --lm-destructive: #FF6369;
+  --lm-destructive-ink: #FF6369;
+  --lm-destructive-fill: #FF6369;
+  --lm-success: #3DC373;
+  --lm-success-ink: #3DC373;
+  --lm-warning: #E6A23C;
+  --lm-warning-ink: #E6A23C;
+  --lm-on-status: #111114;
+  --lm-label-2-aa: rgba(235, 235, 245, 0.62);
+
+  /* 재질 */
+  --lm-material-thin: rgba(28, 28, 31, 0.60);
+  --lm-material-regular: rgba(28, 28, 31, 0.72);
+  --lm-material-thick: rgba(28, 28, 31, 0.85);
+  --lm-material-blur-thin: 20px;
+  --lm-material-blur-regular: 30px;
+  --lm-material-blur-thick: 40px;
+  --lm-material-saturate: 180%;
+
+  /* 그림자: 다크에서는 없음 */
+  --lm-elev-1: none;
+  --lm-elev-2: none;
+  --lm-elev-3: none;
+
+  /* 불투명도 */
+  --lm-op-disabled: 0.38;
+  --lm-op-secondary: 0.62;
+  --lm-op-tertiary: 0.32;
+  --lm-op-pressed: 0.72;
+  --lm-op-scrim: 0.48;
+  --lm-op-skeleton: 0.08;
+  --lm-op-tint-wash: 0.12;
+  --lm-op-sync-dot: 1;
+
+  /* 글꼴 */
+  --lm-font-sans: "Pretendard Variable", Pretendard, sans-serif;
+  --lm-font-num: "Pretendard Variable", Pretendard, sans-serif;
+  --lm-tracking-large: -0.4px;
+  --lm-tracking-medium: -0.2px;
+  --lm-tracking-small: 0;
+
+  /* 타이포 */
+  --lm-text-large-title-size: 34px;
+  --lm-text-large-title-line: 41px;
+  --lm-text-large-title-weight: 700;
+  --lm-text-large-title-tracking: var(--lm-tracking-large);
+  --lm-text-title-1-size: 28px;
+  --lm-text-title-1-line: 34px;
+  --lm-text-title-1-weight: 700;
+  --lm-text-title-1-tracking: var(--lm-tracking-large);
+  --lm-text-title-2-size: 22px;
+  --lm-text-title-2-line: 28px;
+  --lm-text-title-2-weight: 700;
+  --lm-text-title-2-tracking: var(--lm-tracking-large);
+  --lm-text-title-3-size: 20px;
+  --lm-text-title-3-line: 25px;
+  --lm-text-title-3-weight: 600;
+  --lm-text-title-3-tracking: var(--lm-tracking-large);
+  --lm-text-headline-size: 17px;
+  --lm-text-headline-line: 22px;
+  --lm-text-headline-weight: 600;
+  --lm-text-headline-tracking: var(--lm-tracking-medium);
+  --lm-text-body-size: 17px;
+  --lm-text-body-line: 22px;
+  --lm-text-body-weight: 400;
+  --lm-text-body-tracking: var(--lm-tracking-medium);
+  --lm-text-callout-size: 16px;
+  --lm-text-callout-line: 21px;
+  --lm-text-callout-weight: 400;
+  --lm-text-callout-tracking: var(--lm-tracking-medium);
+  --lm-text-subhead-size: 15px;
+  --lm-text-subhead-line: 20px;
+  --lm-text-subhead-weight: 400;
+  --lm-text-subhead-tracking: var(--lm-tracking-medium);
+  --lm-text-footnote-size: 13px;
+  --lm-text-footnote-line: 18px;
+  --lm-text-footnote-weight: 400;
+  --lm-text-footnote-tracking: var(--lm-tracking-small);
+  --lm-text-caption-1-size: 12px;
+  --lm-text-caption-1-line: 16px;
+  --lm-text-caption-1-weight: 400;
+  --lm-text-caption-1-tracking: var(--lm-tracking-small);
+  --lm-text-caption-2-size: 11px;
+  --lm-text-caption-2-line: 13px;
+  --lm-text-caption-2-weight: 500;
+  --lm-text-caption-2-tracking: var(--lm-tracking-small);
+  --lm-text-display-clock-size: 76px;
+  --lm-text-display-clock-line: 80px;
+  --lm-text-display-clock-weight: 300;
+  --lm-text-display-clock-tracking: var(--lm-tracking-large);
+
+  /* 동적 글자 */
+  --lm-type-scale-xs: 0.85;
+  --lm-type-scale-md: 1.0;
+  --lm-type-scale-lg: 1.15;
+  --lm-type-scale-xl: 1.3;
+  --lm-type-scale: var(--lm-type-scale-md);
+
+  /* 여백 */
+  --lm-space-0_5: 2px;
+  --lm-space-1: 4px;
+  --lm-space-2: 8px;
+  --lm-space-3: 12px;
+  --lm-space-4: 16px;
+  --lm-space-5: 20px;
+  --lm-space-6: 24px;
+  --lm-space-8: 32px;
+  --lm-space-10: 40px;
+  --lm-space-12: 48px;
+
+  /* 모서리 */
+  --lm-radius-xs: 6px;
+  --lm-radius-sm: 10px;
+  --lm-radius-md: 14px;
+  --lm-radius-lg: 20px;
+  --lm-radius-xl: 28px;
+  --lm-radius-full: 999px;
+  --lm-radius-icon: 13.5px;
+  --lm-radius-bubble: 18px;
+
+  /* 움직임 */
+  --lm-dur-instant: 100ms;
+  --lm-dur-fast: 160ms;
+  --lm-dur-base: 240ms;
+  --lm-dur-slow: 350ms;
+  --lm-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --lm-ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --lm-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --lm-tap-scale: 0.97;
+
+  /* 크롬 */
+  --lm-statusbar-h: 47px;
+  --lm-safe-top: env(safe-area-inset-top, 0px);
+  --lm-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --lm-navbar-h: 44px;
+  --lm-navbar-large-h: 96px;
+  --lm-tabbar-h: 49px;
+  --lm-tabbar-safe-h: 34px;
+  --lm-home-indicator-w: 134px;
+  --lm-home-indicator-h: 5px;
+  --lm-home-indicator-bottom: 8px;
+  --lm-row-h: 44px;
+  --lm-row-h-2: 60px;
+  --lm-row-h-thumb: 72px;
+  --lm-separator-w: 0.5px;
+  --lm-touch-min: 44px;
+  --lm-side: 16px;
+
+  /* z-index */
+  --lm-z-app: 0;
+  --lm-z-nav: 10;
+  --lm-z-tabbar: 20;
+  --lm-z-banner: 60;
+  --lm-z-sheet: 70;
+  --lm-z-center: 80;
+  --lm-z-alert: 90;
+  --lm-z-pause: 100;
+  --lm-z-debug: 999;
+}
+
+/* 라이트 오버라이드: 값만 바꾼다. 구조·치수·움직임은 그대로 */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --lm-bg: #F2F2F5;
+  --lm-bg-elevated: #FFFFFF;
+  --lm-bg-grouped: #F2F2F5;
+  --lm-bg-grouped-cell: #FFFFFF;
+  --lm-bg-tertiary: #E9E9EE;
+
+  --lm-label: #111114;
+  --lm-label-2: rgba(60, 60, 67, 0.62);
+  --lm-label-3: rgba(60, 60, 67, 0.32);
+
+  --lm-separator: rgba(60, 60, 67, 0.18);
+  --lm-fill: rgba(120, 120, 128, 0.16);
+  --lm-fill-2: rgba(120, 120, 128, 0.12);
+
+  --lm-tint: #2F6BFF;
+  --lm-tint-ink: #2A62F0;
+  --lm-tint-fill: #2A62F0;
+  --lm-on-tint: #FFFFFF;
+  --lm-destructive: #E5484D;
+  --lm-destructive-ink: #C92A2F;
+  --lm-destructive-fill: #C92A2F;
+  --lm-success: #2E9E5B;
+  --lm-success-ink: #237A46;
+  --lm-warning: #C98A1B;
+  --lm-warning-ink: #8A5A00;
+  --lm-on-status: #111114;
+  --lm-label-2-aa: rgba(60, 60, 67, 0.74);
+
+  --lm-material-thin: rgba(250, 250, 252, 0.60);
+  --lm-material-regular: rgba(250, 250, 252, 0.72);
+  --lm-material-thick: rgba(250, 250, 252, 0.85);
+
+  --lm-elev-1: 0 1px 2px rgba(0, 0, 0, 0.10);
+  --lm-elev-2: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --lm-elev-3: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+/* 사용자 동적 글자 */
+[data-text-size="xs"] { --lm-type-scale: var(--lm-type-scale-xs); }
+[data-text-size="md"] { --lm-type-scale: var(--lm-type-scale-md); }
+[data-text-size="lg"] { --lm-type-scale: var(--lm-type-scale-lg); }
+[data-text-size="xl"] { --lm-type-scale: var(--lm-type-scale-xl); }
+
+
+/* 앱 타일·tint (DESIGN_TOKENS 8절 표: 라이트 열, 다크 열) */
+[data-app="phone"]{--lm-app-tile:#2E7D4F;--lm-app-tint:#8AD8AB;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="phone"],[data-theme="light"][data-app="phone"]{--lm-app-tint:#45C179;--lm-app-on-tint:#111114;}
+[data-app="msg"]{--lm-app-tile:#2E7D4F;--lm-app-tint:#8AD8AB;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="msg"],[data-theme="light"][data-app="msg"]{--lm-app-tint:#45C179;--lm-app-on-tint:#111114;}
+[data-app="talk"]{--lm-app-tile:#B8892B;--lm-app-tint:#EED8AC;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="talk"],[data-theme="light"][data-app="talk"]{--lm-app-tint:#DFB460;--lm-app-on-tint:#111114;}
+[data-app="loop"]{--lm-app-tile:#7A3E6E;--lm-app-tint:#D29EC7;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="loop"],[data-theme="light"][data-app="loop"]{--lm-app-tint:#B55FA4;--lm-app-on-tint:#111114;}
+[data-app="blink"]{--lm-app-tile:#23262B;--lm-app-tint:#717E95;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="blink"],[data-theme="light"][data-app="blink"]{--lm-app-tint:#495261;--lm-app-on-tint:#FFFFFF;}
+[data-app="mail"]{--lm-app-tile:#2B3A67;--lm-app-tint:#7C90CD;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="mail"],[data-theme="light"][data-app="mail"]{--lm-app-tint:#415CAD;--lm-app-on-tint:#FFFFFF;}
+[data-app="photo"]{--lm-app-tile:#C4622D;--lm-app-tint:#F1CCB8;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="photo"],[data-theme="light"][data-app="photo"]{--lm-app-tint:#E1956B;--lm-app-on-tint:#111114;}
+[data-app="cam"]{--lm-app-tile:#4A5866;--lm-app-tint:#A5B4C3;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="cam"],[data-theme="light"][data-app="cam"]{--lm-app-tint:#6E869E;--lm-app-on-tint:#111114;}
+[data-app="map"]{--lm-app-tile:#1F7A7A;--lm-app-tint:#71DFDF;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="map"],[data-theme="light"][data-app="map"]{--lm-app-tint:#2DC8C8;--lm-app-on-tint:#111114;}
+[data-app="find"]{--lm-app-tile:#1F7A7A;--lm-app-tint:#71DFDF;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="find"],[data-theme="light"][data-app="find"]{--lm-app-tint:#2DC8C8;--lm-app-on-tint:#111114;}
+[data-app="cal"]{--lm-app-tile:#2B3A67;--lm-app-tint:#7C90CD;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="cal"],[data-theme="light"][data-app="cal"]{--lm-app-tint:#415CAD;--lm-app-on-tint:#FFFFFF;}
+[data-app="note"]{--lm-app-tile:#B8892B;--lm-app-tint:#EED8AC;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="note"],[data-theme="light"][data-app="note"]{--lm-app-tint:#DFB460;--lm-app-on-tint:#111114;}
+[data-app="voice"]{--lm-app-tile:#23262B;--lm-app-tint:#717E95;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="voice"],[data-theme="light"][data-app="voice"]{--lm-app-tint:#495261;--lm-app-on-tint:#FFFFFF;}
+[data-app="health"]{--lm-app-tile:#C4622D;--lm-app-tint:#F1CCB8;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="health"],[data-theme="light"][data-app="health"]{--lm-app-tint:#E1956B;--lm-app-on-tint:#111114;}
+[data-app="wallet"]{--lm-app-tile:#23262B;--lm-app-tint:#717E95;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="wallet"],[data-theme="light"][data-app="wallet"]{--lm-app-tint:#495261;--lm-app-on-tint:#FFFFFF;}
+[data-app="bank"]{--lm-app-tile:#2B3A67;--lm-app-tint:#7C90CD;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="bank"],[data-theme="light"][data-app="bank"]{--lm-app-tint:#415CAD;--lm-app-on-tint:#FFFFFF;}
+[data-app="taxi"]{--lm-app-tile:#B8892B;--lm-app-tint:#EED8AC;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="taxi"],[data-theme="light"][data-app="taxi"]{--lm-app-tint:#DFB460;--lm-app-on-tint:#111114;}
+[data-app="file"]{--lm-app-tile:#4A5866;--lm-app-tint:#A5B4C3;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="file"],[data-theme="light"][data-app="file"]{--lm-app-tint:#6E869E;--lm-app-on-tint:#111114;}
+[data-app="set"]{--lm-app-tile:#4A5866;--lm-app-tint:#A5B4C3;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="set"],[data-theme="light"][data-app="set"]{--lm-app-tint:#6E869E;--lm-app-on-tint:#111114;}
+[data-app="calc"]{--lm-app-tile:#23262B;--lm-app-tint:#717E95;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="calc"],[data-theme="light"][data-app="calc"]{--lm-app-tint:#495261;--lm-app-on-tint:#FFFFFF;}
+[data-app="wave"]{--lm-app-tile:#2B3A67;--lm-app-tint:#7C90CD;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="wave"],[data-theme="light"][data-app="wave"]{--lm-app-tint:#415CAD;--lm-app-on-tint:#FFFFFF;}
+[data-app="tube"]{--lm-app-tile:#C4622D;--lm-app-tint:#F1CCB8;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="tube"],[data-theme="light"][data-app="tube"]{--lm-app-tint:#E1956B;--lm-app-on-tint:#111114;}
+[data-app="moa"]{--lm-app-tile:#4A5866;--lm-app-tint:#A5B4C3;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="moa"],[data-theme="light"][data-app="moa"]{--lm-app-tint:#6E869E;--lm-app-on-tint:#111114;}
+[data-app="hankki"]{--lm-app-tile:#2E7D4F;--lm-app-tint:#8AD8AB;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="hankki"],[data-theme="light"][data-app="hankki"]{--lm-app-tint:#45C179;--lm-app-on-tint:#111114;}
+[data-app="market"]{--lm-app-tile:#B8892B;--lm-app-tint:#EED8AC;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="market"],[data-theme="light"][data-app="market"]{--lm-app-tint:#DFB460;--lm-app-on-tint:#111114;}
+[data-app="cont"]{--lm-app-tile:#4A5866;--lm-app-tint:#A5B4C3;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="cont"],[data-theme="light"][data-app="cont"]{--lm-app-tint:#6E869E;--lm-app-on-tint:#111114;}
+[data-app="rem"]{--lm-app-tile:#2B3A67;--lm-app-tint:#7C90CD;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="rem"],[data-theme="light"][data-app="rem"]{--lm-app-tint:#415CAD;--lm-app-on-tint:#FFFFFF;}
+[data-app="clock"]{--lm-app-tile:#23262B;--lm-app-tint:#717E95;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="clock"],[data-theme="light"][data-app="clock"]{--lm-app-tint:#495261;--lm-app-on-tint:#FFFFFF;}
+[data-app="wthr"]{--lm-app-tile:#1F7A7A;--lm-app-tint:#71DFDF;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="wthr"],[data-theme="light"][data-app="wthr"]{--lm-app-tint:#2DC8C8;--lm-app-on-tint:#111114;}
+[data-app="portal"]{--lm-app-tile:#2B3A67;--lm-app-tint:#7C90CD;--lm-app-on-tint:#111114;}
+[data-theme="light"] [data-app="portal"],[data-theme="light"][data-app="portal"]{--lm-app-tint:#415CAD;--lm-app-on-tint:#FFFFFF;}

@@ -1,0 +1,333 @@
+/* money 그룹: 지도·바로택시·날씨·지갑·누리은행·한끼·이웃마켓
+ * 모든 선택자는 [data-app="<id>"]로 시작한다. 색은 tokens.css 변수만 쓴다. */
+
+/* ===================== 공통 지도 면 (map · taxi) ===================== */
+[data-app="map"] .m-map,
+[data-app="taxi"] .m-map {
+  position: absolute; inset: 0; overflow: hidden; background: var(--lm-bg);
+}
+[data-app="map"] .m-map.mini,
+[data-app="taxi"] .m-map.mini {
+  position: relative; inset: auto; height: 200px; border-radius: var(--lm-radius-md); overflow: hidden;
+}
+[data-app="map"] .m-grid,
+[data-app="taxi"] .m-grid {
+  position: absolute; inset: 0; display: grid; grid-template-columns: repeat(8, 1fr);
+  grid-auto-rows: 1fr; gap: 7px; padding: 6px;
+}
+[data-app="map"] .m-grid i,
+[data-app="taxi"] .m-grid i {
+  background: color-mix(in srgb, var(--lm-bg-elevated) 72%, var(--lm-fill) 28%);
+  border-radius: 2px;
+}
+[data-app="map"] .m-river,
+[data-app="taxi"] .m-river {
+  position: absolute; left: -12%; right: -12%; top: 34%; height: 11%;
+  transform: rotate(-7deg); border-radius: 50% / 46%;
+  background: color-mix(in srgb, var(--lm-tint) 34%, var(--lm-bg-elevated));
+  opacity: .6; z-index: 1;
+}
+[data-app="map"] .m-bridge,
+[data-app="taxi"] .m-bridge {
+  position: absolute; left: 58%; top: 29%; width: 12px; height: 20%;
+  transform: rotate(7deg); background: var(--lm-bg-elevated); z-index: 2;
+  border-left: 1px solid var(--lm-separator); border-right: 1px solid var(--lm-separator);
+}
+[data-app="map"] .m-subway,
+[data-app="taxi"] .m-subway {
+  position: absolute; left: -10%; right: -10%; top: 55%; height: 3px; transform: rotate(-7deg);
+  background: repeating-linear-gradient(90deg, var(--lm-tint) 0 12px, transparent 12px 20px);
+  opacity: .8; z-index: 2;
+}
+[data-app="map"] .m-river-label,
+[data-app="map"] .m-bridge-label,
+[data-app="taxi"] .m-river-label,
+[data-app="taxi"] .m-bridge-label {
+  position: absolute; z-index: 3; font-size: 11px; color: var(--lm-label-2);
+  background: var(--lm-material-thin); padding: 2px 6px; border-radius: 6px;
+}
+[data-app="map"] .m-river-label,
+[data-app="taxi"] .m-river-label { left: 16%; top: 37%; }
+[data-app="map"] .m-bridge-label,
+[data-app="taxi"] .m-bridge-label { left: 60%; top: 31%; }
+
+[data-app="map"] .m-pin,
+[data-app="taxi"] .m-pin {
+  position: absolute; transform: translate(-50%, -100%); z-index: 4;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  gap: 1px; min-width: 44px; min-height: 44px; color: var(--lm-tint);
+}
+[data-app="map"] .m-pin-ic,
+[data-app="taxi"] .m-pin-ic { width: 26px; height: 26px; }
+[data-app="map"] .m-pin.is-me,
+[data-app="taxi"] .m-pin.is-me { color: var(--lm-success); }
+[data-app="map"] .m-pin span,
+[data-app="taxi"] .m-pin span {
+  max-width: 108px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 11px; font-weight: 600; color: var(--lm-label);
+  background: var(--lm-material-thick); padding: 1px 5px; border-radius: 6px;
+}
+
+/* ===================== 지도 앱 ===================== */
+[data-app="map"] .m-home { position: absolute; inset: 0; overflow: hidden; }
+[data-app="map"] .m-top {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 6;
+  padding-top: var(--lm-statusbar-h);
+  background: var(--lm-material-thin);
+  backdrop-filter: blur(var(--lm-material-blur-regular)) saturate(var(--lm-material-saturate));
+  -webkit-backdrop-filter: blur(var(--lm-material-blur-regular)) saturate(var(--lm-material-saturate));
+}
+[data-app="map"] .m-top-in { height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 16px; }
+[data-app="map"] .m-top-in h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: var(--lm-tracking-medium); }
+[data-app="map"] .m-top-btns { display: flex; gap: 6px; }
+[data-app="map"] .m-circle {
+  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--lm-bg-elevated); color: var(--lm-label);
+}
+[data-app="map"] .m-circle .ic { width: 21px; height: 21px; }
+
+[data-app="map"] .m-panel {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 84%; z-index: 5;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--lm-bg-elevated); border-radius: 20px 20px 0 0;
+  transform: translateY(46%);
+  transition: transform var(--lm-dur-slow) var(--lm-ease-standard);
+  box-shadow: var(--lm-elev-3);
+}
+[data-app="map"] .m-panel.open { transform: translateY(0); }
+[data-app="map"] .m-grab { flex: none; height: 44px; display: grid; place-items: center; touch-action: none; cursor: grab; }
+[data-app="map"] .m-grab i { width: 38px; height: 5px; border-radius: 3px; background: var(--lm-label-3); }
+[data-app="map"] .m-panel-body { flex: 1; overflow-y: auto; padding-bottom: calc(48px + var(--lm-safe-bottom)); scrollbar-width: none; }
+[data-app="map"] .m-panel-body::-webkit-scrollbar { display: none; }
+[data-app="map"] .m-search {
+  display: flex; align-items: center; gap: 8px; height: 44px; margin: 0 16px 14px; padding: 0 12px;
+  border-radius: 10px; background: var(--lm-fill-2); color: var(--lm-label-2); font-size: 16px;
+}
+[data-app="map"] .m-search .ic { width: 18px; height: 18px; }
+[data-app="map"] .m-favs { display: flex; gap: 8px; padding: 0 16px 16px; overflow-x: auto; scrollbar-width: none; }
+[data-app="map"] .m-fav {
+  flex: none; display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 16px;
+  border-radius: 999px; background: var(--lm-fill-2); font-size: 14px; font-weight: 600;
+}
+[data-app="map"] .m-fav-ic { width: 16px; height: 16px; color: var(--lm-tint); }
+
+[data-app="map"] .m-card {
+  position: absolute; left: 12px; right: 12px; bottom: 16px; z-index: 7;
+  padding: 16px; border-radius: 18px; background: var(--lm-bg-elevated); box-shadow: var(--lm-elev-3);
+}
+[data-app="map"] .m-card-x { position: absolute; top: 4px; right: 4px; width: 44px; height: 44px; display: grid; place-items: center; color: var(--lm-label-2); }
+[data-app="map"] .m-card-name { font-size: 20px; font-weight: 700; padding-right: 36px; }
+[data-app="map"] .m-card-addr { font-size: 14px; color: var(--lm-label-2); margin-top: 2px; }
+[data-app="map"] .m-card-note { font-size: 13px; color: var(--lm-tint); margin-top: 6px; }
+[data-app="map"] .m-card-btns { display: flex; gap: 8px; margin-top: 14px; }
+[data-app="map"] .m-cbtn {
+  flex: 1; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: var(--lm-fill-2); font-size: 15px; font-weight: 600;
+}
+[data-app="map"] .m-cbtn.primary { background: var(--lm-tint-fill); color: var(--lm-on-tint); }
+[data-app="map"] .m-cbtn .ic { width: 18px; height: 18px; }
+
+[data-app="map"] .m-mini-wrap .m-map.mini { height: 220px; border-radius: 0; }
+[data-app="map"] .m-place-head { padding: 2px 16px 14px; }
+[data-app="map"] .m-place-name { font-size: 26px; font-weight: 700; letter-spacing: var(--lm-tracking-large); }
+[data-app="map"] .m-place-addr { font-size: 15px; color: var(--lm-label-2); margin-top: 3px; }
+[data-app="map"] .m-place-btns { margin: 4px 0 20px; }
+[data-app="map"] .m-place-btns .btn + .btn { margin-top: 8px; }
+
+[data-app="map"] .m-route-map { padding: 0 16px 14px; }
+[data-app="map"] .m-route-map .m-map.mini { height: 190px; }
+[data-app="map"] .m-dur {
+  margin: 0 16px 20px; padding: 18px; border-radius: 14px; text-align: center;
+  background: var(--lm-bg-grouped-cell);
+}
+[data-app="map"] .m-dur-n { font-size: 34px; font-weight: 700; color: var(--lm-tint); letter-spacing: var(--lm-tracking-large); }
+[data-app="map"] .m-dur-s { font-size: 13px; color: var(--lm-label-2); margin-top: 4px; }
+[data-app="map"] .m-dur-w { font-size: 14px; color: var(--lm-warning-ink); margin-top: 6px; }
+
+/* ===================== 바로택시 ===================== */
+[data-app="taxi"] .t-mapwrap .m-map.mini { margin: 0 16px 16px; height: 210px; }
+[data-app="taxi"] .t-foot { flex: none; padding: 8px 0 calc(8px + var(--lm-safe-bottom)); border-top: var(--lm-separator-w) solid var(--lm-separator); background: var(--lm-bg); }
+[data-app="taxi"] .t-confirm { padding: 4px 16px 12px; }
+[data-app="taxi"] .t-confirm-k { font-size: 13px; color: var(--lm-label-2); }
+[data-app="taxi"] .t-confirm-to { font-size: 24px; font-weight: 700; margin-top: 2px; }
+[data-app="taxi"] .t-confirm-addr { font-size: 15px; color: var(--lm-label-2); margin-top: 2px; }
+[data-app="taxi"] .t-confirm-q { font-size: 17px; font-weight: 600; margin: 18px 0 8px; }
+[data-app="taxi"] .t-confirm-pay { font-size: 14px; color: var(--lm-label-2); margin-top: 10px; }
+[data-app="taxi"] .t-amount { margin: 6px 16px 20px; padding: 24px; border-radius: 16px; text-align: center; background: var(--lm-bg-grouped-cell); }
+[data-app="taxi"] .t-amount-n { font-size: 36px; font-weight: 700; letter-spacing: var(--lm-tracking-large); font-family: var(--lm-font-num); }
+[data-app="taxi"] .t-amount-s { font-size: 14px; color: var(--lm-label-2); margin-top: 4px; }
+[data-app="taxi"] .t-lost { margin: 0 16px 20px; padding: 16px; border-radius: 14px; background: var(--lm-bg-grouped-cell); }
+[data-app="taxi"] .t-lost-meta { font-size: 13px; color: var(--lm-label-2); }
+[data-app="taxi"] .t-lost-text { font-size: 17px; line-height: 1.45; margin-top: 6px; }
+
+/* ===================== 날씨 ===================== */
+[data-app="wthr"] .w-screen {
+  position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden;
+  background: color-mix(in srgb, var(--lm-tint) 16%, var(--lm-bg));
+}
+[data-app="wthr"] .w-top { flex: none; padding-top: var(--lm-statusbar-h); }
+[data-app="wthr"] .w-top-in { height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px 0 20px; }
+[data-app="wthr"] .w-top-in h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: var(--lm-tracking-medium); }
+[data-app="wthr"] .w-listbtn { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--lm-label); }
+[data-app="wthr"] .w-scroll { flex: 1; overflow-y: auto; padding-bottom: calc(40px + var(--lm-safe-bottom)); scrollbar-width: none; }
+[data-app="wthr"] .w-scroll::-webkit-scrollbar { display: none; }
+[data-app="wthr"] .w-now { padding: 10px 20px 22px; text-align: center; }
+[data-app="wthr"] .w-now-city { font-size: 21px; font-weight: 620; letter-spacing: var(--lm-tracking-medium); }
+[data-app="wthr"] .w-now-city small { display: block; font-size: 12px; font-weight: 500; color: var(--lm-label-2); margin-top: 3px; }
+[data-app="wthr"] .w-now-temp {
+  font-family: var(--lm-font-num); font-size: 82px; font-weight: 200; line-height: 1;
+  letter-spacing: -3px; margin: 8px 0 2px; font-variant-numeric: tabular-nums;
+}
+[data-app="wthr"] .w-now-cond { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 17px; font-weight: 560; }
+[data-app="wthr"] .w-cond-ic { width: 22px; height: 22px; }
+[data-app="wthr"] .w-now-hl { font-size: 15px; color: var(--lm-label-2); margin-top: 4px; }
+[data-app="wthr"] .w-block { padding-bottom: 16px; }
+[data-app="wthr"] .w-hourly { display: flex; gap: 4px; overflow-x: auto; padding: 0 12px 8px; scrollbar-width: none; }
+[data-app="wthr"] .w-hourly::-webkit-scrollbar { display: none; }
+[data-app="wthr"] .w-h-item {
+  flex: none; width: 58px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 10px 0; border-radius: 12px;
+}
+[data-app="wthr"] .w-h-item.now { background: var(--lm-fill-2); }
+[data-app="wthr"] .w-h-t { font-size: 12px; color: var(--lm-label-2); }
+[data-app="wthr"] .w-h-ic { width: 24px; height: 24px; }
+[data-app="wthr"] .w-h-v { font-size: 15px; font-weight: 600; font-family: var(--lm-font-num); }
+[data-app="wthr"] .w-daily { margin: 0 16px; padding: 2px 12px; border-radius: 14px; background: color-mix(in srgb, var(--lm-bg-elevated) 72%, transparent); }
+[data-app="wthr"] .w-d-row { display: flex; align-items: center; gap: 10px; height: 42px; font-size: 15px; }
+[data-app="wthr"] .w-d-row + .w-d-row { border-top: var(--lm-separator-w) solid var(--lm-separator); }
+[data-app="wthr"] .w-d-day { width: 22px; font-weight: 600; }
+[data-app="wthr"] .w-d-ic { width: 22px; height: 22px; color: var(--lm-label-2); }
+[data-app="wthr"] .w-d-pop { width: 34px; font-size: 12px; color: var(--lm-tint); font-family: var(--lm-font-num); }
+[data-app="wthr"] .w-d-lo { width: 30px; text-align: right; color: var(--lm-label-2); font-family: var(--lm-font-num); }
+[data-app="wthr"] .w-d-bar { flex: 1; height: 4px; border-radius: 2px; background: var(--lm-fill-2); position: relative; }
+[data-app="wthr"] .w-d-bar i { position: absolute; top: 0; bottom: 0; border-radius: 2px; background: var(--lm-tint); }
+[data-app="wthr"] .w-d-hi { width: 32px; text-align: right; font-weight: 600; font-family: var(--lm-font-num); }
+[data-app="wthr"] .w-block-last { padding-bottom: 24px; }
+
+/* ===================== 지갑 ===================== */
+[data-app="wallet"] .w-cards { display: flex; flex-direction: column; gap: 12px; padding: 2px 16px 20px; }
+[data-app="wallet"] .w-card {
+  height: 124px; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column;
+  justify-content: space-between; text-align: left; overflow: hidden;
+}
+[data-app="wallet"] .w-card.transit { background: var(--lm-tint-fill); color: var(--lm-on-tint); }
+[data-app="wallet"] .w-card.pay { background: var(--lm-bg-tertiary); color: var(--lm-label); }
+[data-app="wallet"] .w-card-top { display: flex; align-items: center; justify-content: space-between; font-size: 15px; font-weight: 700; opacity: .95; }
+[data-app="wallet"] .w-card-ic { width: 24px; height: 24px; }
+[data-app="wallet"] .w-card-name { font-size: 22px; font-weight: 700; letter-spacing: var(--lm-tracking-medium); }
+[data-app="wallet"] .w-card-sub { font-size: 13px; opacity: .78; }
+[data-app="wallet"] .w-mini {
+  margin: 4px 16px 16px; height: 112px; padding: 16px; border-radius: 16px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+[data-app="wallet"] .w-mini.transit { background: var(--lm-tint-fill); color: var(--lm-on-tint); }
+[data-app="wallet"] .w-mini-brand { font-size: 14px; font-weight: 700; opacity: .92; }
+[data-app="wallet"] .w-mini-name { font-size: 21px; font-weight: 700; }
+[data-app="wallet"] .w-mini-sub { font-size: 13px; opacity: .8; }
+[data-app="wallet"] .w-rep { font-size: 12px; color: var(--lm-tint); font-weight: 600; }
+[data-app="wallet"] .w-note { margin: 0 0 20px; }
+[data-app="wallet"] .w-amount { margin: 4px 16px 20px; padding: 22px; border-radius: 16px; text-align: center; background: var(--lm-bg-grouped-cell); }
+[data-app="wallet"] .w-amount-n { font-size: 32px; font-weight: 700; font-family: var(--lm-font-num); letter-spacing: var(--lm-tracking-large); }
+[data-app="wallet"] .w-amount-s { font-size: 14px; color: var(--lm-label-2); margin-top: 4px; }
+
+/* ===================== 누리은행 ===================== */
+[data-app="bank"] .b-login { display: flex; flex-direction: column; background: var(--lm-bg); }
+[data-app="bank"] .b-login-body { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 6px 24px 40px; }
+[data-app="bank"] .b-bank { font-size: 28px; font-weight: 700; margin-top: 18px; letter-spacing: var(--lm-tracking-large); }
+[data-app="bank"] .b-guide { font-size: 16px; color: var(--lm-label-2); margin-top: 8px; }
+[data-app="bank"] .b-acctno { font-size: 14px; color: var(--lm-label-2); margin-top: 4px; font-family: var(--lm-font-num); }
+[data-app="bank"] .b-dots { display: flex; gap: 16px; margin: 28px 0 8px; height: 14px; }
+[data-app="bank"] .b-dots i { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--lm-label-3); }
+[data-app="bank"] .b-dots i.on { background: var(--lm-label); border-color: var(--lm-label); }
+[data-app="bank"] .b-dots.shake { animation: mny-b-shake .4s; }
+@keyframes mny-b-shake { 20%, 60% { transform: translateX(-9px); } 40%, 80% { transform: translateX(9px); } }
+[data-app="bank"] .b-err { min-height: 20px; font-size: 13px; color: var(--lm-destructive-ink); text-align: center; margin-bottom: 6px; }
+[data-app="bank"] .b-pad { display: grid; grid-template-columns: repeat(3, 72px); gap: 14px 26px; margin-top: auto; padding-bottom: 16px; }
+[data-app="bank"] .b-key {
+  width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--lm-fill-2); font-size: 24px; font-weight: 500; font-family: var(--lm-font-num);
+  transition: background var(--lm-dur-fast);
+}
+[data-app="bank"] .b-key:active { background: var(--lm-fill); }
+[data-app="bank"] .b-key.ghost { background: none; pointer-events: none; }
+[data-app="bank"] .b-key .ic { width: 24px; height: 24px; }
+[data-app="bank"] .b-acct { margin: 4px 16px 16px; padding: 20px 22px; border-radius: 18px; background: var(--lm-tint-fill); color: var(--lm-on-tint); }
+[data-app="bank"] .b-acct-top { display: flex; align-items: center; justify-content: space-between; font-size: 15px; font-weight: 600; }
+[data-app="bank"] .b-stop { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--lm-bg); color: var(--lm-destructive-ink); }
+[data-app="bank"] .b-acct-no { font-family: var(--lm-font-num); font-size: 14px; opacity: .82; margin-top: 16px; }
+[data-app="bank"] .b-acct-bal { font-size: 30px; font-weight: 700; margin-top: 3px; letter-spacing: var(--lm-tracking-large); font-family: var(--lm-font-num); }
+[data-app="bank"] .b-acct-owner { font-size: 14px; opacity: .82; margin-top: 8px; }
+[data-app="bank"] .b-amt { font-family: var(--lm-font-num); }
+[data-app="bank"] .b-amt.in { color: var(--lm-success-ink); }
+[data-app="bank"] .b-amt.out { color: var(--lm-label); }
+[data-app="bank"] .b-note { margin: 0 0 20px; }
+[data-app="bank"] .b-amount { margin: 4px 16px 20px; padding: 22px; border-radius: 16px; text-align: center; background: var(--lm-bg-grouped-cell); }
+[data-app="bank"] .b-amount-k { font-size: 13px; color: var(--lm-label-2); }
+[data-app="bank"] .b-amount-n { font-size: 32px; font-weight: 700; font-family: var(--lm-font-num); margin-top: 2px; letter-spacing: var(--lm-tracking-large); }
+[data-app="bank"] .b-amount.in .b-amount-n { color: var(--lm-success-ink); }
+[data-app="bank"] .b-amount-s { font-size: 14px; color: var(--lm-label-2); margin-top: 4px; }
+
+/* ===================== 한끼 ===================== */
+[data-app="hankki"] .hk-stores { display: flex; flex-direction: column; gap: 10px; padding: 0 16px 20px; }
+[data-app="hankki"] .hk-store { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 14px; background: var(--lm-bg-grouped-cell); text-align: left; }
+[data-app="hankki"] .hk-thumb { width: 64px; height: 64px; flex: none; border-radius: 10px; overflow: hidden; }
+[data-app="hankki"] .hk-thumb .ph { height: 100%; }
+[data-app="hankki"] .hk-store-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+[data-app="hankki"] .hk-store-n { font-size: 17px; font-weight: 600; }
+[data-app="hankki"] .hk-store-s { font-size: 14px; color: var(--lm-label-2); }
+[data-app="hankki"] .hk-store-m { font-size: 13px; color: var(--lm-label-2); }
+[data-app="hankki"] .hk-ord-meta { margin-top: 2px; }
+[data-app="hankki"] .hk-ord-addr { font-size: 14px; color: var(--lm-label); line-height: 1.35; }
+[data-app="hankki"] .hk-ord-req { font-size: 13px; color: var(--lm-label-2); line-height: 1.35; }
+[data-app="hankki"] .hk-live .row-title { color: var(--lm-tint); }
+[data-app="hankki"] .hk-newline { font-size: 13px; font-weight: 600; color: var(--lm-tint); margin: 0 16px 8px; }
+[data-app="hankki"] .hk-detail-head { padding: 6px 16px 14px; }
+[data-app="hankki"] .hk-detail-at { font-size: 13px; color: var(--lm-label-2); }
+[data-app="hankki"] .hk-detail-items { font-size: 24px; font-weight: 700; margin-top: 2px; letter-spacing: var(--lm-tracking-medium); }
+[data-app="hankki"] .hk-addr { margin: 0 16px 20px; padding: 16px; border-radius: 14px; background: var(--lm-bg-grouped-cell); }
+[data-app="hankki"] .hk-addr-k { font-size: 13px; color: var(--lm-label-2); }
+[data-app="hankki"] .hk-addr-v { font-size: 17px; font-weight: 600; line-height: 1.4; margin-top: 4px; }
+[data-app="hankki"] .hk-addr-r { font-size: 14px; color: var(--lm-label-2); margin-top: 4px; }
+[data-app="hankki"] .hk-reorder { padding: 4px 16px 14px; }
+[data-app="hankki"] .hk-reorder-k { font-size: 13px; color: var(--lm-label-2); }
+[data-app="hankki"] .hk-reorder-addr { font-size: 22px; font-weight: 700; line-height: 1.35; margin-top: 4px; letter-spacing: var(--lm-tracking-medium); }
+[data-app="hankki"] .hk-reorder-req { font-size: 14px; color: var(--lm-label-2); margin-top: 6px; }
+[data-app="hankki"] .hk-reorder-pay { font-size: 14px; color: var(--lm-label-2); margin-top: 12px; }
+
+/* ===================== 이웃마켓 ===================== */
+[data-app="market"]:has(.stack > .scr:nth-child(2)) .tabbar { display: none; }
+[data-app="market"] .mk-loc { display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--lm-label-2); margin: -4px 16px 12px; }
+[data-app="market"] .mk-loc .ic { width: 15px; height: 15px; }
+[data-app="market"] .mk-thumb { display: block; width: 56px; height: 56px; flex: none; border-radius: 10px; overflow: hidden; }
+[data-app="market"] .mk-thumb .ph { height: 100%; }
+[data-app="market"] .mk-badge {
+  display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 6px;
+  font-size: 12px; font-weight: 600; background: var(--lm-fill-2); color: var(--lm-label-2);
+}
+[data-app="market"] .mk-badge.reserved { background: color-mix(in srgb, var(--lm-tint) 16%, transparent); color: var(--lm-tint); }
+[data-app="market"] .mk-badge.selling { background: color-mix(in srgb, var(--lm-success) 14%, transparent); color: var(--lm-success-ink); }
+[data-app="market"] .mk-chat-post { font-size: 12px; color: var(--lm-label-2); }
+[data-app="market"] .mk-count { font-size: 14px; color: var(--lm-label-2); margin: 0 16px 10px; }
+[data-app="market"] .mk-hero { margin-bottom: 16px; }
+[data-app="market"] .mk-detail { padding: 0 16px 16px; }
+[data-app="market"] .mk-detail-title { font-size: 22px; font-weight: 700; letter-spacing: var(--lm-tracking-medium); }
+[data-app="market"] .mk-detail-price { font-size: 26px; font-weight: 700; margin-top: 2px; font-family: var(--lm-font-num); letter-spacing: var(--lm-tracking-large); }
+[data-app="market"] .mk-detail-badge { display: flex; margin: 8px 0; }
+[data-app="market"] .mk-detail-desc { font-size: 16px; line-height: 1.5; }
+[data-app="market"] .mk-detail-note { font-size: 13px; color: var(--lm-warning-ink); margin-top: 8px; }
+[data-app="market"] .mk-log { display: flex; flex-direction: column; gap: 8px; padding: 8px 16px 24px; }
+[data-app="market"] .mk-day { text-align: center; font-size: 12px; color: var(--lm-label-2); margin: 10px 0 4px; }
+[data-app="market"] .mk-line { display: flex; align-items: flex-end; gap: 8px; }
+[data-app="market"] .mk-line.me { justify-content: flex-end; }
+[data-app="market"] .mk-line.them { justify-content: flex-start; }
+[data-app="market"] .mk-bubble { max-width: 76%; padding: 9px 12px; border-radius: 18px; display: flex; align-items: flex-end; gap: 8px; }
+[data-app="market"] .mk-line.me .mk-bubble { background: var(--lm-tint-fill); color: var(--lm-on-tint); border-bottom-right-radius: 6px; }
+[data-app="market"] .mk-line.them .mk-bubble { background: var(--lm-fill-2); border-bottom-left-radius: 6px; }
+[data-app="market"] .mk-text { font-size: 16px; line-height: 1.4; word-break: keep-all; overflow-wrap: anywhere; }
+[data-app="market"] .mk-time { font-size: 11px; opacity: .65; flex: none; }
+[data-app="market"] .mk-sys {
+  align-self: center; margin-top: 8px; padding: 4px 10px; border-radius: 999px;
+  font-size: 12px; color: var(--lm-label-2); background: var(--lm-fill-2);
+}
+[data-app="market"] .mk-un { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 2px; font-size: 12px; color: var(--lm-warning-ink); }
+[data-app="market"] .mk-un .ic { width: 14px; height: 14px; }

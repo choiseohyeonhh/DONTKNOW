@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>LUMA 프로토타입</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/os.css">
+<!-- APP-CSS:BEGIN -->
+<link rel="stylesheet" href="css/apps-life.css">
+<link rel="stylesheet" href="css/apps-media.css">
+<link rel="stylesheet" href="css/apps-money.css">
+<link rel="stylesheet" href="css/apps-msg.css">
+<link rel="stylesheet" href="css/apps-set.css">
+<link rel="stylesheet" href="css/apps-sns.css">
+<!-- APP-CSS:END -->
+</head>
+<body>
+<div class="stage">
+  <div class="device"></div>
+  <aside class="side-note">
+    <h2>LUMA 폰 프로토타입</h2>
+    <p>도현의 폰. 3/17(화) 21:10, 잠긴 채로 시작한다. 게임 시계는 실제보다 4배 빠르다.</p>
+    <p>잠금 해제 암호는 응급정보에 있다. 키보드 숫자도 된다.</p>
+    <p>화면 맨 위 왼쪽을 끌어내리면 알림 센터, 오른쪽 위를 끌어내리면 제어 센터. 위로 밀어 닫는다.</p>
+    <p>홈 아래 막대 = 홈으로. <kbd>Esc</kbd> = 뒤로.</p>
+    <p>
+      <button data-act="notif">알림 센터</button> ·
+      <button data-act="cc">제어 센터</button> ·
+      <button data-act="search">검색</button><br>
+      <button data-act="home">홈</button> ·
+      <button data-act="lock">잠그기</button> ·
+      <button data-act="theme">라이트/다크</button>
+    </p>
+    <p>진행 판정·흔적·원격 삭제는 이 프로토타입에 없다. 화면과 앱 조작만 확인한다.</p>
+  </aside>
+</div>
+<script src="js/core.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/data.js"></script>
+<script src="js/shell.js"></script>
+<!-- APPS:BEGIN -->
+<script src="js/apps/bank.js"></script>
+<script src="js/apps/blink.js"></script>
+<script src="js/apps/cal.js"></script>
+<script src="js/apps/calc.js"></script>
+<script src="js/apps/cam.js"></script>
+<script src="js/apps/clock.js"></script>
+<script src="js/apps/cont.js"></script>
+<script src="js/apps/file.js"></script>
+<script src="js/apps/find.js"></script>
+<script src="js/apps/hankki.js"></script>
+<script src="js/apps/health.js"></script>
+<script src="js/apps/loop.js"></script>
+<script src="js/apps/mail.js"></script>
+<script src="js/apps/map.js"></script>
+<script src="js/apps/market.js"></script>
+<script src="js/apps/moa.js"></script>
+<script src="js/apps/msg.js"></script>
+<script src="js/apps/note.js"></script>
+<script src="js/apps/phone.js"></script>
+<script src="js/apps/photo.js"></script>
+<script src="js/apps/portal.js"></script>
+<script src="js/apps/rem.js"></script>
+<script src="js/apps/set.js"></script>
+<script src="js/apps/talk.js"></script>
+<script src="js/apps/taxi.js"></script>
+<script src="js/apps/tube.js"></script>
+<script src="js/apps/voice.js"></script>
+<script src="js/apps/wallet.js"></script>
+<script src="js/apps/wave.js"></script>
+<script src="js/apps/wthr.js"></script>
+<!-- APPS:END -->
+<script>LM.boot();</script>
+</body>
+</html>

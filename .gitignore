@@ -1,0 +1,10 @@
+# 환경변수·비밀정보 (실제 값은 절대 커밋 금지)
+documents/.env
+.env
+.env.*
+!.env.example
+game/dist/
+phone-prototype/dist/
+.claude/settings.local.json
+__pycache__/
+game/tests/shots/
