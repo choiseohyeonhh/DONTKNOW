@@ -163,6 +163,9 @@ run('rooms: 그룹 5 + 1:1 13, 멤버·과거 대화', () => {
     }
     if (r.type === '1:1') {
       for (const m of r.history) assert.ok(ts(m.at) < new Date('2026-03-14T00:00:00+09:00'), '1:1 history not before 3/14');
+    } else if (r.id !== 'talk.alba') {
+      const lastAt = ts(r.history[r.history.length - 1].at);
+      assert.ok(lastAt >= new Date('2026-03-15T03:00:00+09:00'), 'group history does not reach cache cutoff ' + r.id);
     }
   }
 });
@@ -183,6 +186,8 @@ run('pool: 300문장 이상, 방·앱 참조, 3조 마감 화제', () => {
       assert.ok(it.window.every((h) => Number.isInteger(h) && h >= 0 && h <= 24));
     }
   }
+  const roomSentences = A.pool.items.filter((it) => it.room);
+  assert.ok(roomSentences.length >= 300, 'room pool sentences ' + roomSentences.length);
   const deadline = A.pool.items.filter((it) => it.room === 'talk.team3' && it.text.includes('3/18 23:59'));
   assert.ok(deadline.length >= 3, '3조 deadline items ' + deadline.length);
 });
