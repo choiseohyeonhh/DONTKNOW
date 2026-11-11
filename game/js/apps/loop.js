@@ -82,7 +82,7 @@
     'kang-ad': { author: 'moneycoach.kang', at: '', media: '추천 부업 카드', text: '추천 부업' },
   };
   const HIGHLIGHTS = {
-    'seoa.film': [{ title: '2월', key: 'seoa-2' }, { title: '3월', key: 'seoa-3' }],
+    'seoa.film': [{ title: '2월', key: 'seoa-2' }, { title: '3/12', key: 'seoa-4' }, { title: '3월', key: 'seoa-3' }],
     'moneycoach.kang': [{ title: '추천 부업', key: 'kang-ad' }],
     'minji.sw': [{ title: '알바', key: 'minji-1' }],
   };

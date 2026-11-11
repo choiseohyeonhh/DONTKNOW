@@ -38,7 +38,7 @@
       const m = last();
       holder.replaceChildren(ui.group({ plain: true, rows: [ui.row({
         title: h('span', { class: 'blink-titlewrap' }, LM.icon('lock', 'blink-lockic'), h('span', null, '실장K')),
-        subtitle: '비밀 대화 · 새 메시지',
+        subtitle: unread() ? '비밀 대화 · 새 메시지' : '비밀 대화',
         meta: m ? m.day + ' ' + m.time : '—',
         lead: ui.avatar('실장K', 56),
         badge: unread() || null,

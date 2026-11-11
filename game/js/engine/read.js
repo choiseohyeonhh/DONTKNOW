@@ -1,5 +1,5 @@
 /* 읽음 단일 상태 + 계산 배지 + 원격 삭제 + 데이터 층 필터.
- * 설계: PROTOYPE_FINDINGS 2절, STATE_MANAGEMENT, BUSINESS_RULES BR-26·BR-30·BR-32.
+ * 설계: PROTOTYPE_FINDINGS 2절, STATE_MANAGEMENT, BUSINESS_RULES BR-26·BR-30·BR-32.
  * 저장하는 것은 G.read[appId][itemId] = { readAt, receipt } 뿐이다. 배지 숫자는 저장하지 않는다. */
 (function () {
   'use strict';
@@ -172,6 +172,8 @@
 
     const sel = '[data-del="' + app + ':' + item + '"]';
     const els = Array.prototype.slice.call(document.querySelectorAll(sel));
+    const appOpen = !!(LM.current && LM.current() && LM.current().id === app);
+    const witnessed = els.length > 0 || appOpen;
     els.forEach((el) => {
       if (!LM.motion || LM.motion()) {
         el.style.transition = 'opacity .4s ease';
@@ -179,7 +181,7 @@
         setTimeout(() => { if (el.parentNode) el.remove(); }, 400);
       } else el.remove();
     });
-    if (LM.ui && LM.ui.toast) LM.ui.toast('1개 항목이 다른 기기에서 삭제됨');
+    if (witnessed && LM.ui && LM.ui.toast) LM.ui.toast('1개 항목이 다른 기기에서 삭제됨');
     LM.emit('delete', { appId: app, itemId: item });
     LM.emit('read', { appId: app, itemId: item, deleted: true });
     if (LM._autosave) LM._autosave();

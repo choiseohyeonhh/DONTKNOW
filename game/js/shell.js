@@ -525,7 +525,7 @@
       if (apps.length) res.appendChild(ui.group({ header: '앱', rows: apps.map((id) => ui.row({ title: LM.APPS[id], lead: LM.appIcon(id, 30), onClick: () => openApp(id) })) }));
       let any = apps.length;
       LM.searchSources.forEach((src) => {
-        const hits = src.items().filter((it) => norm(it.text).includes(nq)).slice(0, 5);
+        const hits = src.items().filter((it) => LM.visible(it) && norm(it.text).includes(nq)).slice(0, 5);
         if (!hits.length) return;
         any += hits.length;
         res.appendChild(ui.group({ header: LM.APPS[src.app], rows: hits.map((it) => ui.row({ title: it.title, subtitle: it.sub, lead: LM.appIcon(src.app, 30), onClick: () => openApp(src.app, { open: it.open }) })) }));

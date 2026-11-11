@@ -117,15 +117,13 @@
   }
 
   function wipe(d) {
-    ui.actionSheet({
-      title: d.name + '을(를) 지우시겠습니까?', text: '되돌릴 수 없습니다.',
-      actions: [{
-        label: '기기 지우기', destructive: true,
-        onClick: () => ui.actionSheet({
-          title: '정말 지울까요?', text: '되돌릴 수 없습니다.',
-          actions: [{ label: '기기 지우기', destructive: true, onClick: () => ui.toast('프로토타입: 기기 지우기는 실행되지 않는다') }],
-        }),
-      }],
+    ui.alert({
+      title: '이 기기를 원격으로 지우시겠습니까?',
+      text: '사진·메시지·메모가 이 기기에서 삭제됩니다. 되돌릴 수 없습니다.',
+      actions: [
+        { label: '취소', cancel: true },
+        { label: '원격 지우기', destructive: true, onClick: () => ui.toast('프로토타입: 기기 지우기는 실행되지 않는다') },
+      ],
     });
   }
 

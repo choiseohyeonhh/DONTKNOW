@@ -6,18 +6,22 @@
   const EV06 = '이 폰 가지고 있는 사람. 30분 안에 대답 없으면 원격으로 지웁니다.';
   const HANKYUL = (() => {
     const out = [];
+    const row = (day) => ({
+      dir: 'in',
+      body: '[한결캐피탈] 입금 확인 (입금자 이도*)',
+      day: day,
+      time: '09:00', // 시각 자리표시(캐논 없음)
+      origin: '한결캐피탈',
+      addr: '1600-XXXX',
+    });
     let y = 2024, m = 8;
-    for (let i = 0; i < 19; i++) {
-      out.push({
-        dir: 'in',
-        body: '[한결캐피탈] 입금 확인 (입금자 이도*)',
-        day: y + '.' + String(m).padStart(2, '0') + '.05', // 날짜 자리표시(캐논은 2024.08~2026.02 범위만)
-        time: '09:00', // 시각 자리표시(캐논 없음)
-        origin: '한결캐피탈',
-        addr: '1600-XXXX',
-      });
+    for (let i = 0; i < 17; i++) {
+      out.push(row(y + '.' + String(m).padStart(2, '0') + '.05')); // 2024.08~2025.12
       m++; if (m > 12) { m = 1; y++; }
     }
+    // 마지막 두 확인은 은행 출금일(1/27·2/26)과 1:1로 맞춘다(E-05·E-83).
+    out.push(row('2026.01.27'));
+    out.push(row('2026.02.26'));
     return out;
   })();
 
@@ -59,39 +63,36 @@
 
   LM.register({ id: 'msg', render(app) { app.start((nav) => list(nav)); } });
 
-  function ev06At() {
-    const first = LM.G && LM.G.firstOnlineAt;
-    return first == null ? null : first + 36 * 60000;
-  }
-  function ev06Visible() {
-    const at = ev06At();
-    return LM.online() && at != null && LM.now().getTime() >= at;
-  }
   function runtime(t) {
     return LM.msg.list('msg', t.id).map((rt) => ({
       id: rt.id, dir: rt.from === 'out' ? 'out' : 'in', body: rt.text,
       day: LM.fmt.date(rt.at, 'md'), time: LM.fmt.date(rt.at, 'hm'), rt: true,
+      origin: rt.origin || null, slate: !!rt.slate, syncedAt: rt.syncedAt || null,
     }));
   }
-  function baseMessages(t) {
-    if (t.id !== 'cirrus') return t.messages;
-    if (!ev06Visible()) return [];
-    const at = new Date(ev06At());
-    return [{ id: 'cirrus:ev06', dir: 'in', body: EV06, day: LM.fmt.date(at, 'md'), time: LM.fmt.time(at), origin: '도현의 슬레이트', slate: true, syncedAt: 'online', unread: 1, threadId: t.id }];
-  }
-  function messages(t) { return baseMessages(t).concat(t.extra, runtime(t)); }
+  function messages(t) { return t.messages.concat(t.extra, runtime(t)); }
   function unread(t) { return LM.read.unreadCount('msg', t.id); }
+
+  /* EV-06: 첫 온라인 뒤 게임 36분에 고정 시각으로 도착한다(EV-02 동기화분). */
+  function scheduleEv06() {
+    if (LM.G.events && LM.G.events['msg:ev06']) return;
+    LM.sched.afterOnline('msg:ev06', 36, () => {
+      LM.msg.add('msg', 'cirrus', {
+        id: 'cirrus:ev06', from: 'in', text: EV06, at: LM.G.gameMs,
+        origin: '도현의 슬레이트', slate: true, syncedAt: 'online',
+        notif: { title: '도현의 슬레이트', body: EV06 },
+      });
+    });
+  }
+  if (LM.G.firstOnlineAt != null) scheduleEv06();
+  else LM.on('firstOnline', scheduleEv06);
+  LM.on('gload', scheduleEv06);
 
   LM.read.register('msg', () => {
     const out = [];
     THREADS.forEach((t) => {
-      if (t.id === 'cirrus') {
-        if (ev06Visible()) out.push({ id: 'cirrus:ev06', threadId: t.id });
-        return;
-      }
       if (t.unread > 0) {
-        const ms = t.messages;
-        const lastIn = ms.slice().reverse().find((m) => m.dir === 'in');
+        const lastIn = t.messages.slice().reverse().find((m) => m.dir === 'in');
         if (lastIn) out.push({ id: lastIn.id, threadId: t.id });
       }
       LM.msg.list('msg', t.id).forEach((rt) => { if (rt.from !== 'out') out.push({ id: rt.id, threadId: t.id }); });
