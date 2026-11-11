@@ -244,9 +244,14 @@
         if (!bar.isConnected) { offRead(); offMsg(); offState(); offMinute(); return; }
         tabs.forEach((t) => {
           if (!t._badgeEl) return;
-          const n = typeof t.badge === 'function' ? t.badge() : t.badge;
-          t._badgeEl.textContent = n ? String(n) : '';
-          t._badgeEl.hidden = !n;
+          const raw = typeof t.badge === 'function' ? t.badge() : t.badge;
+          const info = raw && typeof raw === 'object' ? raw : { count: raw || 0, dot: false };
+          const n = Number(info.count) || 0;
+          const dot = !!info.dot && !n;
+          t._badgeEl.textContent = n ? String(n) : (dot ? '•' : '');
+          t._badgeEl.hidden = !n && !dot;
+          t._badgeEl.classList.toggle('dot', dot);
+          t._badgeEl.setAttribute('aria-label', n ? '안 읽은 메시지 ' + n + '개' : (dot ? '알림이 꺼진 방에 안 읽은 메시지가 있음' : '안 읽은 메시지 없음'));
         });
       };
       const offRead = LM.on('read', syncBadges);
@@ -482,13 +487,35 @@
 
   /* 공유 시트 */
   ui.share = (what) => {
-    const targets = ['지훈', '서아', '아빠', '하린', '김태윤 경위'];
+    const payload = (typeof what === 'string' || what == null) ? { title: what || '항목' } : Object.assign({}, what);
+    const title = payload.title || payload.eid || '항목';
+    const targets = [
+      { name: '도현', app: 'msg', thread: 'cirrus', npc: 'DH', label: '도현의 슬레이트' },
+      { name: '지훈', app: 'talk', thread: 'jihoon', npc: 'JH' },
+      { name: '서아', app: 'talk', thread: 'seoa', npc: 'SA' },
+      { name: '아빠', app: 'talk', thread: 'dad', npc: null },
+      { name: '하린', app: 'loop', thread: 'harin', npc: 'HR' },
+      { name: '김태윤 경위', app: 'mail', thread: 'sent', npc: 'KT', to: 'taeyun.kim@sw.police.kr' },
+    ];
+    const attachment = payload.eid ? { eid: payload.eid, title: title, kind: payload.kind || 'file', app: payload.app || null } : null;
+    const send = (t) => {
+      const target = { app: t.app, thread: t.thread, npc: t.npc, name: t.label || t.name, title: t.label || t.name, to: t.to };
+      const ok = LM.sendMessage ? LM.sendMessage(target, {
+        text: attachment ? '' : String(title),
+        attachment: attachment,
+        subject: title,
+      }) : false;
+      ui.toast(ok ? t.name + '에게 공유했습니다' : '온라인이 필요합니다');
+      return ok;
+    };
     const apps = [['msg', '메시지'], ['talk', '톡'], ['loop', '루프 DM'], ['mail', '메일'], ['blink', '블링크']];
     const body = h('div', { class: 'share' },
-      h('div', { class: 'share-what' }, LM.icon('doc'), h('span', null, what || '항목')),
-      h('div', { class: 'share-row' }, targets.map((n) => h('button', { class: 'share-t', onclick: (e) => { e.target.closest('.sheet-wrap').close(); ui.toast(n + '에게 공유했습니다'); } }, ui.avatar(n, 56), h('span', null, n)))),
+      h('div', { class: 'share-what' }, LM.icon('doc'), h('span', null, title)),
+      h('div', { class: 'share-row' }, targets.map((t) => h('button', { class: 'share-t', onclick: (e) => { e.target.closest('.sheet-wrap').close(); send(t); } }, ui.avatar(t.name, 56), h('span', null, t.name)))),
       h('div', { class: 'share-row' }, apps.map(([id, n]) => h('button', { class: 'share-t', onclick: (e) => { e.target.closest('.sheet-wrap').close(); ui.toast(n + '로 공유했습니다'); } }, LM.appIcon(id, 56), h('span', null, n)))),
       ui.group({ rows: [ui.row({ title: '복사', icon: 'copy', action: true, onClick: (e) => { e.target.closest('.sheet-wrap').close(); ui.toast('복사됨'); } }), ui.row({ title: '스크린샷으로 저장', icon: 'photo', action: true, onClick: (e) => { e.target.closest('.sheet-wrap').close(); ui.toast('사진에 저장됨'); } })] }));
     ui.sheet(null, ui.sheetPage({ title: '공유', body }), { size: 'medium' });
+  };
+
   };
 })();

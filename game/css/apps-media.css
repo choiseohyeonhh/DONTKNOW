@@ -168,7 +168,7 @@
 [data-app="file"] .file-hero-ic { flex: none; width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; background: var(--lm-tint-fill); color: var(--lm-on-tint); }
 [data-app="file"] .file-hero-ic .ic { width: 28px; height: 28px; }
 [data-app="file"] .file-hero-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-[data-app="file"] .file-hero-t b { font-size: 20px; font-weight: 700; word-break: break-all; }
+[data-app="file"] .file-hero-t b { font-size: 20px; font-weight: 700; word-break: keep-all; overflow-wrap: anywhere; }
 [data-app="file"] .file-hero-t span { font-size: 14px; color: var(--lm-label-2); }
 [data-app="file"] .file-paper { position: relative; min-height: 210px; margin: 0 16px 18px; padding: 22px 20px 44px; border-radius: 12px; background: #f7f6f2; color: #2b2b2b; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); }
 [data-app="file"] .file-paper-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }

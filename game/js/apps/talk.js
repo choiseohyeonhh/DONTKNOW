@@ -96,7 +96,7 @@
   LM.register({ id: 'talk', render(app) {
     app.setTabs([
       { label: '친구', icon: 'user', build: (nav) => friends(nav) },
-      { label: '채팅', icon: 'chat', badge: () => totalUnread(), build: (nav) => chats(nav) },
+      { label: '채팅', icon: 'chat', badge: () => ({ count: totalUnread(), dot: totalDot() }), build: (nav) => chats(nav) },
       { label: '더보기', icon: 'more', build: (nav) => more(nav) },
     ], 1);
   } });
@@ -123,32 +123,31 @@
   }
   function last(room) { const m = visible(room); return m.length ? m[m.length - 1] : null; }
   function roomUnread(room) {
-    let n = visible(room).filter((m) => m.dir === 'in' && LM.read.isUnread('talk', m.id)).length;
-    if (room.ambient) {
-      /* 배경 잡담은 홈·탭 숫자에서는 빼지만(캐논 배지 실험 보호), 방 행에서는 안 읽음을 보여 준다. */
-      const read = (LM.G && LM.G.read && LM.G.read.talk) || {};
-      n += LM.msg.list('talk', room.id).filter((rt) => rt.from !== 'out' && rt.ambient && !read[rt.id]).length;
-    }
-    return n;
+    return visible(room).filter((m) => m.dir === 'in' && LM.read.isUnread('talk', m.id)).length;
   }
   function markAmbientRead(room) {
     if (!room.ambient) return;
     LM.msg.list('talk', room.id).forEach((rt) => { if (rt.from !== 'out' && rt.ambient) LM.read.mark('talk', rt.id); });
   }
-  function staticUnread(room) {
-    return staticVisible(room).filter((m) => m.dir === 'in' && LM.read.isUnread('talk', m.id)).length;
+  /* 홈 아이콘·탭·폴더·방 행 모두 같은 후보 목록에서 계산한다(AC-707).
+   * 알림을 끈 방은 숫자 없이 점만 보인다(MESSAGING 3.9). */
+  function totalUnread() {
+    return LM.read && LM.read.unreadInfo ? LM.read.unreadInfo('talk').count
+      : ROOMS.reduce((n, r) => n + (r.muted ? 0 : roomUnread(r)), 0);
   }
-  /* 배경 방의 실시간 잡담은 방 행에만 세고, 홈·탭 숫자는 캐논 대화 기준을 유지한다.
-   * (배경 잡담이 캐논의 읽음 배지 실험을 덮지 않게. 배경 방 자체의 안 읽음은 행에 보인다.) */
-  function totalUnread() { return ROOMS.reduce((n, r) => n + (r.ambient ? staticUnread(r) : roomUnread(r)), 0); }
+  function totalDot() {
+    return !!(LM.read && LM.read.unreadInfo && LM.read.unreadInfo('talk').dot);
+  }
 
   LM.read.register('talk', () => {
     const out = [];
     ROOMS.forEach((r) => {
-      staticVisible(r).forEach((m) => { if (m.dir === 'in' && m.unread > 0) out.push({ id: m.id, threadId: r.id }); });
-      /* 배경 방의 실시간 잡담은 알림 센터·방 행에만 남기고, 홈 배지 계산에서는 뺀다.
-       * 캐논 대화의 읽음 실험(AC-707)을 배경 잡담이 덮지 않게 한다. */
-      LM.msg.list('talk', r.id).forEach((rt) => { if (rt.from !== 'out' && !(r.ambient && rt.ambient)) out.push({ id: rt.id, threadId: r.id }); });
+      staticVisible(r).forEach((m) => {
+        if (m.dir === 'in' && m.unread > 0) out.push({ id: m.id, threadId: r.id, muted: !!r.muted });
+      });
+      LM.msg.list('talk', r.id).forEach((rt) => {
+        if (rt.from !== 'out') out.push({ id: rt.id, threadId: r.id, muted: !!r.muted });
+      });
     });
     return out;
   });
@@ -246,6 +245,23 @@
     return h('div', { class: 'talk-line' + (out ? ' out' : ''), data: { mid: r.id + '-' + i } },
       h('div', { class: 'talk-av' + (out || ghost ? ' ghost' : '') }, ui.avatar(r.avatar, 32)),
       bodyCol);
+  }
+
+  /* 방 로그 렌더러. 실제 방 화면과 엔딩의 마지막 폰 화면이 같은 날짜 구분선·말풍선 규칙을 쓴다. */
+  function renderLog(r, ms) {
+    const log = h('div', { class: 'talk-room', role: 'log' });
+    let day = null, prev = null;
+    ms.forEach((m, i) => {
+      if (m.day !== day) {
+        day = m.day; prev = null;
+        log.appendChild(h('div', { class: 'talk-day' }, h('time', null, day)));
+      }
+      const ghost = prev && prev.dir === m.dir && prev.dir === 'in' && prev.day === m.day && (toMin(m.time) - toMin(prev.time)) <= 10;
+      log.appendChild(line(r, m, ghost, i));
+      if (m.dir === 'in') prev = m;
+      else prev = null;
+    });
+    return log;
   }
 
   function room(nav, r, backLabel) {
@@ -404,6 +420,16 @@
   }
 
   /* 엔딩 등 다른 화면이 톡의 실제 방 렌더러·CSS를 그대로 재사용할 수 있게 내보낸다. */
+  LM.talkRoomData = function (threadId) {
+    const r = ROOMS.find((x) => x.id === threadId);
+    if (!r) return null;
+    return { id: r.id, name: r.name, avatar: r.avatar, type: r.type, messages: visible(r) };
+  };
+  LM.talkRenderMessages = function (o) {
+    o = o || {};
+    const r = { id: o.id || 'preview', name: o.name || '아빠', avatar: o.avatar || o.name || '아빠', type: o.type || '1:1', muted: false, npc: null };
+    return renderLog(r, o.messages || []);
+  };
   LM.talkPreview = function (o) {
     o = o || {};
     const r = { id: o.threadId || 'preview', name: o.name || '아빠', avatar: o.avatar || o.name || '아빠', type: '1:1', muted: false, npc: null };

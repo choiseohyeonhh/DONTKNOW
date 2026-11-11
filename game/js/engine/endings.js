@@ -80,16 +80,14 @@
         '<rect x="236" y="620" width="34" height="16" rx="2" fill="#c9b47a" opacity=".85"/>' +
         '<text x="240" y="632" fill="#2b2318" font-size="11" font-family="sans-serif">207</text>' +
         '</g>' +
-        /* 복도 끝, 두 사람의 아주 작은 뒷모습 */
-        '<g fill="#07090c" opacity=".92">' +
-        '<ellipse cx="184" cy="567" rx="7" ry="9"/><rect x="181" y="575" width="6" height="6" rx="3"/><path d="M166 612c0-18 8-28 18-31 10 3 18 13 18 31z"/>' +
-        '<ellipse cx="214" cy="565" rx="7" ry="9"/><rect x="211" y="573" width="6" height="6" rx="3"/><path d="M196 610c0-18 8-28 18-31 10 3 18 13 18 31z"/>' +
-        '</g>' +
         '<ellipse cx="195" cy="650" rx="250" ry="220" fill="url(#el)" opacity=".22"/>' +
         vignette + '</svg>';
     }
-    if (kind === 'A′') {
-      /* 같은 경찰서 앞. 두 사람 사이에 한 사람만큼의 간격. */
+    if (kind === 'A′' || kind === 'A-police') {
+      /* 같은 경찰서 앞. A는 두 사람이 붙어 있고, A′는 한 사람만큼 벌어져 있다. */
+      const gap = kind === 'A′';
+      const x1 = gap ? 126 : 162, x2 = gap ? 258 : 228;
+      const y1 = 590, y2 = gap ? 594 : 591;
       return base + defs +
         '<rect width="390" height="844" fill="url(#eg)"/>' +
         '<rect x="0" y="0" width="390" height="120" fill="#0c1016"/>' +
@@ -103,14 +101,14 @@
         '<rect x="0" y="580" width="390" height="264" fill="#10141a"/>' +
         '<path d="M40 700h310M70 742h250M100 784h190" stroke="#27303c" stroke-width="10" stroke-linecap="round"/>' +
         '<ellipse cx="195" cy="610" rx="250" ry="180" fill="url(#el)"/>' +
-        /* 두 사람의 뒷모습, 사이가 벌어져 있다. 얼굴은 보이지 않는다. */
+        /* 두 사람의 뒷모습, A′는 사이가 벌어져 있다. 얼굴은 보이지 않는다. */
         '<g fill="#07090c">' +
-        '<ellipse cx="126" cy="590" rx="15" ry="18"/><rect x="121" y="604" width="10" height="12" rx="5"/>' +
-        '<path d="M94 704C96 660 108 626 126 618C144 626 156 660 158 704Z"/>' +
-        '<path d="M108 700l-8 44h13l11-38zM144 700l8 44h-13l-11-38z"/>' +
-        '<ellipse cx="258" cy="594" rx="14" ry="17"/><rect x="253" y="607" width="10" height="12" rx="5"/>' +
-        '<path d="M228 704C230 662 242 630 258 622C274 630 286 662 288 704Z"/>' +
-        '<path d="M241 700l-7 44h12l10-38zM275 700l7 44h-12l-10-38z"/>' +
+        '<ellipse cx="' + x1 + '" cy="' + y1 + '" rx="15" ry="18"/><rect x="' + (x1 - 5) + '" y="' + (y1 + 14) + '" width="10" height="12" rx="5"/>' +
+        '<path d="M' + (x1 - 32) + ' 704C' + (x1 - 30) + ' 660 ' + (x1 - 18) + ' 626 ' + x1 + ' 618C' + (x1 + 18) + ' 626 ' + (x1 + 30) + ' 660 ' + (x1 + 32) + ' 704Z"/>' +
+        '<path d="M' + (x1 - 18) + ' 700l-8 44h13l11-38zM' + (x1 + 18) + ' 700l8 44h-13l-11-38z"/>' +
+        '<ellipse cx="' + x2 + '" cy="' + y2 + '" rx="14" ry="17"/><rect x="' + (x2 - 5) + '" y="' + (y2 + 13) + '" width="10" height="12" rx="5"/>' +
+        '<path d="M' + (x2 - 30) + ' 704C' + (x2 - 28) + ' 662 ' + (x2 - 16) + ' 630 ' + x2 + ' 622C' + (x2 + 16) + ' 630 ' + (x2 + 28) + ' 662 ' + (x2 + 30) + ' 704Z"/>' +
+        '<path d="M' + (x2 - 17) + ' 700l-7 44h12l10-38zM' + (x2 + 17) + ' 700l7 44h-12l-10-38z"/>' +
         '</g>' +
         vignette + '</svg>';
     }
@@ -223,52 +221,68 @@
     ],
   };
 
+  function sentMail() {
+    const sent = LM.msg.list('mail', 'sent').filter((m) => m.from === 'out' || m.id === 'E-50-copy');
+    if (sent.length) {
+      const m = sent[sent.length - 1];
+      return { subject: m.subject || '자수하겠습니다', at: m.at, to: m.to || null };
+    }
+    const st = LM.mail && LM.mail.state ? LM.mail.state() : null;
+    return { subject: (st && st.subject) || '자수하겠습니다', at: null, to: (st && st.to) || null };
+  }
+
   function phoneScreen(kind) {
     const wrap = h('div', { class: 'end-phone' });
     if (kind === 'A') {
-      /* 이 폰은 도현의 계정이다. 도현이 보낸 "아빠"는 오른쪽 내 말풍선이고,
-       * 옆의 안 읽음 1은 아버지가 읽는 순간 사라진다. 톡 앱의 실제 렌더러/CSS를 쓴다. */
-      const msgs = [
-        { dir: 'in', body: '오늘 좀 늦어 먼저 자', day: '3/17', time: '18:52' },
-        { dir: 'out', body: '아빠', time: '09:02', outUnread: true },
-      ];
-      const talkRoom = (LM.talkPreview ? LM.talkPreview({ name: '아빠', messages: msgs })
-        : (() => {
-          const r = h('div', { class: 'talk-room' });
-          r.append(h('div', { class: 'talk-day' }, h('time', null, '3/17')));
-          r.append(h('div', { class: 'talk-line' }, h('div', { class: 'talk-av' }, ui.avatar('아빠', 32)), h('div', { class: 'talk-body' }, h('div', { class: 'talk-row' }, h('div', { class: 'talk-bubble' }, '오늘 좀 늦어 먼저 자'), h('div', { class: 'talk-side' }, h('span', null, '18:52'))))));
-          r.append(h('div', { class: 'talk-line out' }, h('div', { class: 'talk-av ghost' }), h('div', { class: 'talk-body' }, h('div', { class: 'talk-row out' }, h('div', { class: 'talk-side' }, h('span', { class: 'talk-unread' }, '1'), h('span', null, '09:02')), h('div', { class: 'talk-bubble' }, '아빠')))));
-          return r;
-        })());
+      /* 이 폰은 도현의 계정이다. 실제 아빠 방 데이터(+런타임 메시지)를 톡 렌더러로 그린 뒤,
+       * 도현이 새로 보낸 "아빠"(오른쪽 내 말풍선)을 붙인다. 옆의 안 읽음 1은 아버지가 읽는 순간 사라진다. */
+      const model = LM.talkRoomData ? LM.talkRoomData('dad') : null;
+      const msgs = model ? model.messages.slice() : [];
+      msgs.push({ id: 'end:dad', dir: 'out', body: '아빠', day: '3/18', time: '09:02', outUnread: true });
+      const log = LM.talkRenderMessages
+        ? LM.talkRenderMessages({ id: 'dad', name: model ? model.name : '아빠', avatar: model ? model.avatar : '아빠', messages: msgs })
+        : h('div', { class: 'talk-room' });
       wrap.setAttribute('data-app', 'talk');
       wrap.append(
-        h('div', { class: 'end-phone-top' }, '아빠'),
-        h('div', { class: 'end-phone-body talk' }, talkRoom));
-      const side = talkRoom.querySelectorAll('.talk-line.out .talk-unread')[0];
+        h('div', { class: 'end-phone-top' }, model ? model.name : '아빠'),
+        h('div', { class: 'end-phone-body talk' }, log));
+      const outs = log.querySelectorAll('.talk-line.out .talk-unread');
+      const side = outs[outs.length - 1];
       if (side) setTimeout(() => { side.classList.add('fading'); setTimeout(() => side.remove(), 220); }, 1400);
+      setTimeout(() => { const body = wrap.querySelector('.end-phone-body'); if (body) body.scrollTop = body.scrollHeight; }, 40);
     } else if (kind === 'A′') {
+      const note = LM.noteData ? LM.noteData('n-left') : null;
+      const nums = note ? String(note.body || '').match(/[0-9]{1,3}(?:,[0-9]{3})+/g) : null;
+      const amount = nums && nums.length ? nums[nums.length - 1] : '48,200,000';
       wrap.append(
         h('div', { class: 'end-phone-top' }, '메모'),
         h('div', { class: 'end-phone-body' },
-          h('div', { class: 'end-note-title' }, '남은 거'),
-          h('div', { class: 'end-note-body' }, '48,200,000')));
+          h('div', { class: 'end-note-title' }, note ? note.title : '남은 거'),
+          h('div', { class: 'end-note-body' }, amount)));
     } else if (kind === 'B') {
       wrap.append(
         h('div', { class: 'end-phone-top' }, '블링크'),
         h('div', { class: 'end-phone-body' },
           h('div', { class: 'end-msg in' }, '찾았다')));
     } else if (kind === 'C') {
+      const mail = sentMail();
+      const time = mail.at ? LM.fmt.date(mail.at, 'hm') + ' 발송' : '09:00 발송';
       wrap.append(
         h('div', { class: 'end-phone-top' }, '보낸편지함'),
         h('div', { class: 'end-phone-body' },
-          h('div', { class: 'end-mail-subj' }, '자수하겠습니다'),
-          h('div', { class: 'end-mail-time' }, '09:00 발송')));
+          h('div', { class: 'end-mail-subj' }, mail.subject),
+          h('div', { class: 'end-mail-time' }, time)));
     } else {
+      /* 지워진 폰에 마지막으로 남은 실제 시러스 대화. 도현에게 보내지 못한 "아빠 미안"만 실패로 남는다. */
+      const ms = LM.msg.list('msg', 'cirrus').map((rt) => ({
+        dir: rt.from === 'out' ? 'out' : 'in', body: rt.text || '',
+      })).filter((m) => m.body);
+      ms.push({ dir: 'out', body: '아빠 미안', fail: true });
       wrap.append(
         h('div', { class: 'end-phone-top' }, '메시지'),
-        h('div', { class: 'end-phone-body' },
-          h('div', { class: 'end-msg out' }, '아빠 미안'),
-          h('div', { class: 'end-fail' }, '전송 실패')));
+        h('div', { class: 'end-phone-body' }, ms.map((m) => h('div', null,
+          h('div', { class: 'end-msg ' + m.dir }, m.body),
+          m.fail ? h('div', { class: 'end-fail' }, '전송 실패') : null))));
     }
     return wrap;
   }
@@ -286,27 +300,38 @@
     return out;
   }
 
+  const FRAMES = {
+    A: ['A', 'A-police'],
+    'A′': ['A′', 'A′'],
+    B: ['B', 'B'],
+    C: ['C', 'C'],
+    D: ['D'],
+  };
+
   function show(kind) {
     const dev = document.querySelector('.device');
     if (!dev || dev.querySelector('.cine-ending')) return;
     const captions = CAPTIONS[kind] || CAPTIONS.C;
+    const frames = FRAMES[kind] || captions.map(() => kind);
     const host = h('div', { class: 'end-stage' });
     const advance = h('button', { class: 'end-advance', onclick: () => next() }, '다음');
+    const framesEl = h('div', { class: 'end-frames', html: endingSVG(frames[0] || kind) });
     const el = h('div', { class: 'cine-ending', role: 'dialog', 'aria-label': '엔딩' },
-      h('div', { class: 'end-frames', html: endingSVG(kind) }),
-      host, advance);
+      framesEl, host, advance);
     let step = 0;
-    const total = 4;
+    /* 자막 컷 수 + 마지막 폰 화면 + 크레딧 + 다시 보기 */
+    const total = captions.length + 3;
     const draw = () => {
+      advance.style.display = step >= total - 1 ? 'none' : '';
       advance.textContent = step < total - 1 ? '다음' : '닫기';
-      advance.style.display = step >= 3 ? 'none' : '';
       host.replaceChildren();
-      if (step === 0) {
-        host.appendChild(h('div', { class: 'end-caption' }, captions.map((c) => h('p', null, c))));
-      } else if (step === 1) {
+      if (step < captions.length) {
+        framesEl.innerHTML = endingSVG(frames[step] || kind);
+        host.appendChild(h('div', { class: 'end-caption' }, h('p', null, captions[step])));
+      } else if (step === captions.length) {
         host.appendChild(h('div', { class: 'end-caption end-phone-cap' }, h('p', null, '마지막 폰 화면')));
         host.appendChild(phoneScreen(kind));
-      } else if (step === 2) {
+      } else if (step === captions.length + 1) {
         host.appendChild(h('div', { class: 'end-credits' },
           h('div', { class: 'end-credit-title' }, 'DONTKNOW'),
           epilogue(kind).map((line) => h('p', null, line))));
@@ -315,9 +340,9 @@
       }
     };
     const next = () => {
-      if (step >= 3) return;
-      if (step < total - 1) { step++; draw(); }
-      else el.remove();
+      if (step >= total - 1) return;
+      step++;
+      draw();
     };
     el.addEventListener('click', (e) => { if (e.target.closest('button')) return; next(); });
     draw();

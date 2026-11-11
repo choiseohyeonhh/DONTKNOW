@@ -69,17 +69,71 @@ async function run(name, fn) {
 
     await page.evaluate(() => LM.advance(80));
     await page.waitForTimeout(250);
-    ok('22:30 단톡 글 뒤 8', (await page.evaluate(() => LM.badge('talk'))) === 8, String(await page.evaluate(() => LM.badge('talk'))));
+    const afterAmbient = await page.evaluate(() => LM.badge('talk'));
+    ok('배경 잡담이 온라인 뒤 홈·탭 숫자에 함께 들어간다(≥8)', afterAmbient >= 8, String(afterAmbient));
 
     await page.evaluate(() => LM.openApp('talk'));
     await page.waitForSelector('.appwin[data-app="talk"] .row');
+    ok('홈·탭·단일 상태가 같은 수', (await page.locator('.app[data-app="talk"] .badge').textContent()) === String(afterAmbient) &&
+      (await page.locator('.appwin[data-app="talk"] .tab-badge:not([hidden])').textContent()) === String(afterAmbient));
     const dadRow = page.locator('.appwin[data-app="talk"] .row', { hasText: '아빠' }).first();
     ok('채팅 목록 아빠 행 배지 6', (await dadRow.locator('.badge').textContent()) === '6');
-    ok('탭 배지 8', (await page.locator('.appwin[data-app="talk"] .tab-badge:not([hidden])').textContent()) === '8');
+    const rowSum = await page.evaluate(() => Array.from(document.querySelectorAll('.appwin[data-app="talk"] .row .badge')).reduce((n, b) => n + Number(b.textContent || 0), 0));
+    ok('방 행 숫자 합 = 홈·탭 배지', rowSum === afterAmbient, rowSum + ' vs ' + afterAmbient);
     await dadRow.click();
     await page.waitForTimeout(300);
+    const afterDad = await page.evaluate(() => LM.badge('talk'));
     ok('아빠 방 0', (await page.evaluate(() => LM.read.unreadCount('talk', 'dad'))) === 0);
-    ok('남은 전체 2(지훈 1 + 단톡 1)', (await page.evaluate(() => LM.badge('talk'))) === 2, String(await page.evaluate(() => LM.badge('talk'))));
+    ok('아빠 방을 읽으면 홈·탭도 6 줄어든다', afterDad === afterAmbient - 6, afterAmbient + ' → ' + afterDad);
+    ok('읽은 뒤에도 홈·탭이 같은 수', (await page.locator('.app[data-app="talk"] .badge').textContent()) === String(afterDad) &&
+      (await page.locator('.appwin[data-app="talk"] .tab-badge:not([hidden])').textContent()) === String(afterDad));
+    ok('콘솔 오류 없음', errors.length === 0, errors.join(' / '));
+    await ctx.close();
+  });
+
+  await run('배지 일관성: 배경 메시지 1건이 방 행·탭·홈에서 같은 프레임에 늘고 준다', async () => {
+    const { ctx, page, errors } = await open(browser, '?unlock&app=talk');
+    await page.waitForSelector('.appwin[data-app="talk"] .row');
+    await page.evaluate(() => LM.advance(5));
+    await page.waitForTimeout(150);
+    const base = await page.evaluate(() => LM.badge('talk'));
+    await page.evaluate(() => LM.msg.add('talk', 'talk.biz26', {
+      id: 'amb-badge-test', from: 'in', text: '배지 확인용 배경 메시지', at: LM.G.gameMs, silent: true, ambient: true,
+    }));
+    await page.waitForTimeout(120);
+    const plus = await page.evaluate(() => LM.badge('talk'));
+    const rowSum = await page.evaluate(() => Array.from(document.querySelectorAll('.appwin[data-app="talk"] .row .badge')).reduce((n, b) => n + Number(b.textContent || 0), 0));
+    ok('배경 메시지가 단일 상태에서 1 증가', plus === base + 1, base + ' → ' + plus);
+    ok('방 행 합 = 탭 = 홈', rowSum === plus &&
+      (await page.locator('.appwin[data-app="talk"] .tab-badge:not([hidden])').textContent()) === String(plus) &&
+      (await page.locator('.app[data-app="talk"] .badge').textContent()) === String(plus));
+    await page.locator('.appwin[data-app="talk"] .row', { hasText: '경영 26 새내기' }).first().click();
+    await page.waitForTimeout(250);
+    const minus = await page.evaluate(() => LM.badge('talk'));
+    ok('방을 열면 같은 상태에서 1 감소', minus === plus - 1, plus + ' → ' + minus);
+    ok('콘솔 오류 없음', errors.length === 0, errors.join(' / '));
+    await ctx.close();
+  });
+
+  await run('배지 일관성: 알림을 끈 방은 홈·탭·행 모두 점만, 숫자 없음', async () => {
+    const { ctx, page, errors } = await open(browser, '?unlock&app=talk');
+    await page.waitForSelector('.appwin[data-app="talk"] .row');
+    await page.evaluate(() => {
+      LM.read.items('talk').forEach((it) => LM.read.mark('talk', it.id));
+    });
+    await page.waitForTimeout(80);
+    await page.evaluate(() => LM.msg.add('talk', 'talk.alba', {
+      id: 'amb-muted-test', from: 'in', text: '교대 확인용 배경 메시지', at: LM.G.gameMs, silent: true, ambient: true,
+    }));
+    await page.waitForTimeout(120);
+    const info = await page.evaluate(() => LM.badgeInfo('talk'));
+    ok('숫자 0 · 점 1', info.count === 0 && info.dot === true, JSON.stringify(info));
+    const home = page.locator('.app[data-app="talk"] .badge');
+    const tab = page.locator('.appwin[data-app="talk"] .tab-badge:not([hidden])');
+    ok('홈 배지 점', (await home.textContent()) === '•' && (await home.evaluate((el) => el.classList.contains('dot'))));
+    ok('탭 배지 점', (await tab.textContent()) === '•');
+    const row = page.locator('.appwin[data-app="talk"] .row', { hasText: '편의점 알바' }).first();
+    ok('방 행은 점만, 숫자 배지 없음', (await row.locator('.talk-mutedot').count()) === 1 && (await row.locator('.badge').count()) === 0);
     ok('콘솔 오류 없음', errors.length === 0, errors.join(' / '));
     await ctx.close();
   });

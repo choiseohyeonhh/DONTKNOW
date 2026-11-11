@@ -46,14 +46,27 @@
     return candidates(appId).some((it) => String(it.id) === String(itemId));
   }
 
-  function unreadCount(appId, threadId) {
+  function unreadCount(appId, threadId, opts) {
     const b = readTree()[String(appId)] || {};
     let n = 0;
     candidates(appId).forEach((it) => {
       if (threadId != null && String(it.threadId == null ? '' : it.threadId) !== String(threadId)) return;
+      if (opts && opts.excludeMuted && it.muted) return;
       if (!Object.prototype.hasOwnProperty.call(b, String(it.id))) n++;
     });
     return n;
+  }
+
+  /* 방 알림을 끈 곳은 숫자 대신 점 하나. 홈·탭·폴더·방 행이 같은 후보 목록에서 계산한다. */
+  function unreadInfo(appId) {
+    const b = readTree()[String(appId)] || {};
+    let count = 0, muted = 0;
+    candidates(appId).forEach((it) => {
+      if (Object.prototype.hasOwnProperty.call(b, String(it.id))) return;
+      if (it.muted) muted++;
+      else count++;
+    });
+    return { count: count, muted: muted, dot: muted > 0 };
   }
 
   function mark(appId, itemId, opts) {
@@ -119,13 +132,15 @@
     markThread,
     isUnread,
     unreadCount,
-    badge: unreadCount,
+    unreadInfo,
+    badge: (appId) => unreadInfo(appId).count,
     register,
     hasProvider,
     items: (appId) => candidates(appId).slice(),
     flush: flushReceipts,
   };
-  LM.badge = (appId) => unreadCount(appId);
+  LM.badge = (appId) => unreadInfo(appId).count;
+  LM.badgeInfo = (appId) => unreadInfo(appId);
 
   LM.on('online', flushReceipts);
 

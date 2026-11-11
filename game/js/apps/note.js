@@ -42,6 +42,8 @@
     },
   ];
 
+  LM.noteData = (id) => notes.find((n) => n.id === id) || null;
+
   let unlocked = !!(LM.G && LM.G.world && LM.G.world.noteUnlocked);
   let root = null;
   let noteOff = null;

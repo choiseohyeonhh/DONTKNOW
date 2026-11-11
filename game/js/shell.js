@@ -119,7 +119,8 @@
   }
 
   function groupUnread(appId, list) {
-    if (LM.read && LM.read.hasProvider && LM.read.hasProvider(appId)) return LM.read.unreadCount(appId);
+    if (LM.read && LM.read.unreadInfo) return LM.read.unreadInfo(appId).count;
+    if (LM.read && LM.read.hasProvider && LM.read.hasProvider(appId)) return LM.read.unreadCount(appId, null, { excludeMuted: true });
     return list.length;
   }
 
@@ -216,10 +217,13 @@
     const b = h('button', { class: 'app', data: { app: id }, onclick: (e) => openApp(id, { from: e.currentTarget.querySelector('.appicon') }) },
       LM.appIcon(id), h('span', { class: 'app-name' }, LM.APPS[id]), badge);
     b._syncBadge = () => {
-      const n = (LM.badge && LM.badge(id)) || 0;
-      badge.textContent = n ? String(n) : '';
-      badge.hidden = !n;
-      b.setAttribute('aria-label', LM.APPS[id] + (n ? ', 안 읽은 메시지 ' + n + '개' : ''));
+      const info = (LM.badgeInfo && LM.badgeInfo(id)) || { count: (LM.badge && LM.badge(id)) || 0, dot: false };
+      const n = Number(info.count) || 0;
+      const dot = !!info.dot && !n;
+      badge.textContent = n ? String(n) : (dot ? '•' : '');
+      badge.hidden = !n && !dot;
+      badge.classList.toggle('dot', dot);
+      b.setAttribute('aria-label', LM.APPS[id] + (n ? ', 안 읽은 메시지 ' + n + '개' : (dot ? ', 알림이 꺼진 대화에 안 읽은 메시지가 있음' : '')));
     };
     b._syncBadge();
     return b;
@@ -229,9 +233,15 @@
     const b = h('button', { class: 'app', data: { folder: f.folder }, onclick: () => openFolder(f) },
       h('span', { class: 'folder-icon', style: { clipPath: `path('${LM.SQUIRCLE}')` } }, f.apps.map((id) => LM.appIcon(id, 13))), h('span', { class: 'app-name' }, f.folder), badge);
     b._syncFolder = () => {
-      const n = f.apps.reduce((sum, id) => sum + ((LM.badge && LM.badge(id)) || 0), 0);
-      badge.textContent = n ? String(n) : '';
-      badge.hidden = !n;
+      let n = 0, dot = false;
+      f.apps.forEach((id) => {
+        const info = (LM.badgeInfo && LM.badgeInfo(id)) || { count: (LM.badge && LM.badge(id)) || 0, dot: false };
+        n += Number(info.count) || 0;
+        if (info.dot) dot = true;
+      });
+      badge.textContent = n ? String(n) : (dot ? '•' : '');
+      badge.hidden = !n && !dot;
+      badge.classList.toggle('dot', !n && dot);
     };
     b._syncFolder();
     return b;

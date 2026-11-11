@@ -194,7 +194,7 @@ async function finishFinal(page) {
       LM.endings.judge('test');
     });
     await page.waitForSelector('.cine-ending');
-    for (let i = 0; i < 2; i++) await page.locator('.end-advance').click();
+    for (let i = 0; i < 3; i++) await page.locator('.end-advance').click();
     await page.waitForSelector('.end-credits');
     const credits = await page.locator('.end-credits').innerText();
     ok('크레딧에 v6.2 없음', !/v6\.2/.test(credits), credits.slice(0, 60));
@@ -215,17 +215,40 @@ async function finishFinal(page) {
     });
     await page.waitForSelector('.cine-ending');
     await page.locator('.end-advance').click();
+    await page.locator('.end-advance').click();
     await page.waitForTimeout(120);
     const info = await page.evaluate(() => {
-      const out = document.querySelector('.end-phone .talk-line.out');
+      const outs = Array.from(document.querySelectorAll('.end-phone .talk-line.out'));
+      const out = outs[outs.length - 1];
       const b = out && out.querySelector('.talk-bubble');
       const unread = out && out.querySelector('.talk-unread');
-      return { hasOut: !!out, text: b ? b.textContent : '', unread: !!unread, ownBg: out ? getComputedStyle(b).backgroundColor : '' };
+      const firstOut = document.querySelector('.end-phone .talk-line.out .talk-bubble');
+      return { hasOut: !!out, text: b ? b.textContent : '', firstText: firstOut ? firstOut.textContent : '', unread: !!unread, ownBg: out ? getComputedStyle(b).backgroundColor : '' };
     });
-    ok('오른쪽 내 말풍선', info.hasOut && info.text === '아빠', JSON.stringify(info));
+    ok('실제 도현의 3/14 발신이 먼저 보인다', info.firstText === '오늘 좀 늦어 먼저 자', JSON.stringify(info));
+    ok('마지막이 오른쪽 내 말풍선 "아빠"', info.hasOut && info.text === '아빠', JSON.stringify(info));
     ok('안 읽음 1 표시', info.unread === true);
     await page.waitForTimeout(1700);
     ok('읽으면 1이 사라진다', (await page.locator('.end-phone .talk-line.out .talk-unread').count()) === 0);
+    ok('콘솔 오류 없음', errors.length === 0, errors.join(' / '));
+    await ctx.close();
+  });
+
+  await run('엔딩 A 스틸: 복도 다음에 경찰서 앞(두 사람) — 복도 재사용 없음', async () => {
+    const { ctx, page, errors } = await open(browser);
+    await page.evaluate(() => {
+      DK.set('npc.DH', 3); DK.set('flags.GO', true); DK.set('flags.LOC', 'exact');
+      DK.set('flags.NAME_SENT', true); DK.set('flags.CONFESS', true);
+      LM.endings.judge('test');
+    });
+    await page.waitForSelector('.cine-ending');
+    const first = await page.locator('.end-frames').innerHTML();
+    const cap1 = await page.locator('.end-caption').innerText();
+    ok('첫 스틸은 복도(207 문)', /207/.test(first) && /복도/.test(cap1), cap1);
+    await page.locator('.end-advance').click();
+    const second = await page.locator('.end-frames').innerHTML();
+    const cap2 = await page.locator('.end-caption').innerText();
+    ok('둘째 스틸은 경찰서 앞', /경찰서/.test(cap2) && !/207/.test(second), cap2);
     ok('콘솔 오류 없음', errors.length === 0, errors.join(' / '));
     await ctx.close();
   });
@@ -262,7 +285,7 @@ async function finishFinal(page) {
     const { ctx, page } = await open(browser);
     await page.evaluate(() => { DK.set('npc.DH', 3); DK.set('flags.MAIL', 'deleted'); LM.endings.judge('test'); });
     await page.waitForSelector('.cine-ending');
-    for (let i = 0; i < 3; i++) await page.locator('.end-advance').click();
+    for (let i = 0; i < 4; i++) await page.locator('.end-advance').click();
     await page.waitForSelector('.end-replay');
     const text = await page.locator('.end-replay').innerText();
     ok('열어 보지 않은 앱 기능 수', /열어 보지 않은 앱 기능/.test(text), text.slice(0, 80));
