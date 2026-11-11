@@ -109,6 +109,7 @@
   }
 
   function alarmDetail(nav, a) {
+    if (a.id === 'a1') LM.C.see('E-212');
     const body = h('div');
     const draw = () => {
       const rows = [

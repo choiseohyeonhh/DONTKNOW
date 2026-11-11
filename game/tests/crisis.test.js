@@ -195,6 +195,22 @@ async function run(name, fn) {
     await ctx.close();
   });
 
+  await run('초기 설정 화면 뒤에는 키보드 입력이 막힌다', async () => {
+    const { ctx, page, errors } = await open(browser);
+    await goOnline(page);
+    await page.evaluate(() => DK.advance(70));
+    await page.waitForSelector('.wipe-setup');
+    const before = await page.evaluate(() => ({ pause: !!document.querySelector('.pause'), app: LM.current() ? LM.current().id : null }));
+    await page.keyboard.press('Escape');
+    await page.keyboard.type('abc');
+    await page.waitForTimeout(120);
+    const after = await page.evaluate(() => ({ pause: !!document.querySelector('.pause'), app: LM.current() ? LM.current().id : null }));
+    ok('Esc로 일시정지가 열리지 않는다', before.pause === false && after.pause === false, JSON.stringify(after));
+    ok('앱이 열리지 않는다', after.app === null, String(after.app));
+    ok('콘솔 오류 없음', errors.length === 0, errors.join(' / '));
+    await ctx.close();
+  });
+
   await browser.close();
   console.log('\n위기·흔적 테스트');
   console.log(results.join('\n'));

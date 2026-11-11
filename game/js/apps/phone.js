@@ -64,6 +64,7 @@
   }
 
   function detail(nav, c) {
+    if (c.id === 'c1') LM.C.see('E-31');
     const body = h('div', null,
       h('div', { class: 'phone-hero' },
         ui.avatar(c.name, 56),

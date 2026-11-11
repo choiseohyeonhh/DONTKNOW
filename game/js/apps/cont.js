@@ -60,6 +60,7 @@
   }
 
   function detail(nav, c) {
+    if (c.id === 'dad') LM.C.see('E-210');
     const body = h('div', null,
       h('div', { class: 'cont-hero' },
         ui.avatar(c.name, 86),
@@ -67,7 +68,7 @@
         c.full && c.full !== c.name ? h('div', { class: 'cont-hero-sub' }, c.full) : null),
       ui.group({ rows: [
         ui.row({ title: '전화', value: c.phone || '없음', action: true, onClick: () => { if (c.phone) copy(c.phone); } }),
-        ui.row({ title: '생일', value: c.birthday || '없음', action: true, onClick: () => { if (c.birthday) ui.toast('캘린더의 생일로 이동(프로토타입)'); } }),
+        ui.row({ title: '생일', value: c.birthday || '없음', action: true, onClick: () => { if (c.birthday) LM.openApp('cal'); } }),
       ] }),
       ui.group({ rows: [kv('회사', val(c.company)), kv('메모', val(c.memo)), kv('주소', val(c.address))] }),
       ui.group({ rows: [

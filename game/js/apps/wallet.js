@@ -47,6 +47,7 @@
   }
 
   function transit(nav) {
+    LM.C.see('E-39');
     const groups = [];
     let lastDate = null;
     RIDES.forEach((r) => {
@@ -77,6 +78,7 @@
   }
 
   function payments(nav) {
+    LM.C.see('E-39');
     return ui.page({
       title: '결제', back: '지갑', nav, large: false,
       body: [

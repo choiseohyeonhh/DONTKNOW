@@ -115,9 +115,61 @@
     ], { online: true, scheduledAt: '2026. 3. 18. 09:00', to: 'taeyun.kim@sw.police.kr', attachments: Array.from({ length: 12 }, (_, i) => ({ name: '캡처 ' + (i + 1), kind: 'PNG', source: '사진 앨범' })) }),
   ];
 
+  const E50 = MAILS.find((m) => m.id === 'E-50');
+  function schedState() {
+    const g = LM.G;
+    if (!g) return { body: E50.body.slice(), attachments: (E50.attachments || []).slice(), to: E50.to, subject: E50.subject, deleted: false, sent: false };
+    if (!g.mailSched || typeof g.mailSched !== 'object') {
+      g.mailSched = {
+        body: E50.body.slice(), attachments: (E50.attachments || []).slice(),
+        to: E50.to, subject: E50.subject, deleted: false, sent: false, sentNow: false,
+      };
+    }
+    const st = g.mailSched;
+    if (!Array.isArray(st.body)) st.body = E50.body.slice();
+    if (!Array.isArray(st.attachments)) st.attachments = (E50.attachments || []).slice();
+    return st;
+  }
+  const schedGone = () => { const st = schedState(); return !!(st.deleted || st.sent || st.sentNow); };
+  function applySchedFlags() {
+    const st = schedState();
+    const body = st.body.join('\n');
+    if (/강민석/.test(body)) LM.flag('NAME_SENT', true);
+    else if (/민석/.test(body)) LM.gset('dlg.ktPartialSeong', true);
+    else if (/강\s*실장|실장K/.test(body)) LM.gset('dlg.ktPartialName', true);
+    const eids = (st.attachments || []).map((a) => a.eid).filter(Boolean);
+    if (eids.indexOf('E-37') >= 0 || (st.attachments || []).some((a) => a.kind === 'recording')) { LM.flag('REC_SENT', true); LM.flag('REC', 'sent'); }
+    if (eids.indexOf('E-33') >= 0) LM.flag('PLATE_SENT', true);
+    if (/(해담|207|성원구청로\s*31)/.test(body)) LM.flag('LOC_SENT', true);
+  }
+  function sentCopy() {
+    const st = schedState();
+    if (st.sentCopy) return;
+    st.sentCopy = true;
+    LM.msg.add('mail', 'sent', {
+      id: 'E-50-copy', from: 'out', title: '이도현', fromAddr: ACCOUNTS.cirrus.address,
+      subject: st.subject || '자수하겠습니다', text: st.body.join('\n\n'), at: LM.G.gameMs,
+      eid: 'E-50', silent: true,
+    });
+  }
+  LM.mail = {
+    state: schedState,
+    applyFlags: applySchedFlags,
+    onDeadline() {
+      const st = schedState();
+      if (st.deleted || LM.flag('MAIL') === 'deleted') { st.deleted = true; return false; }
+      if (st.sent || st.sentNow) { applySchedFlags(); return true; }
+      st.sent = true;
+      LM.flag('MAIL', 'sent');
+      applySchedFlags();
+      sentCopy();
+      return true;
+    },
+  };
+
   function runtimeMails(folder) {
-    return LM.msg.list('mail', folder).map((rt) => ({
-      id: rt.id, account: account, folder: folder, from: rt.from === 'out' ? '이도현' : (rt.title || rt.from || '메일'),
+    return LM.msg.list('mail', folder).filter((rt) => !rt.account || rt.account === account).map((rt) => ({
+      id: rt.id, account: rt.account || account, folder: folder, from: rt.from === 'out' ? '이도현' : (rt.title || rt.from || '메일'),
       fromAddr: rt.fromAddr || '', to: rt.to || ACCOUNTS[account].address,
       subject: rt.subject || rt.text || '(제목 없음)', preview: rt.preview || rt.text || '',
       listTime: LM.fmt.date(rt.at, 'md'), timeFull: LM.fmt.date(rt.at), body: [rt.text || ''], attachments: rt.attach ? [rt.attach] : [], unread: rt.from !== 'out', online: false, rt: true, eid: rt.eid || (rt.attach && rt.attach.eid) || null,
@@ -127,7 +179,7 @@
     const d = LM.fmt.toDate(m.timeFull) || LM.fmt.toDate(m.listTime);
     return d ? d.getTime() : 0;
   };
-  const folderMails = (key) => MAILS.filter((m) => m.account === account && m.folder === key && (!m.online || LM.online()) && !LM.isDeleted('mail', m.id))
+  const folderMails = (key) => MAILS.filter((m) => m.account === account && m.folder === key && (!m.online || LM.online()) && !LM.isDeleted('mail', m.id) && !(m.id === 'E-50' && schedGone()))
     .concat(runtimeMails(key)).sort((a, b) => mailAt(b) - mailAt(a));
   const folderLabel = (key) => (FOLDERS.find((f) => f.key === key) || {}).label || '메일함';
   const bodyText = (m) => m.body.join(' ');
@@ -310,15 +362,16 @@
 
   /* ---------- 예약 메일 ---------- */
   function schedule(nav, m) {
+    const st = schedState();
     const body = h('div', { class: 'mail-sched' },
       h('div', { class: 'mail-sched-card' },
         h('span', { class: 'mail-sched-label' }, '발송 예정'),
         h('div', { class: 'mail-sched-time' }, LM.fmt.date(m.scheduledAt))),
-      ui.group({ rows: [kv('받는 사람', m.to), kv('제목', m.subject), kv('첨부', (m.attachments || []).length + '장'), kv('작성', m.timeFull)] }),
+      ui.group({ rows: [kv('받는 사람', st.to || m.to), kv('제목', st.subject || m.subject), kv('첨부', (st.attachments || []).length + '장'), kv('상태', LM.flag('MAIL') === 'edited' ? '수정됨 · 발송 대기' : '발송 대기')] }),
       ui.notice('오프라인에서도 내용은 캐시로 보인다. 발송 동작은 온라인이 필요하다.'),
-      h('h2', { class: 'mail-subject' }, m.subject),
-      m.body.map((p) => h('p', { class: 'mail-p' }, p)),
-      ui.group({ header: '첨부 ' + (m.attachments || []).length + '장', plain: true, rows: [h('div', { class: 'mail-chips' }, (m.attachments || []).map(attachChip))] }),
+      h('h2', { class: 'mail-subject' }, st.subject || m.subject),
+      st.body.map((p) => h('p', { class: 'mail-p' }, p)),
+      ui.group({ header: '첨부 ' + (st.attachments || []).length + '장', plain: true, rows: [h('div', { class: 'mail-chips' }, (st.attachments || []).map(attachChip))] }),
     );
     const footer = h('div', { class: 'mail-sched-actions' },
       h('button', { class: 'btn gray m', onclick: () => editSchedule(nav, m) }, '수정'),
@@ -328,15 +381,49 @@
   }
 
   function editSchedule(nav, m) {
-    const ta = h('textarea', { class: 'mail-body-input', rows: '8' }, m.body.join('\n\n'));
+    const st = schedState();
+    let attachments = (st.attachments || []).slice();
+    const ta = h('textarea', { class: 'mail-body-input', rows: '8' }, st.body.join('\n\n'));
+    const chips = h('div', { class: 'mail-chips' });
+    const drawChips = () => {
+      chips.replaceChildren(...attachments.map((a, i) => h('button', { class: 'mail-chip', onclick: () => { attachments.splice(i, 1); drawChips(); } },
+        LM.icon('doc'), h('span', null, a.name + ' · 빼기'))));
+      if (!attachments.length) chips.appendChild(h('span', { class: 'mail-chip-empty' }, '첨부 없음'));
+    };
+    const add = h('button', { class: 'btn gray s', onclick: () => ui.actionSheet({
+      title: '첨부 추가',
+      actions: [
+        { label: '번호판 사진', onClick: () => { attachments.push({ name: '번호판 프레임', kind: 'PNG', source: '사진', eid: 'E-33' }); drawChips(); } },
+        { label: '교육자료.pdf', onClick: () => { attachments.push({ name: '교육자료.pdf', kind: 'PDF', source: '파일', eid: 'E-216' }); drawChips(); } },
+        { label: '녹음 37', onClick: () => { attachments.push({ name: '새로운 녹음 37', kind: 'recording', source: '음성 메모', eid: 'E-37' }); drawChips(); } },
+      ],
+    }) }, '첨부 추가');
+    drawChips();
     const box = h('div', { class: 'mail-compose', data: { app: 'mail' } },
-      ui.group({ rows: [kv('받는 사람', m.to), kv('발송', LM.fmt.date(m.scheduledAt) + ' (고정)')] }),
-      h('div', { class: 'mail-field' }, h('label', null, '제목'), h('input', { value: m.subject })),
+      ui.group({ rows: [kv('받는 사람', st.to || m.to), kv('발송', LM.fmt.date(m.scheduledAt) + ' (고정)')] }),
+      h('div', { class: 'mail-field' }, h('label', null, '제목'), h('input', { value: st.subject || m.subject })),
       ta,
+      ui.group({ header: '첨부', rows: [chips, add] }),
       LM.online() ? null : ui.notice('오프라인 상태입니다. 저장은 이 기기에 대기한다.', 'warn'));
     ui.sheet(null, ui.sheetPage({
       title: '예약 수정', cancel: '취소', done: '저장',
-      onDone: () => { m.body = ta.value.split(/\n{2,}/).map((s) => s.trim()).filter(Boolean); LM.flag('MAIL', 'edited'); if (LM.trace) LM.trace('TR-09', { action: 'edit' }); ui.toast('예약 메일을 수정했다'); },
+      onDone: () => {
+        st.body = ta.value.split(/\n{2,}/).map((s) => s.trim()).filter(Boolean);
+        st.attachments = attachments.slice();
+        LM.flag('MAIL', 'edited');
+        if (LM.trace) LM.trace('TR-09', { action: 'edit' });
+        ui.toast('예약 메일을 수정했다');
+        setTimeout(() => {
+          try {
+            const old = nav.screens && nav.screens[nav.screens.length - 1];
+            const fresh = schedule(nav, m);
+            fresh.classList.add('scr');
+            nav.el.appendChild(fresh);
+            nav.screens[nav.screens.length - 1] = fresh;
+            if (old) old.remove();
+          } catch (e) { nav.pop(); nav.push(() => schedule(nav, m)); }
+        }, 40);
+      },
       body: box,
     }), { size: 'large' });
   }
@@ -344,14 +431,24 @@
   function sendNow(nav, m) {
     ui.actionSheet({
       title: '지금 보낼까요?', text: '예약 시각을 기다리지 않고 바로 발송합니다.',
-      actions: [{ label: '지금 보내기', onClick: () => { m.folder = 'sent'; m.scheduledAt = null; LM.flag('MAIL', 'sent-now'); if (LM.trace) LM.trace('TR-09', { action: 'send-now' }); LM.emit('state', {}); ui.toast('메일을 보냈다'); nav.pop(); } }],
+      actions: [{ label: '지금 보내기', onClick: () => {
+        const st = schedState();
+        st.sentNow = true;
+        LM.flag('MAIL', 'sent-now');
+        applySchedFlags();
+        sentCopy();
+        if (LM.trace) LM.trace('TR-09', { action: 'send-now' });
+        LM.emit('state', {});
+        ui.toast('메일을 보냈다');
+        nav.pop();
+      } }],
     });
   }
 
   function deleteSchedule(nav, m) {
     ui.actionSheet({
       title: '예약 메일을 삭제할까요?', text: '삭제하면 발송되지 않습니다.',
-      actions: [{ label: '삭제', destructive: true, onClick: () => { m.folder = 'trash'; LM.flag('MAIL', 'deleted'); if (LM.trace) LM.trace('TR-09', { action: 'delete' }); LM.emit('state', {}); nav.pop(); ui.toast('예약 메일을 삭제했다'); } }],
+      actions: [{ label: '삭제', destructive: true, onClick: () => { const st = schedState(); st.deleted = true; LM.flag('MAIL', 'deleted'); if (LM.trace) LM.trace('TR-09', { action: 'delete' }); LM.emit('state', {}); nav.pop(); ui.toast('예약 메일을 삭제했다'); } }],
     });
   }
 

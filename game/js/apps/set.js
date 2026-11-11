@@ -67,6 +67,7 @@
   }
 
   function cirrus(nav) {
+    LM.C.see('E-76');
     return sub(nav, '시러스 ID', [
       h('div', { class: 'set-hero' }, ui.avatar('이도현', 84), h('div', { class: 'set-hero-n' }, '이도현'), h('div', { class: 'set-hero-s' }, 'dohyun.lee0921@cirrus.kr')),
       ui.group({ rows: [
@@ -100,6 +101,7 @@
     } else DECO_SYNC[key] = v;
   }
   function sync(nav) {
+    LM.C.see('E-204');
     const rows = [
       ['photos', '사진'], ['notes', '메모'], ['reminders', '미리 알림'], ['mail', '메일'],
       ['talk', '톡 백업'], ['voice', '음성 메모'], ['keyboard', '키보드 사전'],
@@ -122,6 +124,7 @@
   }
 
   function family(nav) {
+    LM.C.see('E-200');
     return sub(nav, '가족', [
       ui.group({ rows: [ui.row({ title: '이상철', subtitle: '아빠 · 관리자', avatar: '이상철' }), ui.row({ title: '이도현', subtitle: '나', avatar: '이도현' })] }),
       ui.group({ header: '위치 공유', rows: [kv('아빠와 위치 공유', '중지 · 2026년 1월 9일'), ui.row({ title: '위치 공유 요청 보내기', action: true, onClick: () => { if (!LM.online()) { ui.toast('오프라인 상태라 보낼 수 없다'); return; } if (LM.G && LM.G.npc && Number(LM.G.npc.DH) === 4) { LM.G.world = LM.G.world || {}; LM.G.world.locShared = true; LM.emit('locShared', {}); } if (LM.trace) LM.trace('TR-16'); ui.toast('도현의 슬레이트로 요청을 보냈다'); } })] }),
@@ -134,7 +137,7 @@
       const on = LM.state.wifi && !LM.state.airplane;
       list.replaceChildren(
         ui.group({ rows: [ui.row({ title: 'Wi-Fi', toggle: { on, onChange: (v) => { LM.set({ wifi: v }); draw(); } } }), on ? ui.row({ title: 'seongwon_home', lead: LM.icon('check', 'row-check'), accessory: LM.icon('wifi') }) : null] }),
-        ui.group({ header: '알려진 네트워크', footer: on ? null : '일부 네트워크는 온라인이 되어야 동기화된다.', rows: D.wifi.filter((w) => !w.onlineOnly || LM.online()).map((w) => ui.row({ title: w.ssid, accessory: h('button', { class: 'nb-btn', 'aria-label': w.ssid + ' 정보', onclick: (e) => { e.stopPropagation(); ui.info(w.ssid, [['처음 연결', w.first], ['마지막 연결', w.last]]); } }, LM.icon('info')) })) }));
+        ui.group({ header: '알려진 네트워크', footer: on ? null : '일부 네트워크는 온라인이 되어야 동기화된다.', rows: D.wifi.filter((w) => !w.onlineOnly || LM.online()).map((w) => ui.row({ title: w.ssid, accessory: h('button', { class: 'nb-btn', 'aria-label': w.ssid + ' 정보', onclick: (e) => { e.stopPropagation(); if (w.ssid === 'HAEDAM_2F') LM.C.see('E-74'); ui.info(w.ssid, [['처음 연결', w.first], ['마지막 연결', w.last]]); } }, LM.icon('info')) })) }));
     };
     draw();
     const off = LM.on('state', () => list.isConnected && draw());
@@ -149,6 +152,7 @@
   }
 
   function hotspot(nav) {
+    LM.C.see('E-199');
     return sub(nav, '개인용 핫스팟', [
       ui.group({ rows: [ui.row({ title: '다른 사람의 연결 허용', toggle: { on: false } })] }),
       ui.group({ header: '연결했던 기기', rows: [ui.row({ title: '도현의 슬레이트', subtitle: '3/2~3/14 평일 아침·저녁 · 마지막 3/14 19:35', icon: 'devices' })] }),
@@ -162,6 +166,7 @@
   }
   function pv(id) { return id === 'blink' ? LM.state.preview.blink : id === 'loop' ? LM.state.preview.loopdm : 'unlocked'; }
   function notifApp(nav, id) {
+    if (id === 'blink' || id === 'loop') LM.C.see('E-202');
     const body = h('div');
     const draw = () => body.replaceChildren(
       ui.group({ rows: [ui.row({ title: '알림 허용', toggle: { on: true } }), ui.row({ title: '배너', toggle: { on: true } })] }),
@@ -172,6 +177,7 @@
 
   const focusShared = () => (LM.G && LM.G.device ? LM.G.device.focusShare !== false : true);
   function focus(nav) {
+    LM.C.see('E-203');
     const body = h('div');
     const draw = () => body.replaceChildren(
       ui.group({ rows: [ui.row({ title: '방해 금지', icon: 'moon', iconBg: '#6A5ACD', toggle: { on: LM.state.dnd, onChange: (v) => { LM.set({ dnd: v }); if (!v && focusShared() && LM.trace) LM.trace('TR-12'); } } })], footer: '다른 기기에서 켬 · 도현의 슬레이트 · 3/15 00:21' }),
@@ -181,6 +187,8 @@
   }
 
   function screenTime(nav) {
+    LM.C.see('E-193');
+    if (LM.online()) LM.C.see('E-194');
     const bars = [['00', 0], ['03', 82], ['06', 0], ['09', 24], ['12', 30], ['15', 18], ['18', 64], ['21', 22]];
     const max = 82;
     const chart = h('div', { class: 'set-chart', role: 'img', 'aria-label': '시간대별 사용 시간 막대' }, bars.map(([t, v]) => h('div', { class: 'set-bar' }, h('i', { style: { height: Math.max(2, (v / max) * 100) + '%' } }), h('span', null, t))));
@@ -219,6 +227,7 @@
     ], '일반');
   }
   function storage(nav) {
+    LM.C.see('E-196');
     const used = [['사진', 4.2, '#F09A37'], ['음성 메모', 0.5, '#E5484D'], ['앱', 9.8, '#3A82F7'], ['시스템', 7.1, '#8E8E93']];
     const total = 64;
     return sub(nav, '저장 공간', [
@@ -255,6 +264,7 @@
   }
 
   function battery(nav) {
+    LM.C.see('E-195');
     return sub(nav, '배터리', [
       ui.group({ rows: [kv('배터리 잔량', '31% · 충전 중'), kv('마지막 방전', '3/15 03:58 · 0%, 전원 꺼짐')] }),
       ui.group({ header: '최근 10일 앱별 사용', rows: D.battery.map(([n, v]) => ui.row({ title: n, value: v })) }),
@@ -264,15 +274,16 @@
   function privacy(nav) {
     return sub(nav, '개인정보 보호', [
       ui.group({ rows: [
-        ui.row({ title: '위치 서비스', value: '켬', onClick: () => nav.push(() => sub(nav, '중요 위치', ui.group({ header: '중요 위치', rows: D.places.map(([a, b]) => ui.row({ title: a, subtitle: b, icon: 'pin' })) }), '개인정보 보호')) }),
-        ui.row({ title: '앱 개인정보 보고서', onClick: () => nav.push(() => sub(nav, '앱 개인정보 보고서', ui.group({ header: '최근 7일 · 3/9~3/15 03:58', rows: D.privacy.map(([a, b]) => ui.row({ title: a, subtitle: b })) }), '개인정보 보호')) }),
+        ui.row({ title: '위치 서비스', value: '켬', onClick: () => { LM.C.see('E-75'); nav.push(() => sub(nav, '중요 위치', ui.group({ header: '중요 위치', rows: D.places.map(([a, b]) => ui.row({ title: a, subtitle: b, icon: 'pin' })) }), '개인정보 보호')); } }),
+        ui.row({ title: '앱 개인정보 보고서', onClick: () => { LM.C.see('E-192'); nav.push(() => sub(nav, '앱 개인정보 보고서', ui.group({ header: '최근 7일 · 3/9~3/15 03:58', rows: D.privacy.map(([a, b]) => ui.row({ title: a, subtitle: b })) }), '개인정보 보호')); } }),
       ] }),
     ]);
   }
 
   function passwords(nav) {
+    LM.C.see('E-201');
     return sub(nav, '암호', [
-      ui.notice('열 때 기기 암호가 필요하다. 프로토타입은 바로 연다.'),
+      ui.notice('열 때 기기 암호가 필요하다.'),
       ui.group({ header: '저장된 로그인', rows: D.logins.map(([site, acc, note]) => ui.row({ title: site, subtitle: acc + (note ? ' · ' + note : ''), icon: 'key', onClick: () => ui.info(site, [['계정', acc], ['암호', '••••••••'], ['비고', note || '—']]) })) }),
     ]);
   }

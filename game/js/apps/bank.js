@@ -58,35 +58,61 @@
   function login(nav) {
     const offline = !LM.online();
     let pin = '', busy = offline;
+    let waitUntil = 0, waitTimer = null;
     const dots = h('div', { class: 'b-dots' });
     const err = h('div', { class: 'b-err', role: 'alert' });
     const drawDots = () => dots.replaceChildren(...Array.from({ length: 6 }, (_, i) => h('i', { class: pin.length > i ? 'on' : '' })));
+    const keyEls = [];
+
+    const setKeys = () => {
+      const locked = busy || !LM.online() || Date.now() < waitUntil;
+      keyEls.forEach((b) => { b.disabled = locked; });
+    };
+    const countdown = () => {
+      if (waitTimer) clearTimeout(waitTimer);
+      const left = Math.ceil((waitUntil - Date.now()) / 1000);
+      if (left > 0) {
+        err.textContent = left + '초 후에 다시 시도하십시오';
+        setKeys();
+        waitTimer = setTimeout(countdown, 250);
+      } else {
+        waitUntil = 0; busy = false; pin = ''; drawDots(); err.textContent = ''; setKeys();
+        if (LM.G) LM.gset('world.bankWaitUntil', 0);
+      }
+    };
 
     const submit = () => {
       if (!LM.online()) { err.textContent = '온라인이 필요합니다.'; return; }
       if (pin === PIN) {
-        pin = ''; drawDots(); err.textContent = '';
+        pin = ''; drawDots(); err.textContent = ''; waitUntil = 0;
+        if (waitTimer) clearTimeout(waitTimer);
+        if (LM.G) LM.gset('world.bankOpened', true);
         nav.push(() => home(nav));
         return;
       }
       busy = true;
-      err.textContent = '암호가 맞지 않습니다. 다시 입력하세요.';
+      err.textContent = '암호가 맞지 않습니다.';
       dots.classList.remove('shake'); void dots.offsetWidth; dots.classList.add('shake');
-      setTimeout(() => { pin = ''; busy = false; drawDots(); dots.classList.remove('shake'); }, 500);
+      waitUntil = Date.now() + 30000;
+      if (LM.G) LM.gset('world.bankWaitUntil', waitUntil);
+      countdown();
     };
     const press = (d) => {
-      if (busy || !LM.online() || pin.length >= 6) return;
+      if (busy || !LM.online() || Date.now() < waitUntil || pin.length >= 6) return;
       pin += d; err.textContent = ''; drawDots();
       if (pin.length === 6) setTimeout(submit, 120);
     };
-    const back = () => { if (busy || !pin) return; pin = pin.slice(0, -1); drawDots(); };
+    const back = () => { if (busy || Date.now() < waitUntil || !pin) return; pin = pin.slice(0, -1); drawDots(); };
 
     const keys = [];
     for (let n = 1; n <= 9; n++) keys.push(h('button', { class: 'b-key', 'aria-label': String(n), onclick: () => press(String(n)), disabled: offline }, String(n)));
     keys.push(h('span', { class: 'b-key ghost', 'aria-hidden': 'true' }));
     keys.push(h('button', { class: 'b-key', 'aria-label': '0', onclick: () => press('0'), disabled: offline }, '0'));
     keys.push(h('button', { class: 'b-key', 'aria-label': '지우기', onclick: back, disabled: offline }, LM.icon('backspace')));
+    keyEls.push(...keys);
     drawDots();
+    if (LM.G && LM.G.world && LM.G.world.bankWaitUntil > Date.now()) { waitUntil = LM.G.world.bankWaitUntil; busy = true; countdown(); }
+    setKeys();
 
     const head = h('header', { class: 'nb nb-std show-title' },
       h('div', { class: 'nb-left' }, h('button', { class: 'nb-back', onclick: () => nav.close() }, '취소')),

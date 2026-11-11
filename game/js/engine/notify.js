@@ -16,8 +16,12 @@
 
   function previewHidden(n) {
     if (!n) return false;
-    if (n.hidden) return true;
     const p = (LM.state && LM.state.preview) || {};
+    if (n.hidden) {
+      if (n.app === 'blink') return p.blink !== 'always';
+      if (n.app === 'loop') return p.loopdm !== 'always';
+      return true;
+    }
     if (p[n.app] === 'off') return true;
     if (n.app === 'blink' && p.blink === 'off') return true;
     if (n.app === 'loop') {

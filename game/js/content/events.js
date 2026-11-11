@@ -12,7 +12,7 @@ LM.C.events = {
     { app: 'talk', title: '아빠', body: '폰 찾았다. 택시에 있었단다', t: '3/17 17:30' },
     { app: 'talk', title: '서아', body: '알겠어. 근데 무슨 일인데?', t: '3/14 22:52' },
     { app: 'talk', title: '지훈', body: '야 너 어디야 전화 좀 받아', t: '3/14 23:58' },
-    { app: 'blink', title: '블링크', body: '새 메시지', hidden: true, t: '3/16 21:00' },
+    { app: 'blink', title: '블링크', body: '수요일 정오까지 돈 안 가져오면 니 아빠 회사 간다. 한빛물류 맞지?', hidden: true, t: '3/16 21:00' },
     { app: 'mail', title: '청운고시원', body: '입실 취소 및 환불 안내', t: '3/15 11:20' },
     { app: 'loop', title: '루프', body: '@jh_lee_99님이 댓글을 남겼습니다', t: '3/15 13:20' },
     { app: 'loop', title: '루프', body: '회원님이 알 수도 있는 사람: minji.sw', t: '3/16 10:10' },

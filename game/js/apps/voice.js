@@ -136,9 +136,9 @@
       right: h('button', { class: 'nb-btn', 'aria-label': '더보기', onclick: () => ui.actionSheet({
         title: rec.title,
         actions: [
-          { label: '이름 변경', onClick: () => ui.toast('프로토타입: 이름은 바뀌지 않는다') },
+          { label: '이름 변경', onClick: () => ui.toast('이름은 바뀌지 않는다') },
           { label: '공유', onClick: () => ui.share({ eid: /^E-\d+/.test(rec.id) ? rec.id : null, title: rec.title, kind: 'recording', app: 'voice' }) },
-          { label: '삭제', destructive: true, onClick: () => ui.toast('프로토타입: 삭제는 일어나지 않는다') },
+          { label: '삭제', destructive: true, onClick: () => ui.toast('삭제는 일어나지 않는다') },
         ],
       }) }, LM.icon('more')),
       body,

@@ -94,6 +94,7 @@
     const back = (BOARDS.find((b) => b.id === p.board) || {}).name || '모아';
     const online = LM.online();
     if (p.eid) LM.C.see(p.eid);
+    if (p.id === 'jail') LM.C.see('E-132');
     LM.setEid(p.eid || null);
     return ui.page({
       title: '글', back, nav, large: false,

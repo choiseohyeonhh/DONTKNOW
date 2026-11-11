@@ -111,7 +111,7 @@
           title: c.name,
           subtitle: c.current ? '현재 위치' : c.onlineOnly ? '다른 기기에서 추가됨 · ' + c.addedAt : (c.sub || ''),
           value: c.now + '°', icon: c.current ? 'location' : 'pin',
-          onClick: () => { currentId = c.id; drawHome(); },
+          onClick: () => { if (c.id === 'gucheong' && LM.online()) LM.C.see('E-213'); currentId = c.id; drawHome(); },
         })),
       }));
   }
@@ -123,7 +123,7 @@
       title: c.name,
       subtitle: c.current ? '현재 위치 · 삭제할 수 없음' : c.onlineOnly ? '다른 기기에서 추가됨 · ' + c.addedAt : (c.sub || ''),
       value: c.now + '°', check: currentId === c.id,
-      onClick: () => { currentId = c.id; drawHome(); nav.pop(); },
+      onClick: () => { if (c.id === 'gucheong' && LM.online()) LM.C.see('E-213'); currentId = c.id; drawHome(); nav.pop(); },
       onLong: c.current ? null : () => ui.actionSheet({
         title: c.name + ' 삭제', text: c.onlineOnly ? '다른 기기에서 추가한 지역이다.' : '',
         actions: [{ label: '지역 삭제', destructive: true, onClick: () => { if (currentId === c.id) currentId = 'seongwon'; removed.add(c.id); added.delete(c.id); drawHome(); ui.toast('지역을 삭제했다'); nav.pop(); nav.push(() => cities(nav)); } }],

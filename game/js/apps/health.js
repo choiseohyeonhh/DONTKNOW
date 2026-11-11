@@ -42,6 +42,7 @@
   }
 
   function summary(nav) {
+    LM.C.see('E-38');
     const card = (title, icon, value, unit, sub, kind, onClick) => h('button', {
       class: 'he-card ' + kind, onclick: onClick,
     },

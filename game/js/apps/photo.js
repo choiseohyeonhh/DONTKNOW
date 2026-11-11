@@ -14,7 +14,7 @@
     ], { eid: 'E-30' }),
     P('group', '리버뷰타워 1월 단체사진 저녁', '단체사진', [
       ['촬영', '2026.01.20 15:02'], ['위치', '리버뷰타워'], ['기기', '도현의 폰'], ['편집됨', '예 · 원본 5명'],
-    ], { edited: true, eid: 'E-32' }),
+    ], { edited: true, eid: 'E-32', seeOnRevert: true, origKey: '리버뷰타워 1월 단체사진 원본 5명 손목 녹색 시계' }),
     P('burst', BURST_KEY, '버스트', [
       ['촬영', '2026.03.14 20:02'], ['위치', '리버뷰타워 지하 2층 주차장'], ['기기', '도현의 폰'], ['버스트', '18장'],
     ], { burst: 18, eid: 'E-33' }),
@@ -64,10 +64,15 @@
   const alive = (items) => items.filter((it) => !LM.isDeleted('photo', it.id));
   function shotItems() {
     return (LM.G.shots || []).map((s) => P(s.id, s.key || s.title, s.title, [
-      ['촬영', LM.fmt.date(s.at)], ['기기', '도현의 폰'], ['단서', s.eid || '—'], ['앨범', '스크린샷'],
-    ], { eid: s.eid, runtime: true }));
+      ['촬영', LM.fmt.date(s.at)], ['기기', '도현의 폰'], ['단서', s.eid || '—'], ['앨범', s.app === 'cam' ? '최근 항목' : '스크린샷'],
+    ], { eid: s.eid, runtime: true, app: s.app || 'photo', shot: true }));
   }
-  const recentItems = () => shotItems().concat(alive(RECENT));
+  const recentShots = () => shotItems();
+  const screenshotShots = () => shotItems().filter((it) => it.app !== 'cam');
+  const recentItems = () => recentShots().concat(alive(RECENT));
+  LM.photo = {
+    recentItems: () => recentItems().map((it) => ({ id: it.id, eid: it.eid, title: it.title, key: it.key, app: it.app || 'photo', edited: !!it.edited })),
+  };
 
   LM.register({
     id: 'photo',
@@ -76,6 +81,11 @@
         { label: '보관함', icon: 'photo', build: (nav) => library(nav) },
         { label: '앨범', icon: 'grid', build: (nav) => albums(nav) },
       ], 0);
+      if (app.opts && app.opts.shotId) {
+        const list = recentItems();
+        const i = list.findIndex((it) => it.id === app.opts.shotId);
+        if (i >= 0) app.stacks[0].push(() => viewer(app.stacks[0], list, i));
+      }
     },
   });
 
@@ -83,7 +93,7 @@
   function library(nav) {
     return ui.page({
       title: '사진', nav, grouped: true,
-      right: h('button', { class: 'nb-btn', 'aria-label': '지도에서 보기', onclick: () => ui.toast('지도에서 보기는 프로토타입에 없다') }, LM.icon('location')),
+      right: h('button', { class: 'nb-btn', 'aria-label': '지도에서 보기', onclick: () => ui.toast('사진 위치 정보는 이 기기에 없다') }, LM.icon('location')),
       body: [
         ui.section('최근 항목'),
         grid(recentItems(), (i) => nav.push(() => viewer(nav, recentItems(), i))),
@@ -109,9 +119,9 @@
   /* ---------- 앨범 ---------- */
   function albums(nav) {
     const list = [
-      { id: 'recent', name: '최근 항목', icon: 'photo', items: alive(RECENT), thumb: RECENT[0] },
+      { id: 'recent', name: '최근 항목', icon: 'photo', items: recentItems(), thumb: recentItems()[0] },
       { id: 'fav', name: '즐겨찾기', icon: 'heart', items: alive([RECENT[0], RECENT[5]]), thumb: RECENT[0] },
-      { id: 'shots', name: '스크린샷', icon: 'screenshot', items: alive(SHOTS), thumb: SHOTS[0] },
+      { id: 'shots', name: '스크린샷', icon: 'screenshot', items: screenshotShots().concat(alive(SHOTS)), thumb: screenshotShots()[0] || SHOTS[0] },
       { id: 'hidden', name: '숨김 · 한결 우편', icon: 'lock', items: alive(HIDDEN), locked: true },
       { id: 'deleted', name: '최근 삭제된 항목', icon: 'trash', items: alive([ROOM]), remaining: 15 },
     ];
@@ -169,15 +179,17 @@
 
     const draw = () => {
       const it = list[i];
-      if (it.eid) LM.C.see(it.eid);
-      LM.setEid(it.eid || null);
+      if (it.eid && !it.seeOnRevert) LM.C.see(it.eid);
+      LM.setEid(it.eid && !it.seeOnRevert ? it.eid : null);
       stage.replaceChildren(fullPhoto(it));
       count.textContent = (i + 1) + ' / ' + list.length;
       foot.replaceChildren(
         h('button', { class: 'phv-btn', disabled: i === 0, 'aria-label': '이전 사진', onclick: () => { if (i > 0) { i--; draw(); } } }, LM.icon('chevron-left')),
         it.burst
           ? h('button', { class: 'phv-burst-btn', onclick: () => nav.push(() => burst(nav, it)) }, LM.icon('grid'), '버스트 ' + it.burst + '장')
-          : h('span', { class: 'phv-spacer' }),
+          : it.edited
+            ? h('button', { class: 'phv-burst-btn', onclick: () => editSheet(it, draw) }, LM.icon('edit'), '편집')
+            : h('span', { class: 'phv-spacer' }),
         h('button', { class: 'phv-btn', disabled: i === list.length - 1, 'aria-label': '다음 사진', onclick: () => { if (i < list.length - 1) { i++; draw(); } } }, LM.icon('chevron-right')),
       );
     };
@@ -202,6 +214,28 @@
 
     draw();
     return scr;
+  }
+
+  function editSheet(it, redraw) {
+    const body = h('div', null,
+      ui.group({ rows: [
+        ui.row({ title: '자르기', subtitle: '이 기기에서는 결과만 남아 있다', chevron: false, dim: true }),
+        ui.row({ title: '필터', subtitle: '원본에 적용된 값은 저장되지 않았다', chevron: false, dim: true }),
+      ] }),
+      ui.button({ label: '원본으로 복귀', kind: 'tinted', icon: 'refresh', onClick: () => {
+        it.edited = false;
+        it.seeOnRevert = false;
+        it.key = it.origKey || it.key;
+        it.info = (it.info || []).map(([k, v]) => (k === '편집됨' ? [k, '아니오 · 원본 5명'] : [k, v]));
+        LM.C.see('E-32');
+        LM.setEid('E-32');
+        const w = document.querySelector('.sheet-wrap'); if (w) w.close();
+        ui.toast('원본으로 되돌렸다');
+        redraw();
+      } }),
+      ui.notice('원본은 편집 전 사진이다. 5명이 모두 보이고, 오른쪽 끝에 초록 시계가 있다.'));
+    const w = ui.sheet(null, ui.sheetPage({ title: '편집', cancel: '취소', body }), { size: 'medium' });
+    return w;
   }
 
   function fullPhoto(it) {

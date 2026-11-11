@@ -55,7 +55,7 @@
     const lost = h('div', { class: 'lost-card' },
       h('b', null, '분실 모드'),
       h('p', null, '이 폰을 주우셨다면 연락 부탁드립니다.', h('br'), '010-XXXX-2290'),
-      h('button', { class: 'lost-btn', onclick: () => { fail.textContent = '서비스 없음'; setTimeout(() => (fail.textContent = ''), 2500); } }, LM.icon('phone-out'), '통화'), fail);
+      h('button', { class: 'lost-btn', onclick: () => { LM.C.see('E-02'); fail.textContent = '서비스 없음'; setTimeout(() => (fail.textContent = ''), 2500); } }, LM.icon('phone-out'), '통화'), fail);
 
     const stack = h('div', { class: 'nstack' });
     function fillNotifs() {
@@ -104,6 +104,7 @@
     el.querySelector('.lock-hint').style.pointerEvents = 'auto';
     el.querySelector('.lock-hint').addEventListener('click', () => showPasscode());
     el._refreshNotifs = fillNotifs;
+    LM.on('state', () => { if (stack.isConnected) fillNotifs(); });
     return el;
   }
 
@@ -185,6 +186,7 @@
   }
 
   function showMedical() {
+    LM.C.see('E-07');
     const m = LM.MEDICAL;
     const body = h('div', null,
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '14px', padding: '4px 16px 18px' } }, ui.avatar(m.name, 60, { glyph: 'medical', hue: 0 }), h('div', null, h('div', { style: { fontSize: '24px', fontWeight: 700 } }, m.name), h('div', { style: { color: 'var(--lm-label-2)', fontSize: '15px' } }, '의료 정보'))),
@@ -286,6 +288,7 @@
   function openApp(id, o) {
     o = o || {};
     if (LM.state.locked && !o.fromLock) { showPasscode(() => openApp(id, o)); return; }
+    if (LM.G) { const list = Array.isArray(LM.G.openedApps) ? LM.G.openedApps : (LM.G.openedApps = []); if (list.indexOf(id) < 0) list.push(id); }
     closeOverlay();
     if (curApp) closeApp(true);
     const def = LM.apps[id] || placeholderApp(id);
@@ -318,7 +321,7 @@
   LM.current = () => curApp;
 
   function placeholderApp(id) {
-    return { id, render(app) { app.start(() => ui.page({ title: LM.APPS[id], body: ui.empty({ icon: 'info', title: '아직 비어 있는 앱', text: '프로토타입에서 이 앱의 화면은 준비 중이다.' }) })); } };
+    return { id, render(app) { app.start(() => ui.page({ title: LM.APPS[id], body: ui.empty({ icon: 'info', title: '아직 비어 있는 앱', text: '이 앱의 화면은 준비 중이다.' }) })); } };
   }
 
   /* 홈 인디케이터: 위로 밀면 홈 */
@@ -523,7 +526,16 @@
     const run = (q) => {
       res.replaceChildren();
       if (!q) {
-        res.appendChild(h('div', { class: 'grp-h', style: { padding: '8px 30px' } }, '앱'));
+        const see = [];
+        (notifList() || []).forEach((n) => { if (n && n.app && n.app !== 'system' && see.indexOf(n.app) < 0) see.push(n.app); });
+        const sugg = see.slice(0, 3);
+        while (sugg.length < 3) { ['msg', 'loop', 'mail'].forEach((id) => { if (sugg.length < 3 && sugg.indexOf(id) < 0) sugg.push(id); }); }
+        res.appendChild(h('div', { class: 'grp-h', style: { padding: '8px 30px' } }, 'LUMA 제안'));
+        res.appendChild(ui.group({ plain: true, rows: sugg.map((id) => ui.row({
+          title: LM.APPS[id], subtitle: '새로 동기화된 항목이 있다', lead: LM.appIcon(id, 30),
+          onClick: () => { closeOverlay(); openApp(id); },
+        })) }));
+        res.appendChild(h('div', { class: 'grp-h', style: { padding: '12px 30px 8px' } }, '앱'));
         res.appendChild(h('div', { class: 'gs-sugg' }, ['talk', 'note', 'photo', 'set'].map((id) => { const b = appButton(id); return b; })));
         return;
       }
@@ -587,6 +599,7 @@
     if (!LM.state.locked) { lockEl.hidden = true; homeEl.hidden = false; }
     // 키보드: Esc = 뒤로/홈, H = 홈
     document.addEventListener('keydown', (e) => {
+      if (document.querySelector('.wipe-setup')) { e.preventDefault(); e.stopImmediatePropagation(); return; }
       if (e.target.matches('input, textarea')) return;
       if (e.key === 'Escape') { if (dev.querySelector('.sheet-wrap')) dev.querySelector('.sheet-wrap').close(); else if (curApp && curApp.pop()) {} else goHomeAction(); }
     });

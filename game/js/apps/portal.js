@@ -118,6 +118,7 @@
   }
 
   function leavePage(nav) {
+    LM.C.see('E-215');
     const steps = [
       { t: '접수', at: '3/16 22:40', state: 'done' },
       { t: '학과 승인 대기', at: '현재', state: 'now' },

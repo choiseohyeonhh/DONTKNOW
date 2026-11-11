@@ -183,6 +183,7 @@
         LM.animate(el, [{ opacity: 1 }, { opacity: 0 }], { duration: 220 }).then(() => el.remove());
       } else el.remove();
       dev.classList.remove('cine-open');
+      if (LM.C && LM.C.see) LM.C.see('E-01');
       LM.gset('prologueSeen', true);
       LM.saveGame('auto');
       LM.resume('cinematic');

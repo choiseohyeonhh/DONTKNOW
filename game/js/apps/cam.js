@@ -18,6 +18,8 @@
     let comp = 0;
     let drawerOpen = false;
     let mode = '사진';
+    let flashOn = true;
+    let lastShot = null;
     const locked = !!(app.opts && app.opts.fromLock);
 
     const scenes = h('div', { class: 'cam-view' },
@@ -44,7 +46,7 @@
       if (i === 1) drawDrawer();
     };
 
-    const flashIcon = h('button', { class: 'cam-mini', 'aria-label': '플래시(장식)', onclick: () => ui.toast('플래시 자동(프로토타입)') }, LM.icon('flash'));
+    const flashIcon = h('button', { class: 'cam-mini', 'aria-label': '플래시', onclick: () => { flashOn = !flashOn; flashIcon.classList.toggle('off', !flashOn); ui.toast(flashOn ? '플래시 자동' : '플래시 끔'); } }, LM.icon('flash'));
     const closeBtn = h('button', { class: 'cam-mini', 'aria-label': '닫기', onclick: () => app.close() }, LM.icon('close'));
 
     const modes = h('div', { class: 'cam-modes' },
@@ -57,20 +59,26 @@
       class: 'cam-thumb', 'aria-label': locked ? '앨범 잠김' : '사진첩 열기',
       onclick: () => {
         if (locked) { ui.toast('잠금 상태에서는 사진첩을 열 수 없다'); return; }
-        LM.openApp('photo');
+        if (lastShot) LM.openApp('photo', { shotId: lastShot.id });
+        else LM.openApp('photo');
       },
     }, ui.photo('성원아파트 방 창가', { ratio: '1 / 1', caption: false }));
+    const refreshThumb = () => {
+      lastShot = (LM.G.shots || []).find((s) => s.app === 'cam') || null;
+      if (lastShot) thumb.replaceChildren(ui.photo(lastShot.key || lastShot.title, { ratio: '1 / 1', caption: false }));
+    };
 
     const shutter = h('button', {
       class: 'cam-shutter', 'aria-label': '촬영',
       onclick: () => {
-        if (mode === '동영상') { ui.toast('동영상은 프로토타입에 없다'); return; }
+        if (mode === '동영상') { ui.toast('동영상 모드에서는 사진을 찍을 수 없습니다'); return; }
         const flash = h('div', { class: 'flash' });
         scr.appendChild(flash);
         setTimeout(() => flash.remove(), 100);
         const eid = comp === 1 && drawerOpen ? 'E-217b' : (comp === 0 || comp === 1) ? 'E-217a' : 'SHOT';
         const title = eid === 'E-217b' ? '서랍 봉투 박미선님 65' : eid === 'E-217a' ? '책상 포스트잇' : '카메라 사진';
         LM.saveShot({ eid: eid, title: title, app: 'cam', key: COMPS[comp] + ' 촬영' });
+        refreshThumb();
         if (LM.trace && !(LM.G && LM.G.sync && LM.G.sync.photos === false)) {
           LM.trace('TR-07', { source: 'cam', scene: COMPS[comp], drawerOpen: comp === 1 && drawerOpen, room: eid !== 'SHOT', eid: eid });
         }
@@ -85,7 +93,7 @@
       h('div', { class: 'cam-bottom' },
         h('div', { class: 'cam-thumb-wrap' }, thumb, locked ? h('span', { class: 'cam-locked' }, '잠금') : null),
         shutter,
-        h('button', { class: 'cam-switch', 'aria-label': '카메라 전환', onclick: () => ui.toast('전면 카메라(프로토타입)') }, LM.icon('rotate'))));
+        h('button', { class: 'cam-switch', 'aria-label': '카메라 전환', onclick: () => {} }, LM.icon('rotate'))));
 
     let sx = null;
     scenes.addEventListener('pointerdown', (e) => { sx = e.clientX; });
@@ -97,6 +105,7 @@
     });
 
     select(0);
+    refreshThumb();
     return scr;
   }
 
@@ -108,11 +117,16 @@
   }
   function sceneDrawer(onTap) {
     const env = h('div', { class: 'cam-envelope', hidden: true },
-      h('span', { class: 'cam-env-to' }, '박미선님 65'));
+      h('span', { class: 'cam-env-to' }, '박미선님 65'),
+      h('span', { class: 'cam-env-from' }, '한결캐피탈'));
     return h('div', { class: 'cam-scene cam-drawer' },
-      h('div', { class: 'cam-drawer-front' },
-        h('button', { class: 'cam-drawer-hotspot', 'aria-label': '서랍 열기', onclick: (e) => { e.stopPropagation(); onTap(); } },
-          h('span', null, '서랍'), env)));
+      h('div', { class: 'cam-desk-edge' }),
+      h('div', { class: 'cam-drawer-slot' }, env),
+      h('button', { class: 'cam-drawer-front', 'aria-label': '서랍 열기', onclick: (e) => { e.stopPropagation(); onTap(); } },
+        h('span', { class: 'cam-drawer-grain' }),
+        h('span', { class: 'cam-drawer-handle' }, h('i')),
+        h('span', { class: 'cam-drawer-label' }, '서랍')),
+      h('div', { class: 'cam-desk-lip' }));
   }
   function sceneBed() {
     return h('div', { class: 'cam-scene cam-bed' },

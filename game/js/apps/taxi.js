@@ -6,13 +6,19 @@
   const LM = window.LM, h = LM.h, ui = LM.ui;
 
   const DESTINATIONS = [
-    { id: 'haedam', name: '해담고시텔', addr: '성원구청로 31', onlineOnly: true },
-    { id: 'spa', name: '성원스파', addr: '성원구청역 1번 출구' },
+    { id: 'haedam', name: '해담고시텔', addr: '성원구청로 31', onlineOnly: true, needsSeen: ['E-150', 'E-198', 'E-219', 'E-220', 'E-74', 'E-214b'] },
+    { id: 'spa', name: '성원스파', addr: '성원구청역 1번 출구', needsMoved: true },
     { id: 'cheongun', name: '청운고시원', addr: '성원구청로 18' },
     { id: 'river', name: '리버뷰타워', addr: '성원동 · 성원대교 전망' },
     { id: 'gucheong', name: '성원구청역', addr: '성원동 · 지하철 1호선' },
     { id: 'home', name: '성원아파트 103동', addr: '성원동 · 집' },
   ];
+  function known(d) {
+    if (d.onlineOnly && !LM.online()) return false;
+    if (d.needsMoved && !LM.flag('MOVED')) return false;
+    if (d.needsSeen && !d.needsSeen.some((e) => LM.hasSeen && LM.hasSeen(e))) return false;
+    return true;
+  }
 
   /* 이용 내역: 3/14 21:05 리버뷰타워 → 21:22 성원구청역 2번 출구, 12,400원 (E-12b) */
   const TRIPS = [
@@ -57,7 +63,7 @@
     const results = h('div');
     const foot = h('div', { class: 't-foot' });
     const drawResults = () => {
-      const list = DESTINATIONS.filter((d) => (!d.onlineOnly || LM.online()) && (!query || d.name.includes(query)));
+      const list = DESTINATIONS.filter((d) => known(d) && (!query || d.name.includes(query)));
       results.replaceChildren(list.length
         ? ui.group({ header: '검색 결과', plain: true, rows: list.map((d) => ui.row({
           title: d.name, subtitle: d.addr, icon: 'pin', check: selected && selected.id === d.id,
@@ -94,7 +100,10 @@
   function confirmCall(nav, d) {
     ui.sheet(null, ui.sheetPage({
       title: '호출', cancel: '닫기', done: '호출',
-      onDone: () => { ui.toast('호출을 확정했다. 프로토타입은 최종 장면으로 넘어가지 않는다.'); },
+      onDone: () => {
+        if (LM.final && LM.final.start(d.id)) return;
+        ui.toast('호출을 확정했다');
+      },
       body: [
         h('div', { class: 't-confirm' },
           h('div', { class: 't-confirm-k' }, '도착지'),
@@ -121,6 +130,7 @@
   }
 
   function tripDetail(nav, t) {
+    if (t.eid) LM.C.see(t.eid);
     return ui.page({
       title: '영수증', back: '이용 내역', nav, large: false,
       body: [

@@ -166,6 +166,21 @@
     return true;
   }
 
+  function pickPhoto(onPick) {
+    const items = (LM.photo && LM.photo.recentItems) ? LM.photo.recentItems() : [];
+    const grid = items.length
+      ? h('div', { class: 'ph-grid cmp-pickgrid' }, items.map((it) => h('button', {
+        class: 'ph-cell', 'aria-label': it.title || '사진',
+        onclick: (e) => {
+          const w = e.target.closest('.sheet-wrap'); if (w) w.close();
+          onPick({ eid: it.eid, title: it.title, kind: 'photo', app: it.app || 'photo' });
+        },
+      }, ui.photo(it.key, { ratio: '1 / 1', caption: false }))))
+      : ui.empty({ icon: 'photo', title: '사진이 없습니다' });
+    const wrap = ui.sheet(null, ui.sheetPage({ title: '사진 선택', cancel: '취소', body: h('div', { class: 'cmp-picker' }, grid) }), { size: 'large' });
+    return wrap;
+  }
+
   function core(o) {
     const target = o.target || {};
     const npc = target.npc || null;
@@ -191,7 +206,7 @@
 
     const plus = h('button', { class: 'cmp-plus', 'aria-label': '첨부', onclick: () => {
       ui.actionSheet({ actions: [
-        { label: '사진', onClick: () => addAttach({ eid: 'E-217a', title: '책상 포스트잇', kind: 'photo', app: 'cam' }) },
+        { label: '사진', onClick: () => pickPhoto(addAttach) },
         { label: '파일', onClick: () => addAttach({ eid: 'E-216', title: '교육자료.pdf', kind: 'file', app: 'file' }) },
         { label: '위치', onClick: () => addAttach({ eid: 'E-150', title: '성원구청로 31, 해담고시텔 207호', kind: 'place', app: 'hankki' }) },
         { label: '녹음', onClick: () => addAttach({ eid: 'E-37', title: '새로운 녹음 37 · 42:31', kind: 'recording', app: 'voice' }) },

@@ -150,7 +150,7 @@
     return ui.row({
       title: s.q, subtitle: s.result || s.at, meta: s.result ? LM.fmt.list(s.at) : null,
       lead: h('span', { class: 'wv-bm-ic' }, LM.icon('search')),
-      onClick: () => go(s.q),
+      onClick: () => { if (/머니코치 강 실장/.test(s.q)) LM.C.see('E-141'); go(s.q); },
     });
   }
   function offlineNote() {

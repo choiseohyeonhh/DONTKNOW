@@ -128,7 +128,7 @@
   }
 
   function openHint() {
-    if (LM.hints && typeof LM.hints.open === 'function') { LM.hints.open(); return; }
+    if (LM.hints && typeof LM.hints.open === 'function') { LM.hints.open(pauseEl); return; }
     const ui = LM.ui;
     sheet(ui.sheetPage({
       title: '막혔을 때', cancel: '닫기',
@@ -166,6 +166,7 @@
 
   function open() {
     if (pauseEl) return;
+    if (document.querySelector('.wipe-setup')) return;
     const d = dev();
     if (!d) return;
     LM.pause('menu');
@@ -210,6 +211,7 @@
     }
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
+      if (document.querySelector('.wipe-setup')) { e.preventDefault(); e.stopImmediatePropagation(); return; }
       if (pauseEl) {
         e.preventDefault();
         e.stopPropagation();

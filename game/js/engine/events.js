@@ -113,6 +113,21 @@
   function showWipe() {
     const dev = document.querySelector('.device');
     if (!dev || dev.querySelector('.wipe-setup')) return;
+    dev.classList.add('wipe-locked');
+    if (LM.closeOverlay) { try { LM.closeOverlay(true); } catch (e) { /* ignore */ } }
+    if (!window.__dkWipeKeys) {
+      window.__dkWipeKeys = true;
+      document.addEventListener('keydown', (e) => {
+        if (!document.querySelector('.wipe-setup')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }, true);
+      document.addEventListener('keyup', (e) => {
+        if (!document.querySelector('.wipe-setup')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }, true);
+    }
     const el = h('div', { class: 'wipe-setup', role: 'dialog', 'aria-modal': 'true', 'aria-label': '초기 설정' },
       h('div', { class: 'wipe-lang' },
         h('div', { class: 'wipe-hello' }, '안녕하세요'),
@@ -165,14 +180,15 @@
   function judge(kind) {
     const g = ensure();
     if (!g) return;
+    if (g.ending && g.ending.shown) return;
     g.judgements = Array.isArray(g.judgements) ? g.judgements : [];
     g.judgements.push({ kind: kind, at: g.gameMs });
-    if (!g.ending) g.ending = { kind: kind, at: g.gameMs };
     LM.logEvent('judge', { kind: kind });
     let handled = false;
     if (LM.endings && typeof LM.endings.judge === 'function') {
       try { LM.endings.judge(kind); handled = true; } catch (e) { console.error(e); }
     }
+    if (!handled && !g.ending) g.ending = { kind: kind, at: g.gameMs, reason: kind, shown: true };
     LM.emit('judge', { kind: kind, at: g.gameMs, handled: handled });
     saveSoon();
   }
@@ -269,7 +285,8 @@
   };
   abs['EV-21'] = function () {
     const g = ensure();
-    if (g.flags.MAIL !== 'deleted') g.flags.MAIL = 'sent';
+    if (LM.mail && LM.mail.onDeadline) LM.mail.onDeadline();
+    else if (g.flags.MAIL !== 'deleted') g.flags.MAIL = 'sent';
     LM.logEvent('EV-21', { mail: g.flags.MAIL });
     judge('deadline');
   };
@@ -612,6 +629,33 @@
       LM.sched.def(id, evHandlers[id]);
       LM.sched.afterOnline(id, mins, evHandlers[id], { needsOnline: true });
     });
+    /* BR-23 세계의 넛지: 진전이 없을 때 방향을 준다. */
+    if (!g.world.ev32) {
+      LM.sched.def('NUDGE:minji', () => {
+        const gg = ensure();
+        if (!gg || gg.world.ev32) return;
+        gg.world.ev32 = true;
+        LM.notify({ app: 'loop', title: '루프', body: '회원님이 알 수도 있는 사람: minji.sw' });
+      });
+      LM.sched.afterOnline('NUDGE:minji', 45, () => {
+        const gg = ensure();
+        if (!gg || gg.world.ev32) return;
+        gg.world.ev32 = true;
+        LM.notify({ app: 'loop', title: '루프', body: '회원님이 알 수도 있는 사람: minji.sw' });
+      });
+    }
+    if (Number(g.npc.JH) > 0 && Number(g.npc.JH) < 2) {
+      LM.sched.def('NUDGE:jh', () => {
+        const gg = ensure();
+        if (!gg || Number(gg.npc.JH) === 0 || Number(gg.npc.JH) >= 2) return;
+        npcMsg('JH', '아저씨, 그 사진 보셨어요? 1월에 도현이가 올린 거요.');
+      });
+      LM.sched.afterOnline('NUDGE:jh', 55, () => {
+        const gg = ensure();
+        if (!gg || Number(gg.npc.JH) === 0 || Number(gg.npc.JH) >= 2) return;
+        npcMsg('JH', '아저씨, 그 사진 보셨어요? 1월에 도현이가 올린 거요.');
+      });
+    }
   }
 
   const evHandlers = {

@@ -1,4 +1,4 @@
-/* LUMA 프로토타입 코어: DOM 헬퍼, 상태, 시계, 앱 등록, 내비 스택, 공통 UI.
+/* LUMA 코어: DOM 헬퍼, 상태, 시계, 앱 등록, 내비 스택, 공통 UI.
  * 설계: design/02-design/COMPONENT_SPECIFICATIONS.md, INTERACTION_SPECIFICATIONS.md, NAVIGATION_ARCHITECTURE.md
  * 클래식 스크립트(모듈 아님) — file:// 에서도 동작한다. */
 (function () {
@@ -486,8 +486,8 @@
     const apps = [['msg', '메시지'], ['talk', '톡'], ['loop', '루프 DM'], ['mail', '메일'], ['blink', '블링크']];
     const body = h('div', { class: 'share' },
       h('div', { class: 'share-what' }, LM.icon('doc'), h('span', null, what || '항목')),
-      h('div', { class: 'share-row' }, targets.map((n) => h('button', { class: 'share-t', onclick: (e) => { e.target.closest('.sheet-wrap').close(); ui.toast(n + '에게 보낼 준비가 됐다(프로토타입)'); } }, ui.avatar(n, 56), h('span', null, n)))),
-      h('div', { class: 'share-row' }, apps.map(([id, n]) => h('button', { class: 'share-t', onclick: (e) => { e.target.closest('.sheet-wrap').close(); ui.toast(n + '로 공유(프로토타입)'); } }, LM.appIcon(id, 56), h('span', null, n)))),
+      h('div', { class: 'share-row' }, targets.map((n) => h('button', { class: 'share-t', onclick: (e) => { e.target.closest('.sheet-wrap').close(); ui.toast(n + '에게 공유했습니다'); } }, ui.avatar(n, 56), h('span', null, n)))),
+      h('div', { class: 'share-row' }, apps.map(([id, n]) => h('button', { class: 'share-t', onclick: (e) => { e.target.closest('.sheet-wrap').close(); ui.toast(n + '로 공유했습니다'); } }, LM.appIcon(id, 56), h('span', null, n)))),
       ui.group({ rows: [ui.row({ title: '복사', icon: 'copy', action: true, onClick: (e) => { e.target.closest('.sheet-wrap').close(); ui.toast('복사됨'); } }), ui.row({ title: '스크린샷으로 저장', icon: 'photo', action: true, onClick: (e) => { e.target.closest('.sheet-wrap').close(); ui.toast('사진에 저장됨'); } })] }));
     ui.sheet(null, ui.sheetPage({ title: '공유', body }), { size: 'medium' });
   };

@@ -165,6 +165,7 @@
   }
 
   function openHistory() {
+    LM.C.see('E-170');
     const body = h('div', { class: 'cc-hist' }, HISTORY.map((row) => {
       const el = h('div', { class: 'cc-row' },
         h('div', { class: 'cc-row-expr' }, row.expr, h('span', { class: 'cc-row-res' }, ' = ' + row.res)),

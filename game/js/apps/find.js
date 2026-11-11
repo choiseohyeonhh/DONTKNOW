@@ -84,7 +84,7 @@
     const draw = () => {
       const lostBtn = h('button', {
         class: 'btn gray m find-action', disabled: !online,
-        onclick: () => { lost = !lost; if (lostBtn) lostBtn.querySelector('span').textContent = lost ? '분실 모드 끄기' : '분실 모드 켜기'; ui.toast(lost ? '분실 모드를 켰다(프로토타입)' : '분실 모드를 껐다'); },
+        onclick: () => { lost = !lost; if (lostBtn) lostBtn.querySelector('span').textContent = lost ? '분실 모드 끄기' : '분실 모드 켜기'; ui.toast(lost ? '분실 모드를 켰다' : '분실 모드를 껐다'); },
       }, LM.icon('lock'), h('span', null, lost ? '분실 모드 끄기' : '분실 모드 켜기'));
 
       body.replaceChildren(

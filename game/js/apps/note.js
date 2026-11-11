@@ -42,7 +42,7 @@
     },
   ];
 
-  let unlocked = false;
+  let unlocked = !!(LM.G && LM.G.world && LM.G.world.noteUnlocked);
   let root = null;
   let noteOff = null;
 
@@ -156,6 +156,7 @@
     const check = () => {
       if (code === CODE) {
         unlocked = true;
+        if (LM.G) LM.gset('world.noteUnlocked', true);
         wrap.close();
         setTimeout(() => nav.push(() => noteView(nav, n)), 240);
         return;
