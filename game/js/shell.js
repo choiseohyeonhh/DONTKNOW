@@ -561,14 +561,27 @@
   }
   LM.openSearch = openSearch;
 
-  /* 배너: 방해 금지 중엔 띄우지 않는다 */
+  /* 배너: 방해 금지 중엔 띄우지 않는다. 끄면 실시간 15초에 최대 1개,
+   * 같은 그룹방은 "새 메시지 N개"로 묶는다(MESSAGING 3.9.3). */
+  let bannerAt = 0, bannerEl = null, bannerThread = null, bannerCount = 0;
   LM.banner = (n) => {
     if (LM.state.dnd || LM.state.locked) return;
+    const now = Date.now();
+    if (bannerEl && bannerEl.isConnected && n.thread && n.thread === bannerThread && now - bannerAt < 15000) {
+      bannerCount++;
+      const body = bannerEl.querySelector('.ncard-b');
+      if (body) body.textContent = '새 메시지 ' + bannerCount + '개';
+      bannerAt = now;
+      return;
+    }
+    if (now - bannerAt < 15000) return;
+    bannerAt = now; bannerThread = n.thread || null; bannerCount = 1;
     const b = h('div', { class: 'banner' }, notifCard(n));
+    bannerEl = b;
     b.addEventListener('click', () => { b.remove(); openNotif(n); });
     dev.appendChild(b);
     LM.animate(b, [{ transform: 'translateY(-120%)' }, { transform: 'translateY(0)' }], { duration: 350, easing: LM.EASE.sheet });
-    setTimeout(() => LM.animate(b, [{ transform: 'translateY(0)' }, { transform: 'translateY(-120%)' }], { duration: 240 }).then(() => b.remove()), 4000);
+    setTimeout(() => LM.animate(b, [{ transform: 'translateY(0)' }, { transform: 'translateY(-120%)' }], { duration: 240 }).then(() => { b.remove(); if (bannerEl === b) bannerEl = null; }), 4000);
   };
 
   function refreshShell() {

@@ -105,18 +105,13 @@
         '<ellipse cx="195" cy="610" rx="250" ry="180" fill="url(#el)"/>' +
         /* 두 사람의 뒷모습, 사이가 벌어져 있다. 얼굴은 보이지 않는다. */
         '<g fill="#07090c">' +
-        '<ellipse cx="126" cy="592" rx="15" ry="18"/><rect x="121" y="608" width="10" height="10" rx="5"/>' +
-        '<ellipse cx="126" cy="636" rx="34" ry="17"/>' +
-        '<path d="M94 704c0-34 16-54 32-54s32 20 32 54z"/>' +
-        '<path d="M106 700l-8 42h12l10-36zM146 700l8 42h-12l-10-36z"/>' +
-        '<path d="M102 648c-8 16-12 32-10 48" stroke="#07090c" stroke-width="8" fill="none" stroke-linecap="round"/>' +
-        '<ellipse cx="258" cy="596" rx="14" ry="17"/><rect x="253" y="611" width="10" height="10" rx="5"/>' +
-        '<ellipse cx="258" cy="638" rx="32" ry="16"/>' +
-        '<path d="M228 704c0-32 14-52 30-52s30 20 30 52z"/>' +
-        '<path d="M240 700l-7 42h11l9-36zM276 700l7 42h-11l-9-36z"/>' +
-        '<path d="M282 650c8 16 12 32 10 48" stroke="#07090c" stroke-width="8" fill="none" stroke-linecap="round"/>' +
+        '<ellipse cx="126" cy="590" rx="15" ry="18"/><rect x="121" y="604" width="10" height="12" rx="5"/>' +
+        '<path d="M94 704C96 660 108 626 126 618C144 626 156 660 158 704Z"/>' +
+        '<path d="M108 700l-8 44h13l11-38zM144 700l8 44h-13l-11-38z"/>' +
+        '<ellipse cx="258" cy="594" rx="14" ry="17"/><rect x="253" y="607" width="10" height="12" rx="5"/>' +
+        '<path d="M228 704C230 662 242 630 258 622C274 630 286 662 288 704Z"/>' +
+        '<path d="M241 700l-7 44h12l10-38zM275 700l7 44h-12l-10-38z"/>' +
         '</g>' +
-        '<path d="M158 620h24M238 620h-18" stroke="#0a0c10" stroke-width="2" opacity=".5"/>' +
         vignette + '</svg>';
     }
     if (kind === 'B') {
@@ -136,9 +131,8 @@
         '<rect x="66" y="596" width="258" height="44" rx="12" fill="#241c15"/>' +
         /* 앉은 사람: 등. 얼굴은 보이지 않는다. */
         '<g fill="#0a0807">' +
-        '<ellipse cx="196" cy="476" rx="19" ry="21"/><rect x="190" y="494" width="12" height="10" rx="5"/>' +
-        '<ellipse cx="196" cy="532" rx="40" ry="20"/>' +
-        '<path d="M150 596c0-44 20-72 46-78 26 6 46 34 46 78z"/>' +
+        '<ellipse cx="196" cy="476" rx="18" ry="20"/><rect x="190" y="492" width="12" height="12" rx="5"/>' +
+        '<path d="M152 596C154 548 172 514 196 508C220 514 238 548 240 596Z"/>' +
         '</g>' +
         '<path d="M160 526c-10 18-12 36-8 54" stroke="#3a2d23" stroke-width="9" fill="none" stroke-linecap="round"/>' +
         '<path d="M232 532c8 16 10 32 7 48" stroke="#3a2d23" stroke-width="8" fill="none" stroke-linecap="round" opacity=".8"/>' +
@@ -165,9 +159,8 @@
         '<rect x="74" y="572" width="242" height="14" fill="#1b222d"/>' +
         /* 유리 너머 앉은 사람 */
         '<g fill="#070a0e" opacity=".88">' +
-        '<ellipse cx="186" cy="386" rx="22" ry="25"/><rect x="180" y="408" width="12" height="10" rx="5"/>' +
-        '<ellipse cx="186" cy="444" rx="48" ry="24"/>' +
-        '<path d="M138 526c0-42 22-70 48-76 26 6 48 34 48 76z"/>' +
+        '<ellipse cx="186" cy="388" rx="21" ry="24"/><rect x="180" y="408" width="12" height="12" rx="5"/>' +
+        '<path d="M138 526C140 470 160 430 186 422C212 430 232 470 234 526Z"/>' +
         '</g>' +
         '<rect x="134" y="526" width="104" height="18" rx="7" fill="#070a0e" opacity=".88"/>' +
         '<rect x="70" y="588" width="250" height="64" rx="6" fill="#141b24"/>' +

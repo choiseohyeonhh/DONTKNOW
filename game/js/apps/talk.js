@@ -123,7 +123,17 @@
   }
   function last(room) { const m = visible(room); return m.length ? m[m.length - 1] : null; }
   function roomUnread(room) {
-    return visible(room).filter((m) => m.dir === 'in' && LM.read.isUnread('talk', m.id)).length;
+    let n = visible(room).filter((m) => m.dir === 'in' && LM.read.isUnread('talk', m.id)).length;
+    if (room.ambient) {
+      /* 배경 잡담은 홈·탭 숫자에서는 빼지만(캐논 배지 실험 보호), 방 행에서는 안 읽음을 보여 준다. */
+      const read = (LM.G && LM.G.read && LM.G.read.talk) || {};
+      n += LM.msg.list('talk', room.id).filter((rt) => rt.from !== 'out' && rt.ambient && !read[rt.id]).length;
+    }
+    return n;
+  }
+  function markAmbientRead(room) {
+    if (!room.ambient) return;
+    LM.msg.list('talk', room.id).forEach((rt) => { if (rt.from !== 'out' && rt.ambient) LM.read.mark('talk', rt.id); });
   }
   function staticUnread(room) {
     return staticVisible(room).filter((m) => m.dir === 'in' && LM.read.isUnread('talk', m.id)).length;
@@ -310,6 +320,7 @@
     });
     const hadUnread = roomUnread(r) > 0;
     LM.read.markThread('talk', r.id);
+    markAmbientRead(r);
     if (hadUnread && !r.ambient && LM.online() && LM.trace) LM.trace('TR-02', { kind: r.id === 'dad' ? 'dad' : 'other', npc: r.npc, thread: r.id });
     visible(r).forEach((m) => LM.C.see(m.eid));
     const lastEidMsg = visible(r).slice().reverse().find((m) => m.eid);
