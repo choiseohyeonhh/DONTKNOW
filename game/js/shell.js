@@ -266,6 +266,8 @@
     };
     LM.on('read', syncBadges);
     LM.on('msg', syncBadges);
+    LM.on('state', syncBadges);
+    LM.on('minute', syncBadges);
 
     // 제스처: 아래로 = 알림 센터(오른쪽 위에서 시작하면 제어 센터), 위로 = 검색
     let sx = 0, sy = 0, tracking = false;

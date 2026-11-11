@@ -230,7 +230,7 @@
       layer.appendChild(body);
       const bar = h('nav', { class: 'tabbar', role: 'tablist' });
       const syncBadges = () => {
-        if (!bar.isConnected) { offRead(); offMsg(); return; }
+        if (!bar.isConnected) { offRead(); offMsg(); offState(); offMinute(); return; }
         tabs.forEach((t) => {
           if (!t._badgeEl) return;
           const n = typeof t.badge === 'function' ? t.badge() : t.badge;
@@ -240,6 +240,8 @@
       };
       const offRead = LM.on('read', syncBadges);
       const offMsg = LM.on('msg', syncBadges);
+      const offState = LM.on('state', syncBadges);
+      const offMinute = LM.on('minute', syncBadges);
       tabs.forEach((t, i) => {
         const holder = h('div', { class: 'tabpane', hidden: true });
         body.appendChild(holder);

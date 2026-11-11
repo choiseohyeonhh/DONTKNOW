@@ -98,7 +98,7 @@
       h('div', { class: 'tb-meta' },
         h('b', null, v.title),
         h('span', null, CHANNEL.name + ' · 조회수 ' + v.views + '회'),
-        h('small', null, LM.fmt.date(v.at, 'abs')));
+        h('small', null, LM.fmt.date(v.at, 'abs'))));
   }
 
   function channelRow(nav) {

@@ -645,8 +645,28 @@
   ];
   const DRAFTS = { harin: '죄송합니다. 그 계좌 제 계좌예요. 돈은 제가 어떻게든…' };
   THREADS.forEach((t) => { t.threadId = t.id; t.itemId = 'loopdm:' + t.id; });
-  LM.read.register('loop', () => THREADS.filter((t) => t.unread > 0).map((t) => ({ id: t.itemId, threadId: t.id }))
-    .concat(LM.msg.list('loop', 'dm').filter((m) => m.from !== 'out').map((m) => ({ id: m.id, threadId: 'dm' }))));
+  LM.read.register('loop', () => {
+    const out = [];
+    THREADS.forEach((t) => {
+      if (t.unread > 0) out.push({ id: t.itemId, threadId: t.id });
+      LM.msg.list('loop', t.id).forEach((m) => { if (m.from !== 'out') out.push({ id: m.id, threadId: t.id }); });
+    });
+    return out;
+  });
+  function threadLast(t) {
+    const rt = LM.msg.list('loop', t.id);
+    if (rt.length) {
+      const m = rt[rt.length - 1];
+      return { text: m.text, at: LM.fmt.date(m.at, 'mdhm') };
+    }
+    return { text: t.last, at: t.at };
+  }
+  function threadAtMs(t) {
+    const rt = LM.msg.list('loop', t.id);
+    if (rt.length) return rt[rt.length - 1].at;
+    const d = LM.fmt.toDate(t.at);
+    return d ? d.getTime() : 0;
+  }
 
   function dmList(nav) {
     if (!LM.online()) {
@@ -654,14 +674,20 @@
     }
     const host = h('div');
     const draw = () => {
-      host.replaceChildren(ui.group({ plain: true, rows: THREADS.map((t) => ui.row({
-        title: t.name, subtitle: t.last, meta: t.at, avatar: avName(t.handle), avatarSize: 56,
-        badge: LM.read.isUnread('loop', t.itemId) ? 1 : null,
-        onClick: () => nav.push(() => dmRoom(nav, t)),
-      })) }));
+      const list = THREADS.slice().sort((a, b) => threadAtMs(b) - threadAtMs(a));
+      host.replaceChildren(ui.group({ plain: true, rows: list.map((t) => {
+        const last = threadLast(t);
+        const n = LM.read.unreadCount('loop', t.id);
+        return ui.row({
+          title: t.name, subtitle: last.text, meta: last.at, avatar: avName(t.handle), avatarSize: 56,
+          badge: n || null,
+          onClick: () => nav.push(() => dmRoom(nav, t)),
+        });
+      }) }));
     };
     draw();
     const offRead = LM.on('read', () => { if (host.isConnected) draw(); else offRead(); });
+    const offMsg = LM.on('msg', () => { if (host.isConnected) draw(); else offMsg(); });
     return ui.page({
       title: '메시지', back: '루프', nav, large: false,
       right: h('button', { class: 'nb-btn', 'aria-label': '새 메시지', onclick: () => ui.toast('새 메시지(프로토타입)') }, LM.icon('compose')),
@@ -711,7 +737,7 @@
     } }, '보내기');
     const footer = h('div', { class: 'lp-composer' }, inp, send);
     const page = ui.page({ title: t.name, back: '메시지', nav, large: false, body: bubbles, footer });
-    LM.read.mark('loop', t.itemId);
+    LM.read.markThread('loop', t.id);
     const offRead = LM.on('read', (e) => { if (!bubbles.isConnected) { offRead(); return; } if (!e || !e.appId || e.appId === 'loop') draw(); });
     const offMsg = LM.on('msg', (e) => { if (!bubbles.isConnected) { offMsg(); return; } if (e.appId === 'loop' && e.threadId === t.id) { LM.read.mark('loop', t.itemId); draw(); } });
     setTimeout(() => { const s = page.scroller; if (s) s.scrollTop = s.scrollHeight; }, 0);

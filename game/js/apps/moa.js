@@ -84,9 +84,10 @@
   }
 
   function postRow(nav, p) {
+    const when = LM.fmt.date(p.at, /:/.test(p.at) ? 'mdhm' : 'md');
     return h('button', { class: 'mo-row', onclick: () => nav.push(() => post(nav, p)) },
       h('div', { class: 'mo-rowmain' }, h('b', null, p.title), h('span', null, p.anon + ' · 댓글 ' + p.commentCount)),
-      h('small', null, LM.fmt.date(p.at, /:/.test(p.at) ? 'mdhm' : 'md'));
+      h('small', null, when));
   }
 
   function post(nav, p) {
